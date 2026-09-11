@@ -11,7 +11,12 @@
  * identity-reconciliation problem. That is the standards leverage.
  */
 
-import type { AccountExposure, Position } from "./types";
+import type {
+  AccountExposure,
+  HealthConfidence,
+  Position,
+  ProtocolExposure,
+} from "./types";
 
 export function joinByAccount(positions: Position[]): Map<string, AccountExposure> {
   const byAccount = new Map<string, Position[]>();
@@ -29,35 +34,78 @@ export function joinByAccount(positions: Position[]): Map<string, AccountExposur
   return out;
 }
 
+const emptyProtocol = (): ProtocolExposure => ({
+  collateralUsd: 0,
+  debtUsd: 0,
+  weightedCollateralUsd: 0,
+  unknownThresholdUsd: 0,
+  healthFactor: Infinity,
+  confidence: "ok",
+});
+
 export function buildExposure(account: string, positions: Position[]): AccountExposure {
+  const byProtocol: Record<string, ProtocolExposure> = {};
+  const collateralByAsset: Record<string, number> = {};
+
+  for (const p of positions) {
+    const bucket = (byProtocol[p.protocol] ??= emptyProtocol());
+    if (p.side === "BORROWER") {
+      bucket.debtUsd += p.valueUsd;
+      continue;
+    }
+    bucket.collateralUsd += p.valueUsd;
+    collateralByAsset[p.assetId] = (collateralByAsset[p.assetId] ?? 0) + p.valueUsd;
+    if (p.liquidationThreshold > 0) {
+      bucket.weightedCollateralUsd += p.valueUsd * p.liquidationThreshold;
+    } else {
+      // Unknown threshold contributes nothing to the liquidation boundary. That
+      // makes the health factor pessimistic rather than invented.
+      bucket.unknownThresholdUsd += p.valueUsd;
+    }
+  }
+
   let collateralUsd = 0;
   let debtUsd = 0;
   let weightedCollateralUsd = 0;
-  const collateralByAsset: Record<string, number> = {};
-  const protocols = new Set<string>();
+  let unknownThresholdUsd = 0;
+  let confidence: HealthConfidence = "ok";
 
-  for (const p of positions) {
-    protocols.add(p.protocol);
-    if (p.side === "BORROWER") {
-      debtUsd += p.valueUsd;
-    } else {
-      collateralUsd += p.valueUsd;
-      weightedCollateralUsd += p.valueUsd * p.liquidationThreshold;
-      collateralByAsset[p.assetId] = (collateralByAsset[p.assetId] ?? 0) + p.valueUsd;
-    }
+  for (const b of Object.values(byProtocol)) {
+    b.healthFactor = b.debtUsd > 0 ? b.weightedCollateralUsd / b.debtUsd : Infinity;
+    b.confidence = classify(b);
+
+    collateralUsd += b.collateralUsd;
+    debtUsd += b.debtUsd;
+    weightedCollateralUsd += b.weightedCollateralUsd;
+    unknownThresholdUsd += b.unknownThresholdUsd;
+    confidence = weaker(confidence, b.confidence);
   }
 
   return {
     account,
-    protocols: [...protocols].sort(),
+    protocols: Object.keys(byProtocol).sort(),
     collateralUsd,
     debtUsd,
     weightedCollateralUsd,
-    healthFactor: debtUsd > 0 ? weightedCollateralUsd / debtUsd : Infinity,
+    unknownThresholdUsd,
+    aggregateLeverageRatio: debtUsd > 0 ? weightedCollateralUsd / debtUsd : Infinity,
+    confidence,
+    byProtocol,
     positions,
     collateralByAsset,
   };
 }
+
+function classify(b: ProtocolExposure): HealthConfidence {
+  // Order matters: a contradicted HF is the stronger signal, because it means the
+  // number is not merely incomplete but demonstrably wrong.
+  if (b.debtUsd > 0 && b.healthFactor < 1) return "contradicted";
+  if (b.unknownThresholdUsd > 0) return "incomplete";
+  return "ok";
+}
+
+const RANK: Record<HealthConfidence, number> = { ok: 0, incomplete: 1, contradicted: 2 };
+const weaker = (a: HealthConfidence, b: HealthConfidence) => (RANK[b] > RANK[a] ? b : a);
 
 export type CoverageReport = {
   /** Accounts seen at all. */
@@ -86,6 +134,12 @@ export type CoverageReport = {
   protocolCountHistogram: Record<number, number>;
   /** Per-protocol sampled vs reported debt. Aggregates hide a single bad feed. */
   perProtocol: Record<string, { sampledDebtUsd: number; reportedDebtUsd: number; ratio: number }>;
+  /**
+   * Borrowers by health-factor confidence, and the debt behind each bucket.
+   * `contradicted` is the honest measure of how much of the book the
+   * standardized schema cannot price risk on — mostly Aave V3 E-Mode.
+   */
+  confidence: Record<HealthConfidence, { borrowers: number; debtUsd: number }>;
 };
 
 export function coverageReport(
@@ -100,8 +154,18 @@ export function coverageReport(
   const pairOverlap: Record<string, number> = {};
   const protocolCountHistogram: Record<number, number> = {};
   const sampledByProtocol: Record<string, number> = {};
+  const confidence: CoverageReport["confidence"] = {
+    ok: { borrowers: 0, debtUsd: 0 },
+    incomplete: { borrowers: 0, debtUsd: 0 },
+    contradicted: { borrowers: 0, debtUsd: 0 },
+  };
 
   for (const e of exposures.values()) {
+    if (e.debtUsd > 0) {
+      const bucket = confidence[e.confidence];
+      bucket.borrowers++;
+      bucket.debtUsd += e.debtUsd;
+    }
     for (const p of e.positions) {
       if (p.side === "BORROWER") {
         sampledByProtocol[p.protocol] = (sampledByProtocol[p.protocol] ?? 0) + p.valueUsd;
@@ -155,5 +219,6 @@ export function coverageReport(
     pairOverlap,
     protocolCountHistogram,
     perProtocol,
+    confidence,
   };
 }

@@ -57,14 +57,31 @@ export function toTokenUnits(balance: string, decimals: number): number {
 }
 
 /**
- * Percentages arrive as BigDecimal strings where 70.5 means 70.5%. Convert to a
- * fraction, and treat a missing or zero threshold as zero rather than guessing
- * a default — an invented threshold would silently corrupt every health factor.
+ * Convert a risk parameter to a fraction, inferring its units.
+ *
+ * The Messari spec says these are percentages, and Aave V3 and Compound V2 do
+ * emit `83` and `82.5`. Morpho Aave V2 emits `0.86` for the same field — a
+ * fraction. Both are live right now, so the unit is not something the schema
+ * guarantees and has to be inferred from the value:
+ *
+ *   0 < v <= 1    already a fraction
+ *   1 < v <= 100  a percentage
+ *
+ * Exactly 1 is ambiguous: it could be a 100% threshold or a 1% one. It resolves
+ * to 100%, because a 1% liquidation threshold does not exist in any real market
+ * while a 100% one is at least coherent. Anything above 100 is not a ratio at
+ * all and is rejected.
+ *
+ * A missing or zero value returns 0 rather than a guessed default. Callers must
+ * treat 0 as "unknown" and refuse to compute, because an invented threshold
+ * would silently corrupt every health factor downstream.
  */
-export function toFraction(pct: string | null | undefined): number {
-  const n = Number(pct);
+export function toFraction(value: string | null | undefined): number {
+  const n = Number(value);
   if (!Number.isFinite(n) || n <= 0) return 0;
-  return n / 100;
+  if (n <= 1) return n;
+  if (n <= 100) return n / 100;
+  return 0;
 }
 
 export function normalizePosition(

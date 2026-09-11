@@ -147,6 +147,63 @@ export function positionsQuery(schemaVersion: string): string {
   `;
 }
 
+/**
+ * Every open position belonging to a given set of accounts.
+ *
+ * The stratified market sample is correct for aggregates but wrong for
+ * per-account risk: an account's debt can sit in a deep market and be captured
+ * while its collateral ranks below the cutoff in another and is dropped, which
+ * makes the health factor collapse for no reason but our own sampling. Health
+ * factors are only meaningful on a complete position set, so accounts of interest
+ * are re-fetched exhaustively here.
+ *
+ * There is no `orderBy: balance` and no truncation. Paging is by `id` because
+ * completeness, not ranking, is the whole point.
+ */
+export function accountPositionsQuery(schemaVersion: string): string {
+  const hasAssetField = !schemaVersion.startsWith("2.");
+  return /* GraphQL */ `
+    query AccountPositions($first: Int!, $lastId: ID!, $accounts: [String!]!) {
+      _meta {
+        block {
+          number
+        }
+      }
+      positions(
+        first: $first
+        where: {
+          account_in: $accounts
+          id_gt: $lastId
+          balance_gt: 0
+          hashClosed: null
+        }
+        orderBy: id
+        orderDirection: asc
+      ) {
+        id
+        side
+        isCollateral
+        balance
+        account {
+          id
+        }
+        ${hasAssetField ? "asset { id symbol decimals }" : ""}
+        market {
+          id
+          liquidationThreshold
+          maximumLTV
+          inputTokenPriceUSD
+          inputToken {
+            id
+            symbol
+            decimals
+          }
+        }
+      }
+    }
+  `;
+}
+
 /** Historical liquidations — the ground truth the risk model is scored against. */
 export const LIQUIDATIONS_QUERY = /* GraphQL */ `
   query Liquidations($first: Int!, $lastId: ID!) {
