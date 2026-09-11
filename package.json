@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "snapshot": "tsx scripts/snapshot.mts"
+    "snapshot": "tsx scripts/snapshot.mts",
+    "verify:health": "tsx scripts/verify-health.mts"
   },
   "dependencies": {
     "next": "16.3.5",

@@ -63,6 +63,17 @@ await writeFile(
   JSON.stringify({ ...snapshot, coverage: report }, null, 2),
 );
 
+// The complete position sets, kept separate from the sample because they answer
+// a different question and only they are valid for per-account risk.
+await writeFile(
+  "data/completed.json",
+  JSON.stringify(
+    { provenance: snapshot.provenance, coverage: completeReport, positions: complete },
+    null,
+    2,
+  ),
+);
+
 const multi = [...exposures.values()]
   .filter((e) => e.protocols.length > 1 && e.debtUsd > 0)
   .sort((a, b) => b.debtUsd - a.debtUsd);
