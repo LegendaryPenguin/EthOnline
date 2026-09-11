@@ -299,6 +299,48 @@ describe("E-Mode inference", () => {
     expect(d.thresholdAfter).toBeCloseTo(0.98, 12);
   });
 
+  it("recognises the dollar category by measurement, not by a token list", () => {
+    // Aave's third E-Mode category is stablecoin against stablecoin, and a two
+    // factor ETH/BTC model cannot see it: both legs correctly have zero beta, so
+    // neither loads on anything. Volatility is what identifies them.
+    expect(dominantFactor([position("0xa", "p", "COLLATERAL", STABLE, 1_000)], betas, prices)).toBe(
+      "USD",
+    );
+    const d = decideEmode(
+      "0xa",
+      "aave-v3-eth",
+      [position("0xa", "aave-v3-eth", "COLLATERAL", STABLE, 1_000_000, 0.8)],
+      [position("0xa", "aave-v3-eth", "BORROWER", STABLE, 900_000, 0)],
+      betas,
+      prices,
+    );
+    expect(d.eligible).toBe(true);
+    expect(d.factor).toBe("USD");
+  });
+
+  it("keeps a low-beta but volatile asset out of the dollar category", () => {
+    // Tokenised gold has near-zero betas on both factors, so betas alone would put
+    // XAUt in with the stablecoins. It is 50x more volatile than any of them, and
+    // the same asset defeating a price-band heuristic is why factors.ts measures.
+    const gold = "0xgggggggggggggggggggggggggggggggggggggggg";
+    const goldBetas = new Map(betas);
+    goldBetas.set(gold, {
+      assetId: gold,
+      symbol: "XAUt",
+      betaEth: 0.05,
+      betaBtc: 0.17,
+      r2: 0.11,
+      observations: 362,
+      volatility: 0.01582,
+      confidence: "measured",
+      reason: "measured from live oracle history",
+    });
+    const goldPrices = new Map(prices).set(gold, 3_300);
+    expect(
+      dominantFactor([position("0xa", "p", "COLLATERAL", gold, 1_000)], goldBetas, goldPrices),
+    ).toBeNull();
+  });
+
   it("finds no dominant factor in a mixed book", () => {
     expect(
       dominantFactor(

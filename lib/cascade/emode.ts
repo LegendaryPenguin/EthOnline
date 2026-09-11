@@ -54,6 +54,36 @@ export const FACTOR_DOMINANCE = 0.9;
 export const MIN_FACTOR_R2 = 0.7;
 
 /**
+ * Daily volatility below which an asset is a dollar, and the loading it must not
+ * have on either risk factor for that to count.
+ *
+ * Aave's third E-Mode category is stablecoin-against-stablecoin, and a two-factor
+ * ETH/BTC model cannot express it: both legs correctly regress to a beta of zero,
+ * so neither loads on anything and `dominantFactor` finds nothing. That cost real
+ * recall — the account holding sUSDe against USDe is in E-Mode on chain and was
+ * missed for exactly this reason.
+ *
+ * The category is still *measured* rather than labelled, which is the rule
+ * everywhere else in this model. Across the live collateral set the separation is
+ * not marginal: USDC and sUSDe sit at 0.00011 and 0.00031 daily volatility, and the
+ * next asset up is XAUt at 0.01582 — a factor of fifty. This threshold sits in that
+ * gap. Tokenised gold has near-zero betas too, so the volatility test is what keeps
+ * it out of the dollar category, and the same asset defeating a price-band
+ * heuristic is why `factors.ts` measures instead of banding.
+ */
+export const USD_MAX_VOLATILITY = 0.003;
+export const USD_MAX_BETA = 0.1;
+
+/**
+ * An E-Mode category, which is not the same thing as a risk factor.
+ *
+ * `USD` is a category with no shock attached: there is no dollar anchor in the
+ * regression and Sentinel never shocks stablecoins. It exists only to recognise
+ * that two dollar-pegged assets are the same bet as each other.
+ */
+export type EmodeCategory = FactorId | "USD";
+
+/**
  * `off`        published thresholds only. Contradicted accounts stay contradicted.
  * `inferred`   raise factor-aligned positions to the E-Mode ceiling.
  * `calibrated` upper bound: give every still-contradicted account exactly the
@@ -75,22 +105,36 @@ export function dominantFactor(
   positions: Position[],
   betas: Map<string, AssetBeta>,
   prices: Map<string, number>,
-): FactorId | null {
+): EmodeCategory | null {
   let total = 0;
-  const byFactor: Record<string, number> = { ETH: 0, BTC: 0 };
+  const byFactor: Record<EmodeCategory, number> = { ETH: 0, BTC: 0, USD: 0 };
 
   for (const p of positions) {
     const value = p.valueUsd;
     if (value <= 0) continue;
     total += value;
     const beta = betas.get(p.assetId.toLowerCase());
-    if (!beta || beta.confidence !== "measured" || beta.r2 < MIN_FACTOR_R2) continue;
+    if (!beta || beta.confidence !== "measured") continue;
+
+    // A dollar is recognised by not moving, which needs no goodness of fit: an R2
+    // gate here would reject it, since there is no variance for the factors to
+    // explain. That is why this test comes before the R2 one rather than after.
+    if (
+      beta.volatility < USD_MAX_VOLATILITY &&
+      Math.abs(beta.betaEth) < USD_MAX_BETA &&
+      Math.abs(beta.betaBtc) < USD_MAX_BETA
+    ) {
+      byFactor.USD += value;
+      continue;
+    }
+
+    if (beta.r2 < MIN_FACTOR_R2) continue;
     if (Math.abs(beta.betaEth) >= 0.7) byFactor.ETH += value;
     else if (Math.abs(beta.betaBtc) >= 0.7) byFactor.BTC += value;
   }
 
   if (total <= 0) return null;
-  for (const factor of ["ETH", "BTC"] as const) {
+  for (const factor of ["ETH", "BTC", "USD"] as const) {
     if (byFactor[factor] / total >= FACTOR_DOMINANCE) return factor;
   }
   return null;
@@ -100,7 +144,7 @@ export type EmodeDecision = {
   account: string;
   protocol: string;
   eligible: boolean;
-  factor: FactorId | null;
+  factor: EmodeCategory | null;
   /** Threshold before and after, weighted by collateral value. */
   thresholdBefore: number;
   thresholdAfter: number;
@@ -135,7 +179,7 @@ export function decideEmode(
   const base = {
     account,
     protocol,
-    factor: null as FactorId | null,
+    factor: null as EmodeCategory | null,
     thresholdBefore,
     thresholdAfter: thresholdBefore,
     healthBefore,
