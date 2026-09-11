@@ -17,6 +17,13 @@ const GATEWAY = "https://gateway.thegraph.com/api";
 /** Deployments further behind head than this are excluded from analysis. */
 export const MAX_BLOCK_LAG = 1000;
 
+/**
+ * Gateway errors that arrive in the `errors` array but describe routing, not the
+ * query. A schema error must not be retried; these must be.
+ */
+export const TRANSIENT_GQL_ERROR =
+  /bad indexers|Timeout|Unavailable|too far behind|no indexer|BadResponse|Rate limit/i;
+
 export class GraphError extends Error {
   constructor(
     message: string,
@@ -90,10 +97,17 @@ export async function query<T>(
 
       const body = (await res.json()) as GqlResponse<T>;
       if (body.errors?.length) {
-        throw new GraphError(
-          `GraphQL error: ${body.errors.map((e) => e.message).join("; ")}`,
-          deployment.key,
-        );
+        const detail = body.errors.map((e) => e.message).join("; ");
+        // Not every GraphQL-shaped error is deterministic. The gateway reports
+        // indexer routing failures this way, and they are pure transport: the
+        // same query succeeded on the retry. Left unretried, this silently
+        // dropped the two deepest Uniswap V3 pairs from a liquidity capture —
+        // a wrong answer rather than a failed one, which is the worse outcome.
+        if (TRANSIENT_GQL_ERROR.test(detail)) {
+          lastTransportError = new Error(detail);
+          continue;
+        }
+        throw new GraphError(`GraphQL error: ${detail}`, deployment.key);
       }
       if (!body.data) {
         throw new GraphError("Gateway returned no data", deployment.key);
