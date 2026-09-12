@@ -50,7 +50,6 @@
  */
 
 import { bytesToBase64, cre, ok, text, type TeeRuntime } from '@chainlink/cre-sdk'
-import { encodeAbiParameters, parseAbiParameters } from 'viem'
 import { z } from 'zod'
 import { buildPriceIndex, normalizePosition } from '../../lib/exposure/normalize'
 import type { Position, RawMarket, RawPosition } from '../../lib/exposure/types'
@@ -62,6 +61,7 @@ import {
 	topPositionsQuery,
 } from '../../lib/signal/enclave-queries'
 import { parseRiskPolicy, type RiskPolicy } from '../../lib/signal/policy'
+import { asOfBlock, encodeSignal, SIGNAL_ABI_PARAMS } from '../../lib/signal/report'
 
 // ─── Config: the public half ────────────────────────────────────────────────
 // Everything here is revealed, so nothing here may be risk policy. Which
@@ -386,69 +386,10 @@ export const onCronTrigger = (runtime: TeeRuntime<Config>): string => {
 }
 
 // ─── The report payload ─────────────────────────────────────────────────────
-
-/**
- * ABI encoding of the published signal.
- *
- * USD figures are scaled to 6 decimals and carried as integers because a
- * consumer contract cannot do arithmetic on a float, and rounding at the
- * boundary is better than rounding in Solidity. Shares and the score are basis
- * points for the same reason.
- *
- * The field list is the signal's public contract; `docs/SIGNAL.md` documents it
- * and Phase 8's consumer decodes it.
- */
-export const SIGNAL_ABI_PARAMS =
-	'string version, uint64 asOfBlock, uint32 borrowersObserved, uint256 debtUsd6, ' +
-	'uint256 multiProtocolDebtUsd6, uint16 multiProtocolShareBps, uint16 leveredShareBps, ' +
-	'uint16 worstShockBps, uint256 worstShockDistressedDebtUsd6, uint16 systemicRiskScoreBps, ' +
-	'uint16 couplingBuckets, uint16 suppressedBuckets'
-
-export function encodeSignal(signal: SentinelSignal): `0x${string}` {
-	const worst = signal.shockLadder[signal.shockLadder.length - 1]
-	return encodeAbiParameters(parseAbiParameters(SIGNAL_ABI_PARAMS), [
-		signal.version,
-		BigInt(asOfBlock(signal)),
-		signal.borrowersObserved,
-		usd6(signal.debtUsd),
-		usd6(signal.multiProtocolDebtUsd),
-		bps(signal.multiProtocolShareOfDebt),
-		bps(signal.leveredShareOfDebt),
-		bps(worst?.shock ?? 0),
-		usd6(worst?.distressedDebtUsd ?? 0),
-		bps(signal.systemicRiskScore / 100),
-		signal.coupling.length,
-		signal.suppressedBuckets.length,
-	])
-}
-
-/**
- * The oldest block any included deployment served.
- *
- * The minimum rather than the maximum: a consumer's staleness check has to be
- * against the least fresh input, or a single lagging deployment would be hidden
- * behind a fresh one.
- */
-export function asOfBlock(signal: SentinelSignal): number {
-	const numbers = Object.values(signal.blocks)
-	return numbers.length === 0 ? 0 : Math.min(...numbers)
-}
-
-/** USD to 6 decimals. Guarded, because silently wrapping money is not an option. */
-function usd6(usd: number): bigint {
-	if (!Number.isFinite(usd) || usd < 0) throw new Error(`usd6: refusing to encode ${usd}`)
-	const scaled = Math.round(usd * 1e6)
-	if (!Number.isSafeInteger(scaled)) {
-		throw new Error(`usd6: ${usd} exceeds exact integer range at 6 decimals`)
-	}
-	return BigInt(scaled)
-}
-
-/** A fraction in [0,1] to basis points, saturating rather than wrapping uint16. */
-function bps(fraction: number): number {
-	if (!Number.isFinite(fraction) || fraction < 0) throw new Error(`bps: refusing ${fraction}`)
-	return Math.min(10_000, Math.round(fraction * 10_000))
-}
+// Encoding lives in `lib/signal/report.ts`, not here, so that a consumer can decode
+// a Sentinel report without installing the CRE toolchain — and so that the encoder
+// and the decoder can never disagree about the field list. A disagreeing ABI decoder
+// does not error; it returns plausible numbers in the wrong fields.
 
 function hexBytes(hex: `0x${string}`): Uint8Array {
 	const body = hex.slice(2)
@@ -598,3 +539,9 @@ export function initWorkflow(config: Config) {
 
 /** Re-exported so the tests can build a policy without reaching into lib/. */
 export type { RiskPolicy }
+
+/**
+ * Re-exported so the workflow's own tests and `docs/SIGNAL.md` have one import site
+ * for the wire format, and so a grep for the ABI from inside `cre/` finds it.
+ */
+export { asOfBlock, encodeSignal, SIGNAL_ABI_PARAMS }

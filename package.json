@@ -16,12 +16,14 @@
     "backtest": "tsx scripts/backtest.mts",
     "cre:typecheck": "cd cre/sentinel-signal && ./node_modules/.bin/tsc --noEmit",
     "cre:test": "cd cre/sentinel-signal && bun test",
-    "leak-demo": "tsx scripts/leak-demo.mts"
+    "leak-demo": "tsx scripts/leak-demo.mts",
+    "consume-signal": "tsx scripts/consume-signal.mts"
   },
   "dependencies": {
     "next": "16.3.5",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "viem": "^2.56.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

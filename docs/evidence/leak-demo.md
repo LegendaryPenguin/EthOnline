@@ -1,6 +1,6 @@
 # Leak demo — the same pipeline, with the enclave removed
 
-Run 2026-09-12T22:36:07.717Z. Addresses truncated for this file.
+Run 2026-09-12T22:50:57.593Z. Addresses truncated for this file.
 
 This is `scripts/leak-demo.mts`, which runs the confidential workflow's own query plan, normalizer and risk policy and then calls `perAddressRowsForLeakDemoOnly` where the enclave calls `aggregateSignal`. That single substitution is the entire diff, and it is the difference between a risk statistic and a target list.
 
@@ -18,7 +18,7 @@ Each row below is individually actionable: the trigger column is the price decli
 | 6 | `0xc468315a…f74ca6` | 1 (aave-v3-eth) | $194,726,995 | $218,101,221 | 1.06x | `0x4c9edd58…1e68b3` | −10% |
 | 7 | `0x7cd0b7ed…70c912` | 1 (aave-v3-eth) | $194,545,252 | $416,348,260 | 1.67x | `0xcbb7c000…ed33bf` | — |
 | 8 | `0xd9381427…b048dd` | 1 (aave-v3-eth) | $193,548,968 | $211,458,287 | 1.04x | `0x4c9edd58…1e68b3` | −5% |
-| 9 | `0xabdbbd00…eef8d6` | 1 (aave-v3-eth) | $176,920,206 | $556,329,044 | 2.45x | `0xcbb7c000…ed33bf` | — |
+| 9 | `0xabdbbd00…eef8d6` | 1 (aave-v3-eth) | $176,920,206 | $556,512,639 | 2.45x | `0xcbb7c000…ed33bf` | — |
 | 10 | `0x4f87de7d…790545` | 1 (aave-v3-eth) | $176,106,607 | $197,857,220 | 1.07x | `0xcd5fe23c…59b7ee` | −10% |
 | 11 | `0xc70ad21c…013810` | 1 (aave-v3-eth) | $141,983,176 | $318,353,364 | 1.86x | `0xc02aaa39…756cc2` | — |
 | 12 | `0x741aa7cf…4131f3` | 2 (aave-v3-eth, morpho-aave-v2-eth) | $132,267,260 | $348,693,237 | 2.19x | `0xc02aaa39…756cc2` | — |
@@ -28,7 +28,7 @@ Each row below is individually actionable: the trigger column is the price decli
 | 16 | `0x99926ab8…70f242` | 1 (aave-v3-eth) | $112,555,003 | $244,722,443 | 1.79x | `0xc02aaa39…756cc2` | — |
 | 17 | `0x28a55c4b…38a6b0` | 1 (aave-v3-eth) | $108,220,024 | $289,632,251 | 2.22x | `0xc02aaa39…756cc2` | — |
 | 18 | `0xe40d278a…ef03bf` | 1 (aave-v3-eth) | $95,757,432 | $195,365,624 | 1.64x | `0xcbb7c000…ed33bf` | — |
-| 19 | `0x32073633…8b7910` | 1 (aave-v3-eth) | $91,073,739 | $101,426,130 | 1.06x | `0x356b8d89…d5ba7d` | −10% |
+| 19 | `0x32073633…8b7910` | 1 (aave-v3-eth) | $91,073,739 | $101,451,938 | 1.06x | `0x356b8d89…d5ba7d` | −10% |
 | 20 | `0xd848f542…7af452` | 1 (aave-v3-eth) | $88,280,613 | $262,517,997 | 2.41x | `0x7f39c581…5e2ca0` | — |
 | 21 | `0x755013a7…654e60` | 1 (aave-v3-eth) | $78,310,763 | $85,026,472 | 0.81x | `0xa1290d69…99e5a7` | −5% |
 | 22 | `0x973ddb8e…951683` | 1 (aave-v3-eth) | $74,888,467 | $77,319,493 | 0.77x | `0xa1290d69…99e5a7` | −5% |

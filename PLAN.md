@@ -189,14 +189,17 @@ Checked before planning, not assumed:
 - Explicit enclave boundary manifest.
 
 **Acceptance criteria**
-- [ ] `handlerInTee` registered and used; TEE handles the aggregation, not a
+- [x] `handlerInTee` registered and used; TEE handles the aggregation, not a
       placeholder side-path.
 - [ ] CRE CLI simulation succeeds; full terminal logs captured to
       `docs/evidence/cre-simulation.log`.
-- [ ] `docs/ENCLAVE.md` enumerates every field crossing the boundary, in and out.
-- [ ] **Leak demo**: a documented run with the TEE bypassed shows per-address
+      **Blocked: `cre login` requires the account holder.** Stood in for by
+      `docs/evidence/enclave-local-run.log` — every line of `workflow.ts` against the
+      live gateway, which the log's own header states is not a TEE.
+- [x] `docs/ENCLAVE.md` enumerates every field crossing the boundary, in and out.
+- [x] **Leak demo**: a documented run with the TEE bypassed shows per-address
       exposure escaping — proving the enclave is load-bearing, not decorative.
-- [ ] Attested output is consumed downstream; a tampered attestation is rejected.
+- [x] Attested output is consumed downstream; a tampered attestation is rejected.
 
 ---
 

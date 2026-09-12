@@ -1,6 +1,6 @@
 Sentinel confidential workflow — LOCAL harness, no enclave
-run at           2026-09-12T22:35:42.326Z
-commit           294229f
+run at           2026-09-12T22:48:10.370Z
+commit           d47153b
 config           config.staging.json
 deployments      aave-v3-eth, aave-v2-eth, compound-v3-eth, compound-v2-eth, morpho-aave-v2-eth
 call budget      15
@@ -10,27 +10,27 @@ attestation      NONE — this is not a TEE; secrets come from ../.env
   [enclave] enclave: aave-v2-eth excluded at discovery: sampled debt is 1011.3x the protocol-reported total, so its position mappings disagree with its own totals
 
 report that would cross the enclave boundary (base64 ABI):
-  AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYwvRwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABRRsK2TuA8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACCsJp3GVQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB9AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEOoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALuAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEUYEQUvOMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACJkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABFzZW50aW5lbC1zaWduYWwvMQAAAAAAAAAAAAAAAAAAAA==
+  AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYwvhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABRRsK2TuA8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACi9RrV9l9wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIKwmncZVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQ6gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAu4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARRgRBS84wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAImQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADrx1z/9PiAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABFzZW50aW5lbC1zaWduYWwvMQAAAAAAAAAAAAAAAAAAAA==
 
 HTTP calls actually issued:
-  call  1  EnclaveBootstrap      HTTP 200    730ms    30817 bytes
-  call  2  EnclaveBootstrap      HTTP 200    602ms    20936 bytes
-  call  3  EnclaveBootstrap      HTTP 200    732ms    31855 bytes
-  call  4  EnclaveBootstrap      HTTP 200    507ms    10399 bytes
-  call  5  EnclaveBootstrap      HTTP 200    493ms     4121 bytes
-  call  6  EnclaveTopPositions   HTTP 200   1031ms   165792 bytes
-  call  7  EnclaveTopPositions   HTTP 200   1013ms   167875 bytes
-  call  8  EnclaveTopPositions   HTTP 200   1434ms   170860 bytes
-  call  9  EnclaveTopPositions   HTTP 200   1529ms   145686 bytes
-  call 10  EnclaveTopPositions   HTTP 200    925ms   147112 bytes
-  call 11  EnclaveCompleteBooks  HTTP 200    639ms    76737 bytes
-  call 12  EnclaveCompleteBooks  HTTP 200    811ms    75203 bytes
-  call 13  EnclaveCompleteBooks  HTTP 200    792ms    60907 bytes
-  call 14  EnclaveCompleteBooks  HTTP 200    973ms     5567 bytes
+  call  1  EnclaveBootstrap      HTTP 200    405ms    30815 bytes
+  call  2  EnclaveBootstrap      HTTP 200    444ms    20936 bytes
+  call  3  EnclaveBootstrap      HTTP 200    266ms    31855 bytes
+  call  4  EnclaveBootstrap      HTTP 200    286ms    10399 bytes
+  call  5  EnclaveBootstrap      HTTP 200    401ms     4121 bytes
+  call  6  EnclaveTopPositions   HTTP 200   1019ms   165792 bytes
+  call  7  EnclaveTopPositions   HTTP 200   1083ms   167875 bytes
+  call  8  EnclaveTopPositions   HTTP 200    515ms   170860 bytes
+  call  9  EnclaveTopPositions   HTTP 200   1092ms   145686 bytes
+  call 10  EnclaveTopPositions   HTTP 200    631ms   147112 bytes
+  call 11  EnclaveCompleteBooks  HTTP 200    420ms    76737 bytes
+  call 12  EnclaveCompleteBooks  HTTP 200    404ms    75203 bytes
+  call 13  EnclaveCompleteBooks  HTTP 200    368ms    60907 bytes
+  call 14  EnclaveCompleteBooks  HTTP 200    481ms     5567 bytes
 
-  14 of 15 calls, 12248ms total
+  14 of 15 calls, 7855ms total
 
 handler return value:
-  score 22.0/100, block 25964359, 4 protocols, 90 borrowers, 1.25% of evaluable debt is multi-protocol, 2867M USD evaluable of 5719M observed, 1215514673 USD distressed at the deepest shock, 3 buckets suppressed for k-anonymity, 1 deployment notes
+  score 22.0/100, block 25964421, 4 protocols, 90 borrowers, 1.25% of evaluable debt is multi-protocol, 2867M USD evaluable of 5719M observed, 1215514673 USD distressed at the deepest shock, 3 buckets suppressed for k-anonymity, 1 deployment notes
 
 OK: no address appears in the handler output.
