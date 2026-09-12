@@ -167,6 +167,72 @@ describe("normalizePosition", () => {
     expect(normalizePosition(raw, "aave-v3-eth", new Map())).toBeNull();
   });
 
+  it("prices a receipt token at the market's own quote", () => {
+    // The measured failure: Aave V3 reports supply positions in the aToken, which
+    // has no price anywhere in the schema. Dropping the position made the largest
+    // borrower on Aave V3 read as $1.03B of debt against $0 of collateral and
+    // publish as insolvent under a 5% shock, while alive on chain.
+    const base = rawPosition();
+    const raw = rawPosition({
+      asset: { id: "0xaethweth", symbol: "aEthWETH", decimals: 18 },
+      market: {
+        ...base.market,
+        outputToken: { id: "0xaEthWETH", symbol: "aEthWETH", decimals: 18 },
+      },
+    });
+    const p = normalizePosition(raw, "aave-v3-eth", new Map());
+    expect(p).not.toBeNull();
+    expect(p!.valueUsd).toBeCloseTo(2000);
+  });
+
+  it("applies a reported exchange rate to a receipt token", () => {
+    // A cToken is not 1:1 with its underlying. Where the protocol reports the
+    // rate, assuming 1:1 would understate collateral by the accrued interest.
+    const base = rawPosition();
+    const raw = rawPosition({
+      asset: { id: "0xceth", symbol: "cETH", decimals: 18 },
+      market: {
+        ...base.market,
+        exchangeRate: "1.05",
+        outputToken: { id: "0xceth", symbol: "cETH", decimals: 18 },
+      },
+    });
+    expect(normalizePosition(raw, "compound-v2-eth", new Map())!.valueUsd).toBeCloseTo(2100);
+  });
+
+  it("refuses a 1:1 assumption when the receipt token's decimals differ", () => {
+    // Different decimals mean the receipt is not a plain unit-for-unit claim, and
+    // an unreported rate is then unknown rather than 1. Unknown drops the row.
+    const base = rawPosition();
+    const raw = rawPosition({
+      asset: { id: "0xreceipt", symbol: "rWETH", decimals: 8 },
+      balance: "100000000",
+      market: {
+        ...base.market,
+        outputToken: { id: "0xreceipt", symbol: "rWETH", decimals: 8 },
+      },
+    });
+    expect(normalizePosition(raw, "x", new Map())).toBeNull();
+  });
+
+  it("does not mistake an unrelated asset for the receipt token", () => {
+    // Compound V3 collateral is a real asset in a market whose output token is the
+    // base receipt. Pricing WBTC at the USDC quote would be catastrophic.
+    const base = rawPosition();
+    const raw = rawPosition({
+      asset: { id: "0xwbtc", symbol: "WBTC", decimals: 8 },
+      balance: "100000000",
+      market: {
+        ...base.market,
+        outputToken: { id: "0xcusdcv3", symbol: "cUSDCv3", decimals: 6 },
+      },
+    });
+    expect(normalizePosition(raw, "compound-v3-eth", new Map())).toBeNull();
+    expect(
+      normalizePosition(raw, "compound-v3-eth", new Map([["0xwbtc", 60000]]))!.valueUsd,
+    ).toBeCloseTo(60000);
+  });
+
   it("returns null for a zero balance", () => {
     expect(normalizePosition(rawPosition({ balance: "0" }), "x", new Map())).toBeNull();
   });

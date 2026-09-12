@@ -29,6 +29,10 @@ const POLICY_JSON = JSON.stringify({
   kAnonymity: 3,
   weights: { concentration: 0.5, leverage: 0.25, distress: 0.25 },
   leverageWatchLevel: 1.5,
+  // No groups: these tests measure the aggregation, not the reconstruction, and a
+  // threshold quietly lifted underneath them would make their numbers mean
+  // something other than what they say. The reconstruction has its own tests.
+  emode: { threshold: 0.95, groups: [] },
 });
 const policy = parseRiskPolicy(POLICY_JSON);
 
@@ -150,6 +154,60 @@ describe("aggregateSignal", () => {
     ];
     const s = run(positions);
     expect(s.shockLadder[2].distressedDebtUsd).toBeCloseTo(100, 6);
+  });
+});
+
+describe("the published E-Mode inference counters", () => {
+  // The reconstruction recovers most of the observed book, so a consumer has to be
+  // able to see how much of the signal rests on inference rather than on published
+  // parameters. A signal that hides its own inference is asking to be trusted
+  // instead of checked.
+  const emodePolicy = parseRiskPolicy(
+    JSON.stringify({
+      ...JSON.parse(POLICY_JSON),
+      emode: { threshold: 0.95, groups: [[ETH, USDC]] },
+    }),
+  );
+
+  // $100 of ETH collateral at 0.8 secures $85 of debt: contradicted at the published
+  // threshold, solvent at 0.95. Both legs are in the group, so it qualifies.
+  const contradicted = (account: string) => [
+    pos(account, "aave-v3-eth", "COLLATERAL", ETH, 100),
+    pos(account, "aave-v3-eth", "BORROWER", USDC, 85),
+  ];
+
+  it("counts the borrowers and debt whose numbers were reconstructed", () => {
+    const s = run([...contradicted("0xa"), ...book("0xb", "aave-v3-eth", 400, 100)], emodePolicy);
+    expect(s.emodeInferredBorrowers).toBe(1);
+    expect(s.emodeInferredDebtUsd).toBe(85);
+    // And the reconstructed book is now evaluable, which is the point of it.
+    expect(s.evaluableDebtUsd).toBe(185);
+  });
+
+  it("counts nothing when the policy carries no groups, and drops the book instead", () => {
+    const s = run([...contradicted("0xa"), ...book("0xb", "aave-v3-eth", 400, 100)]);
+    expect(s.emodeInferredBorrowers).toBe(0);
+    expect(s.emodeInferredDebtUsd).toBe(0);
+    expect(s.debtUsd).toBe(185);
+    expect(s.evaluableDebtUsd).toBe(100);
+  });
+
+  it("shocks the reconstructed book against the threshold it was measured at", () => {
+    // The inconsistency this pins: establishing solvency at 0.95 and then shocking
+    // against 0.8 would report distress the reconstruction had already ruled out. At
+    // a 10% ETH shock the boundary is $90 x 0.95 = $85.5 against $85 of debt, so the
+    // book survives; against 0.8 it would be $72 and would falsely liquidate.
+    const s = run(contradicted("0xa"), emodePolicy);
+    expect(s.shockLadder[0].shock).toBe(0.1);
+    expect(s.shockLadder[0].distressedDebtUsd).toBe(0);
+    // At 20% it genuinely fails: $80 x 0.95 = $76 < $85.
+    expect(s.shockLadder[1].distressedDebtUsd).toBe(85);
+  });
+
+  it("keeps the inference out of the published signal's shape", () => {
+    // The counters are aggregates. Nothing about *which* accounts were reconstructed
+    // may reach the output.
+    expect(() => assertAggregateOnly(run(contradicted("0xa"), emodePolicy))).not.toThrow();
   });
 });
 

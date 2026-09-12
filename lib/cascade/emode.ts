@@ -95,11 +95,85 @@ export type EmodeCategory = FactorId | "USD";
 export type EmodeMode = "off" | "inferred" | "calibrated";
 
 /**
- * Which factor dominates a set of positions by value, if any does.
+ * The factor a single asset belongs to, if any does.
+ *
+ * Extracted so that the offline group derivation (`npm run emode:groups`, which
+ * writes the enclave's risk policy) and the in-process inference cannot drift
+ * apart. Both must call this: two definitions of "correlated" would mean the
+ * enclave applying a threshold the app would not.
  *
  * Requires the beta to be both large and well-fitted: a 0.8 beta at an R2 of 0.1
  * is a number with no information in it, and E-Mode granted on that basis would
  * be an invented safety margin.
+ */
+export function classifyAsset(beta: AssetBeta | undefined): EmodeCategory | null {
+  if (!beta || beta.confidence !== "measured") return null;
+
+  // A dollar is recognised by not moving, which needs no goodness of fit: an R2
+  // gate here would reject it, since there is no variance for the factors to
+  // explain. That is why this test comes before the R2 one rather than after.
+  if (
+    beta.volatility < USD_MAX_VOLATILITY &&
+    Math.abs(beta.betaEth) < USD_MAX_BETA &&
+    Math.abs(beta.betaBtc) < USD_MAX_BETA
+  ) {
+    return "USD";
+  }
+
+  if (beta.r2 < MIN_FACTOR_R2) return null;
+  if (Math.abs(beta.betaEth) >= 0.7) return "ETH";
+  if (Math.abs(beta.betaBtc) >= 0.7) return "BTC";
+  return null;
+}
+
+/**
+ * How far an asset's loading on its own category's anchor may sit from 1, and how
+ * much loading it may carry on the *other* anchor, to count as a wrapper of the
+ * anchor rather than merely something with exposure to it.
+ *
+ * Measured on the live collateral set, the separation is clean and not fitted. The
+ * four real ETH wrappers load 0.937-0.979 on ETH and at most 0.116 on BTC. LINK
+ * loads 0.807 on ETH — which passes `classifyAsset` — but also 0.298 on BTC, and an
+ * asset with independent BTC exposure is not a wrapper of ETH; it is a token with
+ * broad market beta. The BTC wrappers behave the same way in mirror: 0.883-1.000 on
+ * BTC and at most 0.028 on ETH.
+ */
+export const WRAPPER_BETA_TOLERANCE = 0.15;
+export const WRAPPER_OFF_FACTOR_MAX = 0.2;
+
+/**
+ * Whether an asset tracks its category's anchor closely enough to share a
+ * liquidation threshold with it.
+ *
+ * This is a stricter question than `classifyAsset` answers, and the difference is
+ * deliberate. `classifyAsset` decides which factor's *shock* an asset receives, and
+ * there a partial beta is not merely acceptable but correct: LINK really does fall
+ * when ETH falls, by about 0.8 of the move, and shocking it that way is the honest
+ * answer. Granting E-Mode is a different claim — that a protocol treats the two
+ * assets as the same risk and will let a book run to 95% — and being wrong about it
+ * inflates a borrower's solvency instead of merely mis-scaling a shock. LINK against
+ * WETH is not an Aave E-Mode pair, and a rule that admitted it would be
+ * manufacturing safety margin for a book that does not have it.
+ *
+ * So: same classifier, one additional requirement, applied only where an elevated
+ * threshold is at stake. `USD` needs nothing extra — the volatility test in
+ * `classifyAsset` is already the tight one, and a dollar has no anchor to track.
+ */
+export function tracksAnchor(beta: AssetBeta | undefined): boolean {
+  const category = classifyAsset(beta);
+  if (!beta || !category) return false;
+  if (category === "USD") return true;
+
+  const own = category === "ETH" ? beta.betaEth : beta.betaBtc;
+  const other = category === "ETH" ? beta.betaBtc : beta.betaEth;
+  return (
+    Math.abs(Math.abs(own) - 1) <= WRAPPER_BETA_TOLERANCE &&
+    Math.abs(other) <= WRAPPER_OFF_FACTOR_MAX
+  );
+}
+
+/**
+ * Which factor dominates a set of positions by value, if any does.
  */
 export function dominantFactor(
   positions: Position[],
@@ -113,24 +187,8 @@ export function dominantFactor(
     const value = p.valueUsd;
     if (value <= 0) continue;
     total += value;
-    const beta = betas.get(p.assetId.toLowerCase());
-    if (!beta || beta.confidence !== "measured") continue;
-
-    // A dollar is recognised by not moving, which needs no goodness of fit: an R2
-    // gate here would reject it, since there is no variance for the factors to
-    // explain. That is why this test comes before the R2 one rather than after.
-    if (
-      beta.volatility < USD_MAX_VOLATILITY &&
-      Math.abs(beta.betaEth) < USD_MAX_BETA &&
-      Math.abs(beta.betaBtc) < USD_MAX_BETA
-    ) {
-      byFactor.USD += value;
-      continue;
-    }
-
-    if (beta.r2 < MIN_FACTOR_R2) continue;
-    if (Math.abs(beta.betaEth) >= 0.7) byFactor.ETH += value;
-    else if (Math.abs(beta.betaBtc) >= 0.7) byFactor.BTC += value;
+    const category = classifyAsset(betas.get(p.assetId.toLowerCase()));
+    if (category) byFactor[category] += value;
   }
 
   if (total <= 0) return null;

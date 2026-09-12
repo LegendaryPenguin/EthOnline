@@ -136,7 +136,13 @@ export function positionsQuery(schemaVersion: string): string {
           liquidationThreshold
           maximumLTV
           inputTokenPriceUSD
+          exchangeRate
           inputToken {
+            id
+            symbol
+            decimals
+          }
+          outputToken {
             id
             symbol
             decimals
@@ -193,7 +199,13 @@ export function accountPositionsQuery(schemaVersion: string): string {
           liquidationThreshold
           maximumLTV
           inputTokenPriceUSD
+          exchangeRate
           inputToken {
+            id
+            symbol
+            decimals
+          }
+          outputToken {
             id
             symbol
             decimals

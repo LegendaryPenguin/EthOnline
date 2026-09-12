@@ -84,6 +84,48 @@ export function toFraction(value: string | null | undefined): number {
   return 0;
 }
 
+/**
+ * Input tokens per unit of the position's asset, when that asset is the market's
+ * receipt token. `null` when it is not, so the caller falls through to the index.
+ *
+ * This exists because of a measured wrong answer, not a hypothetical one. Aave V3
+ * reports supply positions in the aToken — `Position.asset` is `aEthweETH`, not
+ * `weETH` — and an aToken has no price in the Messari lending schema, because
+ * `Market.inputTokenPriceUSD` prices the underlying and `Token` carries no price at
+ * all. So the position was unpriceable, dropped, and the account then read as
+ * $1.03B of debt against $0 of collateral: the largest borrower on Aave V3 published
+ * as insolvent under a 5% shock while sitting untouched on a live chain. A dropped
+ * position is not a conservative position.
+ *
+ * `Market.outputToken` names the receipt token exactly, so this is identification
+ * rather than a guess about symbols. The rate is the residual assumption:
+ *
+ *   - `exchangeRate` reported  use it. Exact, and the only correct answer for a
+ *                             rebasing receipt such as a cToken.
+ *   - not reported            assume 1:1, but only when decimals match. Aave's
+ *                             aTokens are 1:1 with the underlying by protocol
+ *                             invariant and report no rate; matching decimals is
+ *                             the cheapest available check that we are looking at
+ *                             that kind of receipt and not a rebasing one.
+ *
+ * The residual risk is a non-1:1 receipt that reports no exchange rate and shares
+ * the underlying's decimals. None of the five registered deployments is that, and
+ * the alternative — silently deleting collateral — is not a safer error, only a
+ * quieter one.
+ */
+function receiptExchangeRate(
+  market: RawPosition["market"],
+  assetId: string,
+  assetDecimals: number,
+): number | null {
+  const outputId = market.outputToken?.id.toLowerCase();
+  if (!outputId || outputId !== assetId) return null;
+
+  const rate = Number(market.exchangeRate);
+  if (Number.isFinite(rate) && rate > 0) return rate;
+  return assetDecimals === market.inputToken.decimals ? 1 : null;
+}
+
 export function normalizePosition(
   raw: RawPosition,
   protocol: string,
@@ -99,12 +141,15 @@ export function normalizePosition(
 
   // Prefer the market's own quote; fall back to the cross-market index when the
   // position's asset differs from the market's input token (Compound V3 style
-  // multi-collateral markets).
+  // multi-collateral markets); and resolve receipt tokens, which are in neither.
   const marketPrice = Number(raw.market.inputTokenPriceUSD);
+  const usableMarketPrice = Number.isFinite(marketPrice) && marketPrice > 0;
   const sameAsset = raw.market.inputToken.id.toLowerCase() === assetId;
-  const price =
-    sameAsset && Number.isFinite(marketPrice) && marketPrice > 0
-      ? marketPrice
+  const receiptRate = receiptExchangeRate(raw.market, assetId, asset.decimals);
+  const price = sameAsset && usableMarketPrice
+    ? marketPrice
+    : receiptRate !== null && usableMarketPrice
+      ? marketPrice * receiptRate
       : (prices.get(assetId) ?? 0);
 
   // No price means no defensible USD figure. Drop it and let the coverage

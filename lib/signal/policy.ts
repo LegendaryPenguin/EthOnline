@@ -19,6 +19,8 @@
  * free of `process`, `fetch`, and anything else absent from a WASM runtime.
  */
 
+import type { EmodeOverride } from "../exposure/join";
+
 export type RiskPolicy = {
   /**
    * Collateral price shocks to evaluate, as positive fractions: 0.2 is a 20%
@@ -56,6 +58,28 @@ export type RiskPolicy = {
    * liquidates against another's collateral — a watch level.
    */
   leverageWatchLevel: number;
+  /**
+   * The E-Mode reconstruction: correlated asset sets and the elevated liquidation
+   * threshold they carry.
+   *
+   * Aave V3's E-Mode is not in the Messari lending schema, and ignoring it is the
+   * largest single error in the system — measured live, it made $3.9B of $5.7B of
+   * observed debt compute insolvent while alive on chain, so it was discarded and
+   * two thirds of the book became unevaluable. Phase 4 measures the correlation
+   * from a year of the protocols' own oracle prices and validates the result
+   * against Aave's contract; that measurement cannot be repeated inside the
+   * enclave, which has fifteen HTTP calls. So it arrives here, in the policy.
+   *
+   * It belongs in the *secret* half for the same reason as the shock ladder: the
+   * groups and the ceiling are exactly what a borrower would need to know to
+   * arrange a book that falls out of the distressed set.
+   *
+   * `groups` may be empty, which turns the reconstruction off. That has to be
+   * written down explicitly rather than omitted — a signal published with E-Mode
+   * silently disabled is a different signal, and nobody should get there by
+   * forgetting a field.
+   */
+  emode: EmodeOverride;
 };
 
 const WEIGHT_KEYS = ["concentration", "leverage", "distress"] as const;
@@ -126,7 +150,50 @@ export function parseRiskPolicy(json: string): RiskPolicy {
     kAnonymity,
     weights,
     leverageWatchLevel: positive(o.leverageWatchLevel, "leverageWatchLevel"),
+    emode: parseEmode(o.emode),
   };
+}
+
+function parseEmode(v: unknown): EmodeOverride {
+  if (typeof v !== "object" || v === null) throw new Error("risk policy: emode must be an object");
+  const o = v as Record<string, unknown>;
+
+  const threshold = positive(o.threshold, "emode.threshold");
+  // Above 1 the "threshold" would let a book borrow more than its collateral is
+  // worth and still read as solvent, which is not a lenient parameter but a broken
+  // one. At or below the schema's own published thresholds it would never bind.
+  if (threshold >= 1) throw new Error(`risk policy: emode.threshold ${threshold} is not below 1`);
+
+  if (!Array.isArray(o.groups)) throw new Error("risk policy: emode.groups must be an array");
+  const groups: string[][] = [];
+  const seen = new Map<string, number>();
+  for (const [i, group] of o.groups.entries()) {
+    if (!Array.isArray(group) || group.length < 2) {
+      // A one-asset group cannot express a correlated *pair*, so it is a typo
+      // rather than a configuration: it would silently lift the threshold on any
+      // single-asset book, which is the opposite of what E-Mode means.
+      throw new Error(`risk policy: emode.groups[${i}] must list at least two assets`);
+    }
+    const assets: string[] = [];
+    for (const asset of group) {
+      if (typeof asset !== "string" || !/^0x[0-9a-f]{40}$/.test(asset)) {
+        throw new Error(
+          `risk policy: emode.groups[${i}] contains a non-lowercased address: ${String(asset)}`,
+        );
+      }
+      // An asset in two groups makes the applied threshold depend on group order,
+      // and a silently order-dependent risk parameter is not a risk parameter.
+      const owner = seen.get(asset);
+      if (owner !== undefined) {
+        throw new Error(`risk policy: ${asset} appears in emode.groups[${owner}] and [${i}]`);
+      }
+      seen.set(asset, i);
+      assets.push(asset);
+    }
+    groups.push(assets);
+  }
+
+  return { threshold, groups };
 }
 
 export function betaFor(policy: RiskPolicy, assetId: string): number {

@@ -12,9 +12,11 @@
     "verify:health": "tsx scripts/verify-health.mts",
     "cascade": "tsx scripts/cascade.mts",
     "verify:emode": "tsx scripts/verify-emode.mts",
+    "emode:groups": "tsx scripts/emode-groups.mts",
     "backtest": "tsx scripts/backtest.mts",
     "cre:typecheck": "cd cre/sentinel-signal && ./node_modules/.bin/tsc --noEmit",
-    "cre:test": "cd cre/sentinel-signal && bun test"
+    "cre:test": "cd cre/sentinel-signal && bun test",
+    "leak-demo": "tsx scripts/leak-demo.mts"
   },
   "dependencies": {
     "next": "16.3.5",

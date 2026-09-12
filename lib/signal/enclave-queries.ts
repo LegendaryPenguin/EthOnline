@@ -49,7 +49,9 @@ function positionFields(schemaVersion: string): string {
       liquidationThreshold
       maximumLTV
       inputTokenPriceUSD
+      exchangeRate
       inputToken { id symbol decimals }
+      outputToken { id symbol decimals }
     }
   `;
 }

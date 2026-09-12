@@ -28,6 +28,10 @@ const POLICY = JSON.stringify({
 	kAnonymity: 2,
 	weights: { concentration: 0.5, leverage: 0.2, distress: 0.3 },
 	leverageWatchLevel: 1.5,
+	// Empty on purpose: these tests assert on the query plan and the published body,
+	// and a lifted threshold underneath them would change those numbers for a reason
+	// unrelated to what each test is about.
+	emode: { threshold: 0.95, groups: [] },
 })
 
 const WETH = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
@@ -48,6 +52,7 @@ const makeConfig = (patch: Partial<Config> = {}): Config => ({
 	marketsPerDeployment: 10,
 	marketsSampled: 2,
 	positionsPerMarket: 10,
+	candidatesPerDeployment: 10,
 	candidateAccounts: 10,
 	completeBooksPageSize: 100,
 	maxBlockLag: 1000,
@@ -276,6 +281,31 @@ describe('the query plan', () => {
 		}
 	})
 
+	test('lets every protocol nominate, so the largest one cannot own the population', () => {
+		// The bug this pins, found on live data: nomination ranked the pooled sample,
+		// Aave V3 carried $6.0B of the $6.4B sampled, and so all 40 candidates were
+		// Aave V3 whales. A population only one protocol can reach reports a
+		// multi-protocol share of 0.00% regardless of what the world is doing —
+		// the signal was structurally unable to observe its own subject.
+		const lopsided: Responder = (op, deployment) => {
+			if (op === 'EnclaveBootstrap') return bootstrap(100, '10000000')
+			// Aave's borrowers are 100x larger, so a pooled top-2 is both of them.
+			const rows =
+				deployment === 'aave-v3-eth'
+					? books([WHALE, WHALE2], 17_000, 10_000, 'a')
+					: books([SMALL], 400, 50, 'c')
+			return op === 'EnclaveTopPositions' ? discovery(rows) : completion(rows)
+		}
+		const { runtime, requests } = makeFakeTeeRuntime(
+			makeConfig({ candidatesPerDeployment: 1, candidateAccounts: 2 }),
+			lopsided,
+		)
+		onCronTrigger(runtime)
+		const asked = requests.find((r) => r.op === 'EnclaveCompleteBooks')?.body ?? ''
+		expect(asked).toContain(WHALE)
+		expect(asked).toContain(SMALL)
+	})
+
 	test('refuses to publish when a complete-book page fills', () => {
 		// A full page means truncated books, and a health factor from a truncated
 		// book is meaningless rather than pessimistic. Failing beats publishing.
@@ -318,6 +348,34 @@ describe('refusing to publish a wrong number', () => {
 		onCronTrigger(runtime)
 		// Still publishes, on the one deployment that reconciles.
 		expect(reports).toHaveLength(1)
+	})
+
+	test('an overstating subgraph is excluded before it can bid for candidate slots', () => {
+		// The gate used to run only in pass 3, which turned out to be too late to
+		// matter: Aave V2's phantom $14.1B outbid every honest deployment during
+		// nomination, so the excluded deployment still decided who the population
+		// was. A gate that runs after the decision it should inform is not a gate.
+		const overstated: Responder = (op, deployment) => {
+			// Compound reports $1 of debt but its positions carry far more.
+			if (op === 'EnclaveBootstrap')
+				return bootstrap(100, deployment === 'compound-v3-eth' ? '1' : '10000')
+			const rows =
+				deployment === 'compound-v3-eth'
+					? books([WHALE2], 170_000, 100_000, 'c')
+					: books([WHALE], 170, 100, 'a')
+			return op === 'EnclaveTopPositions' ? discovery(rows) : completion(rows)
+		}
+		const { runtime, requests } = makeFakeTeeRuntime(
+			makeConfig({ candidatesPerDeployment: 1, candidateAccounts: 1 }),
+			overstated,
+		)
+		onCronTrigger(runtime)
+		// One completion call only — the excluded deployment is not asked — and the
+		// single candidate slot went to the honest deployment's borrower.
+		const completions = requests.filter((r) => r.op === 'EnclaveCompleteBooks')
+		expect(completions).toHaveLength(1)
+		expect(completions[0].body).toContain(WHALE)
+		expect(completions[0].body).not.toContain(WHALE2)
 	})
 
 	test('throws rather than publishing when every deployment fails', () => {

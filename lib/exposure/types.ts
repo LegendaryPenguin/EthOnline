@@ -23,6 +23,14 @@ export type RawPosition = {
     maximumLTV: string;
     inputTokenPriceUSD: string;
     inputToken: { id: string; symbol: string; decimals: number };
+    /**
+     * The market's receipt token — Aave's aToken, Compound's cToken. Needed
+     * because Aave V3 reports supply positions in the aToken rather than the
+     * underlying, and the aToken has no price anywhere in the schema.
+     */
+    outputToken?: { id: string; symbol: string; decimals: number } | null;
+    /** Output token per input token, when the protocol reports one. */
+    exchangeRate?: string | null;
   };
 };
 
@@ -89,6 +97,15 @@ export type ProtocolExposure = {
   /** weightedCollateralUsd / debtUsd. Infinity when debt is zero. */
   healthFactor: number;
   confidence: HealthConfidence;
+  /**
+   * The elevated threshold applied to resolve a contradiction, or null.
+   *
+   * Non-null means this protocol's numbers rest on an inference — Aave V3 E-Mode,
+   * which the standardized schema does not express — rather than on published
+   * parameters alone. Recorded rather than folded in silently, because a consumer
+   * is entitled to know which figures are observed and which are reconstructed.
+   */
+  emodeThreshold: number | null;
 };
 
 /** Everything one account holds, across every protocol. */

@@ -18,7 +18,34 @@ import type {
   ProtocolExposure,
 } from "./types";
 
-export function joinByAccount(positions: Position[]): Map<string, AccountExposure> {
+/**
+ * An elevated liquidation threshold for correlated collateral-and-debt pairs.
+ *
+ * This is Aave V3 E-Mode, which the Messari lending schema has no field for. Left
+ * uncorrected it is the single largest error in the whole system: measured on live
+ * mainnet, $3.9B of the $5.7B of observed debt computed to a health factor below 1
+ * while sitting un-liquidated on chain, so it had to be discarded as
+ * `contradicted` and 68% of the book became unevaluable.
+ *
+ * `groups` are correlated asset sets and `threshold` is the ceiling those sets
+ * carry. Neither is guessed here: `lib/cascade/factors.ts` measures correlation
+ * from a year of the protocols' own oracle prices, `lib/cascade/emode.ts` derives
+ * the inference, and `npm run verify:emode` checks it against Aave's contract. This
+ * type is just the channel that carries the measurement to the place that needs it
+ * — including into the enclave, which has no HTTP budget to measure a year of
+ * prices and receives the result inside its secret risk policy instead.
+ */
+export type EmodeOverride = {
+  /** Elevated liquidation threshold, as a fraction. */
+  threshold: number;
+  /** Correlated asset sets, lowercased asset ids. */
+  groups: string[][];
+};
+
+export function joinByAccount(
+  positions: Position[],
+  emode?: EmodeOverride,
+): Map<string, AccountExposure> {
   const byAccount = new Map<string, Position[]>();
 
   for (const p of positions) {
@@ -29,7 +56,7 @@ export function joinByAccount(positions: Position[]): Map<string, AccountExposur
 
   const out = new Map<string, AccountExposure>();
   for (const [account, ps] of byAccount) {
-    out.set(account, buildExposure(account, ps));
+    out.set(account, buildExposure(account, ps, emode));
   }
   return out;
 }
@@ -41,27 +68,107 @@ const emptyProtocol = (): ProtocolExposure => ({
   unknownThresholdUsd: 0,
   healthFactor: Infinity,
   confidence: "ok",
+  emodeThreshold: null,
 });
 
-export function buildExposure(account: string, positions: Position[]): AccountExposure {
-  const byProtocol: Record<string, ProtocolExposure> = {};
-  const collateralByAsset: Record<string, number> = {};
+/** Totals for one protocol, with `floor` as a lower bound on every known threshold. */
+function measureProtocol(positions: Position[], floor: number): ProtocolExposure {
+  const b = emptyProtocol();
 
   for (const p of positions) {
-    const bucket = (byProtocol[p.protocol] ??= emptyProtocol());
     if (p.side === "BORROWER") {
-      bucket.debtUsd += p.valueUsd;
+      b.debtUsd += p.valueUsd;
       continue;
     }
-    bucket.collateralUsd += p.valueUsd;
-    collateralByAsset[p.assetId] = (collateralByAsset[p.assetId] ?? 0) + p.valueUsd;
+    b.collateralUsd += p.valueUsd;
     if (p.liquidationThreshold > 0) {
-      bucket.weightedCollateralUsd += p.valueUsd * p.liquidationThreshold;
+      // The floor lifts a known threshold; it never invents one. E-Mode says a
+      // correlated pair is treated more leniently, not that an asset the subgraph
+      // reports no threshold for is collateral at all.
+      b.weightedCollateralUsd += p.valueUsd * Math.max(p.liquidationThreshold, floor);
     } else {
       // Unknown threshold contributes nothing to the liquidation boundary. That
       // makes the health factor pessimistic rather than invented.
-      bucket.unknownThresholdUsd += p.valueUsd;
+      b.unknownThresholdUsd += p.valueUsd;
     }
+  }
+
+  b.healthFactor = b.debtUsd > 0 ? b.weightedCollateralUsd / b.debtUsd : Infinity;
+  b.confidence = classify(b);
+  return b;
+}
+
+/**
+ * The elevated threshold this protocol's book qualifies for, or 0.
+ *
+ * Every priced collateral asset and every borrowed asset must sit in one group.
+ * Aave grants E-Mode to a position, not to an asset, so a book with an
+ * uncorrelated leg does not qualify — and requiring the whole book rather than a
+ * dominant share of it errs toward applying the inference less often.
+ */
+export function correlatedFloor(positions: Position[], emode: EmodeOverride): number {
+  const assets = new Set<string>();
+  for (const p of positions) {
+    if (p.valueUsd <= 0) continue;
+    if (p.side === "COLLATERAL" && p.liquidationThreshold <= 0) continue;
+    assets.add(p.assetId);
+  }
+  if (assets.size === 0) return 0;
+
+  for (const group of emode.groups) {
+    const members = new Set(group);
+    let all = true;
+    for (const a of assets) {
+      if (!members.has(a)) {
+        all = false;
+        break;
+      }
+    }
+    if (all) return emode.threshold;
+  }
+  return 0;
+}
+
+export function buildExposure(
+  account: string,
+  positions: Position[],
+  emode?: EmodeOverride,
+): AccountExposure {
+  const positionsByProtocol = new Map<string, Position[]>();
+  const collateralByAsset: Record<string, number> = {};
+
+  for (const p of positions) {
+    const bucket = positionsByProtocol.get(p.protocol);
+    if (bucket) bucket.push(p);
+    else positionsByProtocol.set(p.protocol, [p]);
+    if (p.side === "COLLATERAL") {
+      collateralByAsset[p.assetId] = (collateralByAsset[p.assetId] ?? 0) + p.valueUsd;
+    }
+  }
+
+  const byProtocol: Record<string, ProtocolExposure> = {};
+  for (const [protocol, ps] of positionsByProtocol) {
+    let measured = measureProtocol(ps, 0);
+
+    // E-Mode is inferred only where it is needed to resolve a contradiction. A book
+    // that already computes solvent tells us nothing about whether it is in E-Mode,
+    // and lifting its threshold anyway would flatter the signal for free. A book
+    // that computes insolvent while alive on chain is evidence that the published
+    // threshold is wrong, and the correlated-pair case is the known reason why.
+    if (emode && measured.confidence === "contradicted") {
+      const floor = correlatedFloor(ps, emode);
+      if (floor > 0) {
+        const lifted = measureProtocol(ps, floor);
+        // Still contradicted means E-Mode was not the explanation, so nothing is
+        // claimed: the book keeps its original, honest numbers.
+        if (lifted.confidence !== "contradicted") {
+          lifted.emodeThreshold = floor;
+          measured = lifted;
+        }
+      }
+    }
+
+    byProtocol[protocol] = measured;
   }
 
   let collateralUsd = 0;
@@ -71,9 +178,6 @@ export function buildExposure(account: string, positions: Position[]): AccountEx
   let confidence: HealthConfidence = "ok";
 
   for (const b of Object.values(byProtocol)) {
-    b.healthFactor = b.debtUsd > 0 ? b.weightedCollateralUsd / b.debtUsd : Infinity;
-    b.confidence = classify(b);
-
     collateralUsd += b.collateralUsd;
     debtUsd += b.debtUsd;
     weightedCollateralUsd += b.weightedCollateralUsd;

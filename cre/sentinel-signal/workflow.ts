@@ -87,7 +87,13 @@ export const configSchema = z.object({
 	/** Deepest markets sampled for positions, aliased into one call. */
 	marketsSampled: z.number().int().positive(),
 	positionsPerMarket: z.number().int().positive(),
-	/** Largest borrowers promoted to a complete-book fetch. The population. */
+	/**
+	 * Largest borrowers each deployment nominates before the union is capped. Without
+	 * this, the largest protocol supplies every candidate and cross-protocol coupling
+	 * becomes unobservable by construction.
+	 */
+	candidatesPerDeployment: z.number().int().positive(),
+	/** Cap on the nominated union promoted to a complete-book fetch. The population. */
 	candidateAccounts: z.number().int().positive(),
 	completeBooksPageSize: z.number().int().positive(),
 	maxBlockLag: z.number().int().nonnegative(),
@@ -200,6 +206,7 @@ export const onCronTrigger = (runtime: TeeRuntime<Config>): string => {
 
 	// ── Pass 2: discovery. Largest positions in the deepest markets. ──
 	const sampled: Position[] = []
+	const sampledBy = new Map<string, Position[]>()
 	const discovered: ConfigDeployment[] = []
 	for (const d of live) {
 		const markets = (bootstrap.get(d.key)?.markets ?? [])
@@ -221,10 +228,32 @@ export const onCronTrigger = (runtime: TeeRuntime<Config>): string => {
 				),
 				{},
 			)
+			const positions: Position[] = []
 			for (const raw of collectAliasedPositions<RawPosition>(data)) {
 				const p = normalizePosition(raw, d.key, prices)
-				if (p) sampled.push(p)
+				if (p) positions.push(p)
 			}
+
+			// Reconcile here, before nomination, not just before aggregation. A
+			// subgraph that overstates debt does not merely contribute a wrong number
+			// — it outbids every honest deployment for candidate slots, because
+			// nomination ranks by debt. Measured live: Aave V2's top sampled positions
+			// come to $14.1B against its own reported $14.0M, so it took nearly all 40
+			// slots and was then discarded in pass 3, leaving a population drawn from
+			// one protocol and a multi-protocol share of exactly zero. A gate that
+			// runs too late is indistinguishable from no gate at all.
+			const ratio = debtRatio(positions, bootstrap.get(d.key))
+			if (ratio !== undefined && ratio > MAX_DEBT_RECONCILIATION_RATIO) {
+				notes.push(
+					`${d.key} excluded at discovery: sampled debt is ${ratio.toFixed(1)}x the ` +
+						'protocol-reported total, so its position mappings disagree with its own totals',
+				)
+				delete blocks[d.key]
+				continue
+			}
+
+			sampled.push(...positions)
+			sampledBy.set(d.key, positions)
 			discovered.push(d)
 		} catch (err) {
 			if (err instanceof BudgetExhausted) throw err
@@ -232,10 +261,28 @@ export const onCronTrigger = (runtime: TeeRuntime<Config>): string => {
 		}
 	}
 
-	// The population: the largest borrowers observable across every deployment.
-	// Largest-first is what makes every published share a lower bound — each
-	// account the cap excludes carries less debt than each one it keeps.
-	const candidates = largestBorrowers(sampled, config.candidateAccounts)
+	// ── The population ──
+	// Each deployment nominates its own largest borrowers first, and only then is
+	// the union ranked and capped. Ranking the pooled sample directly looks more
+	// principled and is wrong for this signal: Aave V3 carries $6.0B of the $6.4B
+	// sampled, so a pooled top-40 is forty Aave V3 whales, and a population that
+	// only one protocol can reach reports a multi-protocol share of 0.00% no matter
+	// what the world is doing. Measured: pooled nomination gave 0.00%, per-protocol
+	// nomination is what surfaces the coupling Phase 2 found by brute force.
+	//
+	// The cap is still largest-first, so every published share remains a lower
+	// bound — each account the cap drops carries less sampled debt than each one it
+	// keeps.
+	const nominated = new Set<string>()
+	for (const d of discovered) {
+		for (const a of largestBorrowers(sampledBy.get(d.key) ?? [], config.candidatesPerDeployment)) {
+			nominated.add(a)
+		}
+	}
+	const candidates = largestBorrowers(
+		sampled.filter((p) => nominated.has(p.account)),
+		config.candidateAccounts,
+	)
 	if (candidates.length === 0) throw new Error('discovery found no priced borrower')
 
 	// ── Pass 3: completion. Complete books for the population, and only these
@@ -273,22 +320,23 @@ export const onCronTrigger = (runtime: TeeRuntime<Config>): string => {
 			if (p) positions.push(p)
 		}
 
-		// Reconcile position rows against the protocol's own reported totals. This
-		// cross-check is free only because the standardized schema exposes both
-		// levels in one query shape.
-		const reported = Number(bootstrap.get(d.key)?.lendingProtocols[0]?.totalBorrowBalanceUSD ?? 0)
-		let sampledDebt = 0
-		for (const p of positions) if (p.side === 'BORROWER') sampledDebt += p.valueUsd
-		if (reported > 0 && sampledDebt / reported > MAX_DEBT_RECONCILIATION_RATIO) {
+		// Reconciled a second time, on the complete books rather than the discovery
+		// sample. The discovery gate protects the candidate population; this one
+		// protects the published number. A subgraph can pass the first and fail the
+		// second, because the complete books include markets discovery never sampled.
+		const ratio = debtRatio(positions, bootstrap.get(d.key))
+		if (ratio !== undefined && ratio > MAX_DEBT_RECONCILIATION_RATIO) {
 			notes.push(
-				`${d.key} excluded: sampled debt is ${(sampledDebt / reported).toFixed(1)}x the ` +
+				`${d.key} excluded: sampled debt is ${ratio.toFixed(1)}x the ` +
 					'protocol-reported total, so its position mappings disagree with its own totals',
 			)
 			delete blocks[d.key]
 			continue
 		}
 
-		reportedDebtUsd[d.key] = reported
+		reportedDebtUsd[d.key] = Number(
+			bootstrap.get(d.key)?.lendingProtocols[0]?.totalBorrowBalanceUSD ?? 0,
+		)
 		complete.push(...positions)
 	}
 
@@ -419,7 +467,11 @@ function summarize(signal: SentinelSignal, notes: string[]): string {
 		`block ${asOfBlock(signal)}`,
 		`${signal.protocols.length} protocols`,
 		`${signal.borrowersObserved} borrowers`,
+		// Evaluable, not observed: books whose health factor contradicts the chain are
+		// excluded from every component, so the share has to say what it is a share of
+		// or it reads as a share of everything.
 		`${(signal.multiProtocolShareOfDebt * 100).toFixed(2)}% of evaluable debt is multi-protocol`,
+		`${(signal.evaluableDebtUsd / 1e6).toFixed(0)}M USD evaluable of ${(signal.debtUsd / 1e6).toFixed(0)}M observed`,
 		`${(worst ? worst.distressedDebtUsd : 0).toFixed(0)} USD distressed at the deepest shock`,
 		`${signal.suppressedBuckets.length} buckets suppressed for k-anonymity`,
 		`${notes.length} deployment notes`,
@@ -508,6 +560,26 @@ export function largestBorrowers(positions: Position[], n: number): string[] {
 }
 
 const message = (err: unknown): string => (err instanceof Error ? err.message : String(err))
+
+/**
+ * Sampled borrowed value as a multiple of the protocol's own reported total.
+ *
+ * A sample can only ever be a fraction of the whole, so a ratio above 1 means the
+ * position rows and the protocol entity disagree — the rows are describing something
+ * other than current debt. This cross-check costs nothing extra only because the
+ * standardized schema exposes both levels in the same query shape, which is the whole
+ * argument for standardization: the consistency check is a schema property.
+ *
+ * `undefined` when there is no reported total to compare against; an absent
+ * denominator is not evidence of a problem.
+ */
+function debtRatio(positions: Position[], bootstrap: BootstrapData | undefined): number | undefined {
+	const reported = Number(bootstrap?.lendingProtocols[0]?.totalBorrowBalanceUSD ?? 0)
+	if (!(reported > 0)) return undefined
+	let sampledDebt = 0
+	for (const p of positions) if (p.side === 'BORROWER') sampledDebt += p.valueUsd
+	return sampledDebt / reported
+}
 
 // ─── Registration ───────────────────────────────────────────────────────────
 

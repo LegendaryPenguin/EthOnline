@@ -9,9 +9,16 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { ANCHORS, logReturns, measureBetas, ols2, stdev } from "../factors";
+import { ANCHORS, type AssetBeta, logReturns, measureBetas, ols2, stdev } from "../factors";
 import { assertSymmetric, buildCouplingMatrix } from "../coupling";
-import { decideEmode, dominantFactor, EMODE_THRESHOLD, effectiveThresholds } from "../emode";
+import {
+  classifyAsset,
+  decideEmode,
+  dominantFactor,
+  EMODE_THRESHOLD,
+  effectiveThresholds,
+  tracksAnchor,
+} from "../emode";
 import { groupByAccountProtocol } from "../simulate";
 import type { Position } from "../../exposure/types";
 import type { PriceSeries } from "../../graph/history";
@@ -382,5 +389,72 @@ describe("E-Mode inference", () => {
       "calibrated",
     );
     expect(calibrated.contradicted.size).toBe(1);
+  });
+});
+
+describe("tracksAnchor", () => {
+  // The gate that decides E-Mode *group membership*, as distinct from which shock an
+  // asset receives. It exists because of one measured near-miss: LINK regresses to a
+  // 0.807 ETH beta at 79% R2, which passes `classifyAsset` — correctly, LINK really
+  // does fall about 0.8 of an ETH move — but LINK against WETH is not an Aave E-Mode
+  // pair, and admitting it would have manufactured solvency for a book that has none.
+  const beta = (over: Partial<AssetBeta>): AssetBeta => ({
+    assetId: "0x1111111111111111111111111111111111111111",
+    symbol: "TEST",
+    betaEth: 0,
+    betaBtc: 0,
+    r2: 0.95,
+    observations: 364,
+    volatility: 0.034,
+    confidence: "measured",
+    reason: "measured from live oracle history",
+    ...over,
+  });
+
+  it("admits the four real ETH wrappers, on their measured live numbers", () => {
+    // weETH, wstETH, rETH, cbETH — Aave's published ETH-correlated category, arrived
+    // at by regression rather than by listing the symbols.
+    for (const [betaEth, betaBtc, r2] of [
+      [0.94, 0.073, 0.947],
+      [0.979, 0.032, 0.986],
+      [0.937, 0.0, 0.76],
+      [0.977, -0.116, 0.712],
+    ]) {
+      expect(tracksAnchor(beta({ betaEth, betaBtc, r2 }))).toBe(true);
+    }
+  });
+
+  it("rejects LINK, which loads on ETH but carries its own BTC exposure", () => {
+    const link = beta({ betaEth: 0.807, betaBtc: 0.298, r2: 0.792, volatility: 0.038 });
+    // Still ETH for shock purposes — the two questions have different answers, which
+    // is the entire reason this function is separate.
+    expect(classifyAsset(link)).toBe("ETH");
+    expect(tracksAnchor(link)).toBe(false);
+  });
+
+  it("admits the BTC wrappers in mirror", () => {
+    for (const [betaBtc, betaEth, r2] of [
+      [0.999, -0.002, 0.982],
+      [0.883, 0.002, 0.758],
+      [0.915, 0.028, 0.889],
+    ]) {
+      expect(tracksAnchor(beta({ betaEth, betaBtc, r2, volatility: 0.0236 }))).toBe(true);
+    }
+  });
+
+  it("admits a dollar without asking it to track anything", () => {
+    // There is no USD proxy in the regression, so a stablecoin has no anchor to load
+    // on. The volatility test in `classifyAsset` is already the tight one.
+    expect(tracksAnchor(beta({ betaEth: -0.001, betaBtc: 0.001, r2: 0.008, volatility: 0.00011 }))).toBe(
+      true,
+    );
+  });
+
+  it("rejects anything classifyAsset already rejected", () => {
+    expect(tracksAnchor(undefined)).toBe(false);
+    // rsETH as measured: a genuine ETH derivative whose fit is too poor to claim it.
+    // Unmeasured is not uncorrelated, and it is not correlated either.
+    expect(tracksAnchor(beta({ betaEth: 0.573, betaBtc: 0.242, r2: 0.506 }))).toBe(false);
+    expect(tracksAnchor(beta({ betaEth: 0.98, confidence: "unmeasured" }))).toBe(false);
   });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildExposure, coverageReport, joinByAccount } from "../join";
+import { buildExposure, correlatedFloor, coverageReport, joinByAccount } from "../join";
 import type { Position } from "../types";
 
 const pos = (over: Partial<Position> = {}): Position => ({
@@ -138,6 +138,172 @@ describe("health factor monotonicity", () => {
   it("is scale invariant", () => {
     // Doubling both sides changes nothing, so the measure is a true ratio.
     expect(build(2000, 1000)).toBeCloseTo(build(200, 100));
+  });
+});
+
+describe("the E-Mode reconstruction", () => {
+  // Aave V3 E-Mode is not in the Messari schema, and left uncorrected it made $3.9B
+  // of the $5.7B of observed debt compute insolvent while alive on chain. These tests
+  // pin the two properties that keep the correction from becoming a free upgrade:
+  // it fires only on a contradiction, and only when the *whole* book is correlated.
+  const WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+  const WEETH = "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee";
+  const WBTC = "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599";
+  const emode = { threshold: 0.95, groups: [[WETH, WEETH]] };
+
+  /** weETH collateral against WETH debt: exactly the live E-Mode shape. */
+  const correlatedBook = (threshold: number) => [
+    pos({ assetId: WEETH, valueUsd: 1000, liquidationThreshold: threshold }),
+    pos({ assetId: WETH, side: "BORROWER", valueUsd: 900 }),
+  ];
+
+  it("lifts a contradicted correlated book to the elevated threshold", () => {
+    // At 0.80 the boundary is $800 against $900 of debt — insolvent on paper, alive
+    // on chain. At 0.95 it is $950, which is what the account's continued existence
+    // says is true.
+    const before = buildExposure("0xa", correlatedBook(0.8));
+    expect(before.confidence).toBe("contradicted");
+
+    const after = buildExposure("0xa", correlatedBook(0.8), emode);
+    expect(after.confidence).not.toBe("contradicted");
+    expect(after.byProtocol["aave-v3-eth"].emodeThreshold).toBe(0.95);
+    expect(after.byProtocol["aave-v3-eth"].healthFactor).toBeCloseTo(950 / 900);
+  });
+
+  it("leaves a book that already computes solvent alone", () => {
+    // A solvent book is no evidence that it is in E-Mode, so lifting its threshold
+    // would flatter the signal for free.
+    const e = buildExposure("0xa", correlatedBook(0.95), emode);
+    expect(e.byProtocol["aave-v3-eth"].emodeThreshold).toBeNull();
+  });
+
+  it("refuses a book with an uncorrelated leg", () => {
+    // Aave grants E-Mode to a position, not an asset. A WBTC leg disqualifies the
+    // whole book, so nothing is claimed and it stays honestly contradicted.
+    const e = buildExposure(
+      "0xa",
+      [
+        pos({ assetId: WEETH, valueUsd: 1000, liquidationThreshold: 0.8 }),
+        pos({ assetId: WBTC, valueUsd: 10, liquidationThreshold: 0.7 }),
+        pos({ assetId: WETH, side: "BORROWER", valueUsd: 900 }),
+      ],
+      emode,
+    );
+    expect(e.confidence).toBe("contradicted");
+    expect(e.byProtocol["aave-v3-eth"].emodeThreshold).toBeNull();
+  });
+
+  it("claims nothing when the lift does not resolve the contradiction", () => {
+    // $950 of boundary against $2000 of debt is still insolvent, so E-Mode was not
+    // the explanation and the book keeps its original numbers rather than a
+    // half-applied inference.
+    const e = buildExposure(
+      "0xa",
+      [
+        pos({ assetId: WEETH, valueUsd: 1000, liquidationThreshold: 0.8 }),
+        pos({ assetId: WETH, side: "BORROWER", valueUsd: 2000 }),
+      ],
+      emode,
+    );
+    expect(e.confidence).toBe("contradicted");
+    expect(e.byProtocol["aave-v3-eth"].emodeThreshold).toBeNull();
+    expect(e.byProtocol["aave-v3-eth"].healthFactor).toBeCloseTo(800 / 2000);
+  });
+
+  it("never lowers a published threshold", () => {
+    // The floor is a lower bound, not a replacement. Compound's 0.98 base market
+    // must not be dragged down to 0.95 by a correction meant to raise things.
+    const e = buildExposure(
+      "0xa",
+      [
+        pos({ assetId: WEETH, valueUsd: 1000, liquidationThreshold: 0.98 }),
+        pos({ assetId: WETH, side: "BORROWER", valueUsd: 990 }),
+      ],
+      emode,
+    );
+    expect(e.byProtocol["aave-v3-eth"].healthFactor).toBeCloseTo(980 / 990);
+  });
+
+  it("applies per protocol, not across the account", () => {
+    // Only the leg that is both contradicted and correlated is lifted; a separate
+    // protocol's book is untouched, because thresholds are the protocol's own.
+    const e = buildExposure(
+      "0xa",
+      [
+        pos({ protocol: "aave-v3-eth", assetId: WEETH, valueUsd: 1000, liquidationThreshold: 0.8 }),
+        pos({ protocol: "aave-v3-eth", assetId: WETH, side: "BORROWER", valueUsd: 900 }),
+        pos({ protocol: "compound-v3-eth", assetId: WBTC, valueUsd: 100, liquidationThreshold: 0.7 }),
+        pos({ protocol: "compound-v3-eth", assetId: WETH, side: "BORROWER", valueUsd: 50 }),
+      ],
+      emode,
+    );
+    expect(e.byProtocol["aave-v3-eth"].emodeThreshold).toBe(0.95);
+    expect(e.byProtocol["compound-v3-eth"].emodeThreshold).toBeNull();
+  });
+
+  it("does not invent a threshold for collateral that reports none", () => {
+    // E-Mode says a correlated pair is treated more leniently, not that an asset the
+    // subgraph reports no threshold for is collateral at all. `correlatedFloor`
+    // ignores such a leg, and `measureProtocol` must still exclude it.
+    const e = buildExposure(
+      "0xa",
+      [
+        pos({ assetId: WEETH, valueUsd: 1000, liquidationThreshold: 0 }),
+        pos({ assetId: WETH, side: "BORROWER", valueUsd: 900 }),
+      ],
+      emode,
+    );
+    expect(e.byProtocol["aave-v3-eth"].weightedCollateralUsd).toBe(0);
+    expect(e.byProtocol["aave-v3-eth"].unknownThresholdUsd).toBe(1000);
+    expect(e.byProtocol["aave-v3-eth"].emodeThreshold).toBeNull();
+  });
+
+  it("does nothing when the policy carries no groups", () => {
+    const e = buildExposure("0xa", correlatedBook(0.8), { threshold: 0.95, groups: [] });
+    expect(e.confidence).toBe("contradicted");
+    expect(e.byProtocol["aave-v3-eth"].emodeThreshold).toBeNull();
+  });
+});
+
+describe("correlatedFloor", () => {
+  const A = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+  const B = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+  const C = "0xcccccccccccccccccccccccccccccccccccccccc";
+  const emode = { threshold: 0.9, groups: [[A, B]] };
+
+  it("requires every leg to sit in one group", () => {
+    expect(correlatedFloor([pos({ assetId: A }), pos({ assetId: B })], emode)).toBe(0.9);
+    expect(correlatedFloor([pos({ assetId: A }), pos({ assetId: C })], emode)).toBe(0);
+  });
+
+  it("does not straddle two groups", () => {
+    // A and C are each correlated with something, but not with each other, and
+    // E-Mode is a property of the pair rather than of the assets separately.
+    const D = "0xdddddddddddddddddddddddddddddddddddddddd";
+    const two = { threshold: 0.9, groups: [[A, B], [C, D]] };
+    expect(correlatedFloor([pos({ assetId: A }), pos({ assetId: C })], two)).toBe(0);
+    expect(correlatedFloor([pos({ assetId: C }), pos({ assetId: D })], two)).toBe(0.9);
+  });
+
+  it("ignores worthless legs and unpriced collateral", () => {
+    // A dust or unpriced leg is not evidence about the book's E-Mode status, and
+    // treating it as disqualifying would throw away the correction on rounding.
+    expect(
+      correlatedFloor(
+        [
+          pos({ assetId: A }),
+          pos({ assetId: B }),
+          pos({ assetId: C, valueUsd: 0 }),
+          pos({ assetId: C, liquidationThreshold: 0 }),
+        ],
+        emode,
+      ),
+    ).toBe(0.9);
+  });
+
+  it("returns 0 for a book with nothing in it", () => {
+    expect(correlatedFloor([], emode)).toBe(0);
+    expect(correlatedFloor([pos({ assetId: A, valueUsd: 0 })], emode)).toBe(0);
   });
 });
 

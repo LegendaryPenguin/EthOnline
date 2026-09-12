@@ -29,7 +29,7 @@
  * no Node built-ins, no `Intl` — this has to survive a WASM runtime.
  */
 
-import { buildExposure } from "../exposure/join";
+import { buildExposure, type EmodeOverride } from "../exposure/join";
 import type { AccountExposure, Position } from "../exposure/types";
 import { betaFor, type RiskPolicy } from "./policy";
 
@@ -84,6 +84,15 @@ export type SentinelSignal = {
   /** Buckets withheld for k-anonymity, with the count that failed. */
   suppressedBuckets: { pair: string; borrowers: number }[];
 
+  /**
+   * Books whose numbers rest on the policy's E-Mode reconstruction rather than on
+   * published parameters alone. Published so a consumer can see how much of the
+   * evaluable book is inferred; a signal that hides its own inference is asking to
+   * be trusted rather than checked.
+   */
+  emodeInferredBorrowers: number;
+  emodeInferredDebtUsd: number;
+
   /** Composite in [0,100] under the confidential weights. */
   systemicRiskScore: number;
 };
@@ -99,7 +108,7 @@ export type AggregateInput = {
 
 export function aggregateSignal(input: AggregateInput): SentinelSignal {
   const { policy } = input;
-  const exposures = groupByAccount(input.positions);
+  const exposures = groupByAccount(input.positions, policy.emode);
 
   let borrowersObserved = 0;
   let debtUsd = 0;
@@ -107,6 +116,8 @@ export function aggregateSignal(input: AggregateInput): SentinelSignal {
   let multiProtocolBorrowers = 0;
   let multiProtocolDebtUsd = 0;
   let leveredDebtUsd = 0;
+  let emodeInferredBorrowers = 0;
+  let emodeInferredDebtUsd = 0;
 
   const pairBorrowers = new Map<string, { borrowers: number; debtUsd: number }>();
   const distressed = policy.shocks.map((shock) => ({
@@ -130,6 +141,11 @@ export function aggregateSignal(input: AggregateInput): SentinelSignal {
     // a distress figure with no defensible units.
     if (e.confidence === "contradicted") continue;
     evaluableDebtUsd += e.debtUsd;
+
+    if (Object.values(e.byProtocol).some((b) => b.emodeThreshold !== null)) {
+      emodeInferredBorrowers++;
+      emodeInferredDebtUsd += e.debtUsd;
+    }
 
     const debtProtocols = borrowingProtocols(e);
     if (debtProtocols.length >= 2) {
@@ -194,6 +210,8 @@ export function aggregateSignal(input: AggregateInput): SentinelSignal {
     shockLadder: distressed,
     coupling,
     suppressedBuckets,
+    emodeInferredBorrowers,
+    emodeInferredDebtUsd,
     systemicRiskScore:
       100 *
       clamp01(
@@ -233,8 +251,16 @@ function shockedDistress(e: AccountExposure, shock: number, policy: RiskPolicy):
     // stated rather than hidden.
     if (p.liquidationThreshold <= 0) continue;
     const decline = Math.min(1, shock * betaFor(policy, p.assetId));
-    weighted[p.protocol] =
-      (weighted[p.protocol] ?? 0) + p.valueUsd * (1 - decline) * p.liquidationThreshold;
+    // The same effective threshold the baseline was measured at. Shocking a book
+    // against the published threshold when its baseline solvency was established
+    // under the E-Mode reconstruction would report distress the reconstruction
+    // already ruled out — the shock response has to be consistent with the
+    // health factor it is a shock to.
+    const threshold = Math.max(
+      p.liquidationThreshold,
+      e.byProtocol[p.protocol]?.emodeThreshold ?? 0,
+    );
+    weighted[p.protocol] = (weighted[p.protocol] ?? 0) + p.valueUsd * (1 - decline) * threshold;
   }
 
   let hit = 0;
@@ -252,14 +278,14 @@ function borrowingProtocols(e: AccountExposure): string[] {
   return [...seen].sort();
 }
 
-function groupByAccount(positions: Position[]): AccountExposure[] {
+function groupByAccount(positions: Position[], emode: EmodeOverride): AccountExposure[] {
   const byAccount = new Map<string, Position[]>();
   for (const p of positions) {
     const bucket = byAccount.get(p.account);
     if (bucket) bucket.push(p);
     else byAccount.set(p.account, [p]);
   }
-  return [...byAccount].map(([account, ps]) => buildExposure(account, ps));
+  return [...byAccount].map(([account, ps]) => buildExposure(account, ps, emode));
 }
 
 const clamp01 = (n: number) => (n < 0 ? 0 : n > 1 ? 1 : n);
@@ -329,7 +355,7 @@ export function perAddressRowsForLeakDemoOnly(
   topCollateralAsset: string;
   distressedAtShock: number | null;
 }[] {
-  return groupByAccount(positions)
+  return groupByAccount(positions, policy.emode)
     .filter((e) => e.debtUsd > 0)
     .map((e) => {
       let topCollateralAsset = "";
