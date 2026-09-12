@@ -1,0 +1,136 @@
+# forge test — Sentinel Solidity consumer, against a live mainnet fork
+# 2026-09-13T03:16:42Z  RPC_URL=https://ethereum-rpc.publicnode.com
+# fixture: contracts/test/fixtures/report.json (real subgraph data, block 25964421)
+
+Compiling 3 files with Solc 0.8.28
+Solc 0.8.28 finished in 2.20s
+Compiler run successful with warnings:
+Warning (2018): Function state mutability can be restricted to pure
+   --> test/Harness.sol:250:5:
+    |
+250 |     function signWith(bytes memory raw, bytes memory context, uint256[] memory keyIndices)
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to view
+   --> test/SentinelConsumer.t.sol:104:5:
+    |
+104 |     function test_RejectsAFlippedBodyByte() public {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to view
+   --> test/SentinelConsumer.t.sol:115:5:
+    |
+115 |     function test_RejectsARewrittenDonId() public {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to view
+   --> test/SentinelConsumer.t.sol:125:5:
+    |
+125 |     function test_RejectsAReplayUnderADifferentSequenceNumber() public {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to view
+   --> test/SentinelConsumer.t.sol:137:5:
+    |
+137 |     function test_RejectsAValidlySignedReportFromAnotherWorkflow() public {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to view
+   --> test/SentinelConsumer.t.sol:152:5:
+    |
+152 |     function test_RejectsAnotherOwnersReport() public {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to view
+   --> test/SentinelConsumer.t.sol:164:5:
+    |
+164 |     function test_ChecksIdentityBeforeSignatures() public {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to view
+   --> test/SentinelConsumer.t.sol:181:5:
+    |
+181 |     function test_RejectsASingleSignature() public {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to view
+   --> test/SentinelConsumer.t.sol:191:5:
+    |
+191 |     function test_RejectsADuplicatedSignature() public {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to view
+   --> test/SentinelConsumer.t.sol:212:5:
+    |
+212 |     function test_RejectsASignerOutsideTheSet() public {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to view
+   --> test/SentinelConsumer.t.sol:222:5:
+    |
+222 |     function test_RejectsAMalformedSignature() public {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to view
+   --> test/SentinelConsumer.t.sol:235:5:
+    |
+235 |     function test_RejectsAnUnknownSignalVersion() public {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to view
+   --> test/SentinelConsumer.t.sol:250:5:
+    |
+250 |     function test_RejectsASignalWithNoBlock() public {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to view
+   --> test/SentinelConsumer.t.sol:285:5:
+    |
+285 |     function test_RejectsATruncatedReport() public {
+    |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+Ran 24 tests for test/SentinelConsumer.t.sol:SentinelConsumerTest
+[PASS] test_AcceptsADifferentPairFromTheSignerSet() (gas: 274535)
+[PASS] test_AcceptsTheOldestFreshSignal() (gas: 276262)
+[PASS] test_ChecksIdentityBeforeSignatures() (gas: 51663)
+[PASS] test_DecodesEveryFieldOfTheRealPayload() (gas: 784447)
+[PASS] test_FixtureSignersMatchDerivedKeys() (gas: 20566)
+[PASS] test_ForkedMainnetHasReachedTheRecordedBlock() (gas: 551710)
+[PASS] test_ParsesTheHeaderIdentity() (gas: 279635)
+[PASS] test_RefusesADuplicatedSignerAtDeployment() (gas: 313750)
+[PASS] test_RefusesAnUnreachableQuorumAtDeployment() (gas: 312148)
+[PASS] test_RejectsADuplicatedSignature() (gas: 98752)
+[PASS] test_RejectsAFlippedBodyByte() (gas: 250690)
+[PASS] test_RejectsAFutureBlock() (gas: 273647)
+[PASS] test_RejectsAMalformedSignature() (gas: 93409)
+[PASS] test_RejectsAReplayUnderADifferentSequenceNumber() (gas: 116499)
+[PASS] test_RejectsARewrittenDonId() (gas: 250374)
+[PASS] test_RejectsASignalWithNoBlock() (gas: 219013)
+[PASS] test_RejectsASignerOutsideTheSet() (gas: 100386)
+[PASS] test_RejectsASingleSignature() (gas: 92354)
+[PASS] test_RejectsAStaleSignal() (gas: 274013)
+[PASS] test_RejectsATruncatedReport() (gas: 37339)
+[PASS] test_RejectsAValidlySignedReportFromAnotherWorkflow() (gas: 40821)
+[PASS] test_RejectsAnUnknownSignalVersion() (gas: 217456)
+[PASS] test_RejectsAnotherOwnersReport() (gas: 40895)
+[PASS] test_TheDecodeIsNotVacuous() (gas: 274115)
+Suite result: ok. 24 passed; 0 failed; 0 skipped; finished in 1.26s (1.26s CPU time)
+
+Ran 13 tests for test/GuardedVault.t.sol:GuardedVaultTest
+[PASS] test_AllowsBorrowingOnceAFreshSignalExists() (gas: 410452)
+[PASS] test_CapacityFallsAsTheStanceTightens() (gas: 846009)
+[PASS] test_ComparesAgainstTheWeekOldBaselineNotThePreviousReport() (gas: 1533629)
+[PASS] test_DoesNotFireOnAFallHoweverLarge() (gas: 551207)
+[PASS] test_FirstSignalIsNormalWhateverItsLevel() (gas: 315932)
+[PASS] test_PausesNewBorrowingUnderAlert() (gas: 578024)
+[PASS] test_RefusesAnUnauthenticatedSubmission() (gas: 88685)
+[PASS] test_RefusesToBorrowBeforeAnySignal() (gas: 29768)
+[PASS] test_RefusesToRewindToAnOlderReport() (gas: 807095)
+[PASS] test_RollsTheBaselineForwardAfterAWeek() (gas: 847886)
+[PASS] test_StartsClosedRatherThanNormal() (gas: 19531)
+[PASS] test_StopsBorrowingWhenTheSignalGoesStale() (gas: 414692)
+[PASS] test_TightensAtEachOperatingPoint() (gas: 1370030)
+Suite result: ok. 13 passed; 0 failed; 0 skipped; finished in 1.26s (29.23ms CPU time)
+
+Ran 2 test suites in 1.26s (2.52s CPU time): 37 tests passed, 0 failed, 0 skipped (37 total tests)

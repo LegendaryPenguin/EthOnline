@@ -263,14 +263,14 @@ Checked before planning, not assumed:
   changes behavior on the signal, tested on a Foundry fork; (b) a webhook/CLI consumer.
 
 **Acceptance criteria**
-- [ ] Signal schema versioned and documented in `docs/SIGNAL.md` with field semantics
+- [x] Signal schema versioned and documented in `docs/SIGNAL.md` with field semantics
       and update cadence.
-- [ ] Consumer contract reads the attested signal and demonstrably alters behavior;
+- [x] Consumer contract reads the attested signal and demonstrably alters behavior;
       `forge test --fork-url` passes.
-- [ ] Contract rejects stale and tampered signals — negative tests included.
-- [ ] Second, independent consumer works against the same schema with no changes to
+- [x] Contract rejects stale and tampered signals — negative tests included.
+- [x] Second, independent consumer works against the same schema with no changes to
       the producer.
-- [ ] A third party could integrate from `docs/SIGNAL.md` alone — validated by writing
+- [x] A third party could integrate from `docs/SIGNAL.md` alone — validated by writing
       the second consumer *only* from the doc.
 
 ---

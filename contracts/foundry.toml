@@ -1,0 +1,14 @@
+[profile.default]
+src = "src"
+test = "test"
+out = "out"
+libs = []
+solc = "0.8.28"
+# The signal is a fifteen-field tuple, which exceeds the legacy pipeline's stack.
+optimizer = true
+via_ir = true
+# The tests read contracts/test/fixtures/report.json, produced by `npm run fixture:report`.
+fs_permissions = [{ access = "read", path = "./test/fixtures" }]
+# No dependencies on purpose — not even forge-std. A consumer integrating from
+# docs/SIGNAL.md should be able to drop src/ into their own project, and a reviewer
+# should be able to run these tests on a fresh clone with nothing but `forge`.

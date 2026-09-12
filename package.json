@@ -21,7 +21,9 @@
     "consume-signal": "tsx scripts/consume-signal.mts",
     "alert:derive": "tsx scripts/derive-alert-policy.mts",
     "agent:ask": "tsx scripts/agent-ask.mts",
-    "mcp:handshake": "tsx scripts/mcp-handshake.mts"
+    "mcp:handshake": "tsx scripts/mcp-handshake.mts",
+    "fixture:report": "tsx scripts/export-report-fixture.mts",
+    "forge:test": "cd contracts && forge test -vv"
   },
   "dependencies": {
     "next": "16.3.5",
