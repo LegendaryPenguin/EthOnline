@@ -11,7 +11,8 @@
     "snapshot": "tsx scripts/snapshot.mts",
     "verify:health": "tsx scripts/verify-health.mts",
     "cascade": "tsx scripts/cascade.mts",
-    "verify:emode": "tsx scripts/verify-emode.mts"
+    "verify:emode": "tsx scripts/verify-emode.mts",
+    "backtest": "tsx scripts/backtest.mts"
   },
   "dependencies": {
     "next": "16.3.5",

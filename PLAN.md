@@ -118,13 +118,31 @@ Checked before planning, not assumed:
   and check whether the liquidatee was flagged.
 
 **Acceptance criteria**
-- [ ] Health factors reconcile with each protocol's own reported values within 1% on
+- [x] Health factors reconcile with each protocol's own reported values within 1% on
       a 20-position sample.
-- [ ] Engine is deterministic and pure — no network calls inside the computation.
-- [ ] **Backtest: ≥50 real historical `Liquidate` events replayed**, with precision,
+- [x] Engine is deterministic and pure — no network calls inside the computation.
+- [x] **Backtest: ≥50 real historical `Liquidate` events replayed**, with precision,
       recall, and false-positive rate published in `docs/BACKTEST.md`.
-- [ ] Misses are documented with root-cause analysis, not omitted.
-- [ ] Monotonicity property test: larger shock never produces a smaller liquidatable set.
+      → **105 episodes** replayed. Recall **48.6%**; precision **47.9%** and
+      false-positive rate **34.5%** from a separate fixed-population experiment,
+      because one experiment cannot produce all three.
+- [x] Misses are documented with root-cause analysis, not omitted.
+      → All 105 accounted for: 51 flagged, **17 unobservable** (the triggering oracle
+      update landed in the liquidation's own block, proven by re-pricing), 27
+      near-boundary from missing accrued interest, **10 genuinely wrong**.
+- [x] Monotonicity property test: larger shock never produces a smaller liquidatable set.
+
+**Beyond plan**
+- [x] `npm run backtest` enforces no-lookahead as a *program property*: every
+      historical read passes an `at()` assertion that its block precedes the outcome
+      being scored (352 reads in the last run).
+- [x] Time-travel capability is probed per deployment and reported, not assumed —
+      **only 2 of 5 indexers retain historical state**, so 68% of the window's
+      liquidations are unscorable. Found because the first version silently swallowed
+      74 of 110 failed replays.
+- [x] Threshold sweep publishes recall *and* the false-positive cost at each
+      threshold, including the finding that HF < 1.02 dominates HF < 1.00 outright —
+      and why Sentinel still flags at 1.
 
 ---
 
@@ -141,15 +159,21 @@ Checked before planning, not assumed:
 - Split total damage into `systemic` (cascade-driven) vs `idiosyncratic` (first-round).
 
 **Acceptance criteria**
-- [ ] Simulation converges on all live snapshots; hard iteration cap with a logged
-      non-convergence path.
-- [ ] Output includes rounds-to-convergence, liquidation volume per protocol per
+- [x] Simulation converges on all live snapshots; hard iteration cap with a logged
+      non-convergence path. (70–290 rounds, `MAX_ROUNDS = 500`, `converged` reported.)
+- [x] Output includes rounds-to-convergence, liquidation volume per protocol per
       round, and the systemic/idiosyncratic split.
-- [ ] Coupling matrix is symmetric where the definition requires it; asymmetry is
-      justified in code comments where intended.
-- [ ] Sensitivity table across shock magnitudes {5,10,15,20,30}% committed.
-- [ ] Uses two distinct standardized schemas (Lending/CDP + DEX AMM) — documented
+- [x] Coupling matrix is symmetric where the definition requires it; asymmetry is
+      justified in code comments where intended. (`assertSymmetric`, and the
+      collateral matrix is asymmetric on purpose.)
+- [x] Sensitivity table across shock magnitudes {5,10,15,20,30}% committed.
+      (`docs/evidence/phase4-cascade.md`, x3 E-Mode modes and x3 depth multipliers.)
+- [x] Uses two distinct standardized schemas (Lending/CDP + DEX AMM) — documented
       with the specific fields consumed from each.
+- [x] Beyond plan: `npm run verify:emode` checks the E-Mode reconstruction against
+      the Aave V3 Pool contract. 100% precision over the 40 largest borrowers.
+- [x] Beyond plan: invariants enforced at runtime — a 0% shock must liquidate $0,
+      and distressed debt must be monotone in the shock. 81 tests.
 
 ---
 
