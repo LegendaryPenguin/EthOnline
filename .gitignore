@@ -32,6 +32,12 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...except the templates, which document what to set and hold no values.
+!.env.example
+
+# CRE workflow build output and deps
+/cre/**/node_modules/
+/cre/**/dist/
 
 # vercel
 .vercel

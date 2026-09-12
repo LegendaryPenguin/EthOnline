@@ -30,5 +30,9 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  // `cre/` is a separate program: it targets WASM, runs under bun, and has its own
+  // tsconfig and its own node_modules. Pulling it in here makes bun's globals collide
+  // with @types/node (`console.log` resolves to `never`) and breaks the app build.
+  // Type-check it with `npm run cre:typecheck`.
+  "exclude": ["node_modules", "cre"]
 }

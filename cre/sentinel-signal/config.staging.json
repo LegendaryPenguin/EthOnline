@@ -1,0 +1,46 @@
+{
+  "schedule": "0 */5 * * * *",
+  "gatewayBaseUrl": "https://gateway.thegraph.com/api",
+  "apiKeySecretId": "GRAPH_API_KEY",
+  "policySecretId": "SENTINEL_RISK_POLICY",
+  "deployments": [
+    {
+      "key": "aave-v3-eth",
+      "label": "Aave V3",
+      "subgraphId": "JCNWRypm7FYwV8fx5HhzZPSFaMxgkPuw4TnR3Gpi81zk",
+      "schemaVersion": "3.1.0"
+    },
+    {
+      "key": "aave-v2-eth",
+      "label": "Aave V2",
+      "subgraphId": "C2zniPn45RnLDGzVeGZCx2Sw3GXrbc9gL4ZfL8B8Em2j",
+      "schemaVersion": "3.1.0"
+    },
+    {
+      "key": "compound-v3-eth",
+      "label": "Compound V3",
+      "subgraphId": "AwoxEZbiWLvv6e3QdvdMZw4WDURdGbvPfHmZRc8Dpfz9",
+      "schemaVersion": "3.1.0"
+    },
+    {
+      "key": "compound-v2-eth",
+      "label": "Compound V2",
+      "subgraphId": "4TbqVA8p2DoBd5qDbPMwmDZv3CsJjWtxo8nVSqF2tA9a",
+      "schemaVersion": "2.0.1"
+    },
+    {
+      "key": "morpho-aave-v2-eth",
+      "label": "Morpho Aave V2",
+      "subgraphId": "DsznTYxGdsqxWB6a474rSksvB7qWSth5Ff1PcxW28vZy",
+      "schemaVersion": "3.0.1"
+    }
+  ],
+  "marketsPerDeployment": 60,
+  "marketsSampled": 6,
+  "positionsPerMarket": 40,
+  "candidateAccounts": 40,
+  "completeBooksPageSize": 400,
+  "maxBlockLag": 1000,
+  "httpCallBudget": 15,
+  "logDiagnostics": true
+}

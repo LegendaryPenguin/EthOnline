@@ -1,0 +1,19 @@
+# ==========================================================================
+# CRE PROJECT SETTINGS
+# ==========================================================================
+# Sentinel's confidential workflow reads from The Graph and writes a signed
+# report; it does not read or write chain state itself. The RPCs below exist so
+# the report can be delivered on-chain with `evmClient.writeReport` — Phase 8's
+# consumer contract — without further setup.
+staging-settings:
+  rpcs:
+    - chain-name: ethereum-testnet-sepolia
+      url: https://ethereum-sepolia-rpc.publicnode.com
+
+# ==========================================================================
+production-settings:
+  rpcs:
+    - chain-name: ethereum-testnet-sepolia
+      url: https://ethereum-sepolia-rpc.publicnode.com
+    - chain-name: ethereum-mainnet
+      url: https://ethereum-rpc.publicnode.com

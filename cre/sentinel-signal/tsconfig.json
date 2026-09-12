@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ESNext"],
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": []
+  },
+  "include": ["main.ts", "workflow.ts", "../../lib/signal/**/*.ts", "../../lib/exposure/**/*.ts"],
+  "exclude": ["../../lib/**/__tests__/**"]
+}
