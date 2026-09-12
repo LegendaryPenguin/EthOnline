@@ -14,6 +14,7 @@
     "verify:emode": "tsx scripts/verify-emode.mts",
     "emode:groups": "tsx scripts/emode-groups.mts",
     "backtest": "tsx scripts/backtest.mts",
+    "backtest:cascades": "tsx scripts/backtest-cascades.mts",
     "cre:typecheck": "cd cre/sentinel-signal && ./node_modules/.bin/tsc --noEmit",
     "cre:test": "cd cre/sentinel-signal && bun test",
     "leak-demo": "tsx scripts/leak-demo.mts",

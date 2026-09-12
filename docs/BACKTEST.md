@@ -31,8 +31,13 @@ assertion that the block it queries strictly precedes the outcome being scored �
 a property the program enforces rather than a claim in a comment.
 
 Window: blocks **25813995–25963995** (head was 25964095). The limit is measured rather
-than chosen: the deployments that serve history at all serve it 200,000 blocks back
-and fail at 1,000,000, so about three weeks is what history allows.
+than chosen, but this run only measured it coarsely: it established that the
+deployments serving history serve 200,000 blocks back and fail at 1,000,000, and took
+the lower figure. Phase 6 binary-searched the same question and found the true depth is
+**~480,000 blocks (~67 days)** on `aave-v3-eth` and ~470,000 on `compound-v3-eth` — so
+history allows about ten weeks, not three, and this window is narrower than it needed
+to be. See `docs/evidence/phase6-early-warning.md`; the correction does not change any
+result below, since a wider window would only have added observations.
 
 ## Only 2 of 5 deployments can be replayed at all
 
@@ -432,10 +437,14 @@ that gap in false positives instead of arguing about it.
 
 ## What this does not establish
 
-**Three weeks is the whole history available.** Time-travel fails at a million
-blocks back, so the window cannot cover a real crisis. Every liquidation scored
-here happened in an ordinary market, and an ordinary market is the easy case: it is
-exactly in a crash that oracle staleness, depth and correlation all break together.
+**About ten weeks is the whole history available**, and this run used three of them.
+Phase 6 measured the wall precisely at ~480,000 blocks (~67 days); either way the
+window cannot cover a real crisis, because the year's actual cascades — including one
+that liquidated $224M across 2,452 accounts and four protocols — sit outside it.
+`Liquidate` *events* are retained for the full year while *state* is not, so Sentinel
+can locate crises it cannot replay. Every liquidation scored here happened in an
+ordinary market, and an ordinary market is the easy case: it is exactly in a crash that
+oracle staleness, depth and correlation all break together.
 
 **A flag is not a profitable liquidation.** The engine answers whether a book is
 below its boundary, not whether seizing it clears at a price a liquidator will

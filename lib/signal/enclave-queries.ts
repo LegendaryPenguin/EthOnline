@@ -32,6 +32,32 @@
  * Shared with the app and with the tests, so: no `process`, no `fetch`, no Node.
  */
 
+/**
+ * `block: { number: N }, ` for a historical read, or nothing for the present.
+ *
+ * Every one of the three passes takes this, so Phase 6's backtest replays the
+ * enclave's *own* sampling plan at a past block rather than a lookalike written
+ * beside it. That matters more than the code it saves: a backtest that samples
+ * differently from the product measures a system nobody ships. The alternative was
+ * three more query builders in `lib/backtest/`, and they would have drifted the
+ * first time either side was edited.
+ *
+ * The enclave itself passes nothing and its documents are byte-identical to what
+ * they were before this existed — `ENCLAVE_BOOTSTRAP_QUERY` is still a constant, now
+ * derived from the no-argument call.
+ *
+ * Interpolated as a literal, like the market ids below, because one variable cannot
+ * be conditionally absent from a document. So it is validated the same way: a block
+ * number is a positive integer or this throws, and nothing else reaches the string.
+ */
+export function atBlockArg(atBlock?: number): string {
+  if (atBlock === undefined) return "";
+  if (!Number.isInteger(atBlock) || atBlock <= 0) {
+    throw new Error(`atBlockArg: refusing a non-positive-integer block ${JSON.stringify(atBlock)}`);
+  }
+  return `block: { number: ${atBlock} }, `;
+}
+
 /** Fields the normalizer needs, and nothing else — bytes are the scarce resource. */
 function positionFields(schemaVersion: string): string {
   // Position.asset arrived in 3.x; on 2.0.1 the market's input token is the asset.
@@ -64,7 +90,9 @@ function positionFields(schemaVersion: string): string {
  * protocol totals for the coverage denominator, and the markets for prices and
  * liquidation thresholds.
  */
-export const ENCLAVE_BOOTSTRAP_QUERY = /* GraphQL */ `
+export function enclaveBootstrapQuery(atBlock?: number): string {
+  const at = atBlockArg(atBlock);
+  return /* GraphQL */ `
   query EnclaveBootstrap($markets: Int!) {
     _meta {
       block {
@@ -72,13 +100,13 @@ export const ENCLAVE_BOOTSTRAP_QUERY = /* GraphQL */ `
         timestamp
       }
     }
-    lendingProtocols {
+    lendingProtocols${at === "" ? "" : `(${at})`} {
       name
       schemaVersion
       totalBorrowBalanceUSD
       totalValueLockedUSD
     }
-    markets(first: $markets, orderBy: totalValueLockedUSD, orderDirection: desc) {
+    markets(${at}first: $markets, orderBy: totalValueLockedUSD, orderDirection: desc) {
       id
       name
       isActive
@@ -99,6 +127,10 @@ export const ENCLAVE_BOOTSTRAP_QUERY = /* GraphQL */ `
     }
   }
 `;
+}
+
+/** The live document, unchanged: the enclave never asks for a historical block. */
+export const ENCLAVE_BOOTSTRAP_QUERY = enclaveBootstrapQuery();
 
 /**
  * Market ids are interpolated as literals rather than passed as variables, because
@@ -126,11 +158,13 @@ export function topPositionsQuery(
   schemaVersion: string,
   marketIds: string[],
   perMarket: number,
+  atBlock?: number,
 ): string {
   if (marketIds.length === 0) throw new Error("topPositionsQuery: no markets");
   if (!Number.isInteger(perMarket) || perMarket <= 0) {
     throw new Error(`topPositionsQuery: perMarket must be a positive integer, got ${perMarket}`);
   }
+  const at = atBlockArg(atBlock);
 
   const aliases = marketIds.map((id, i) => {
     if (!MARKET_ID.test(id)) {
@@ -138,7 +172,7 @@ export function topPositionsQuery(
     }
     return `
     m${i}: positions(
-      first: ${perMarket}
+      ${at}first: ${perMarket}
       where: { market: "${id}", balance_gt: 0, hashClosed: null }
       orderBy: balance
       orderDirection: desc
@@ -170,7 +204,8 @@ export function topPositionsQuery(
  * books. There is no budget left for a second page, which is why the candidate
  * count is capped upstream instead.
  */
-export function completeBooksQuery(schemaVersion: string): string {
+export function completeBooksQuery(schemaVersion: string, atBlock?: number): string {
+  const at = atBlockArg(atBlock);
   return /* GraphQL */ `
     query EnclaveCompleteBooks($accounts: [String!]!, $first: Int!) {
       _meta {
@@ -179,7 +214,7 @@ export function completeBooksQuery(schemaVersion: string): string {
         }
       }
       positions(
-        first: $first
+        ${at}first: $first
         where: { account_in: $accounts, balance_gt: 0, hashClosed: null }
         orderBy: id
         orderDirection: asc
