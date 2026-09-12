@@ -9,7 +9,15 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { ANCHORS, type AssetBeta, logReturns, measureBetas, ols2, stdev } from "../factors";
+import {
+  ANCHORS,
+  type AssetBeta,
+  logReturns,
+  measureBetas,
+  ols2,
+  resolveReceiptBetas,
+  stdev,
+} from "../factors";
 import { assertSymmetric, buildCouplingMatrix } from "../coupling";
 import {
   classifyAsset,
@@ -27,6 +35,8 @@ const ETH = ANCHORS.ETH;
 const BTC = ANCHORS.BTC;
 const DERIVATIVE = "0xdddddddddddddddddddddddddddddddddddddddd";
 const STABLE = "0xssssssssssssssssssssssssssssssssssssssss";
+/** Tokenised gold: low beta on both factors, fifty times a stablecoin's volatility. */
+const GOLD = "0xgggggggggggggggggggggggggggggggggggggggg";
 
 describe("ols2", () => {
   it("recovers coefficients it was built from", () => {
@@ -150,6 +160,22 @@ describe("measureBetas", () => {
   });
 });
 
+/**
+ * The price index every fixture below is denominated in.
+ *
+ * Shared with `position()` rather than declared per describe block, because
+ * `amount * PRICES[assetId] === valueUsd` is an invariant of real data — the whole
+ * point of `addReceiptPrices` — and a fixture that violates it asserts on a book the
+ * pipeline cannot produce.
+ */
+const PRICES = new Map([
+  [ETH, 2_000],
+  [BTC, 60_000],
+  [DERIVATIVE, 2_100],
+  [STABLE, 1],
+  [GOLD, 3_300],
+]);
+
 let seq = 0;
 function position(
   account: string,
@@ -159,6 +185,8 @@ function position(
   valueUsd: number,
   liquidationThreshold = 0.8,
 ): Position {
+  const price = PRICES.get(assetId);
+  if (price === undefined) throw new Error(`fixture asset ${assetId} has no price`);
   return {
     id: `q${seq++}`,
     protocol,
@@ -166,7 +194,7 @@ function position(
     side,
     assetId,
     assetSymbol: assetId.slice(0, 6),
-    amount: valueUsd,
+    amount: valueUsd / price,
     valueUsd,
     liquidationThreshold,
     maximumLtv: liquidationThreshold - 0.05,
@@ -231,11 +259,7 @@ describe("E-Mode inference", () => {
       [STABLE, seriesFor(0, 0)],
     ]),
   );
-  const prices = new Map([
-    [ETH, 2_000],
-    [DERIVATIVE, 2_100],
-    [STABLE, 1],
-  ]);
+  const prices = PRICES;
 
   function seriesFor(ethBeta: number, btcBeta: number): PriceSeries {
     const out: PriceSeries = new Map();
@@ -329,7 +353,7 @@ describe("E-Mode inference", () => {
     // Tokenised gold has near-zero betas on both factors, so betas alone would put
     // XAUt in with the stablecoins. It is 50x more volatile than any of them, and
     // the same asset defeating a price-band heuristic is why factors.ts measures.
-    const gold = "0xgggggggggggggggggggggggggggggggggggggggg";
+    const gold = GOLD;
     const goldBetas = new Map(betas);
     goldBetas.set(gold, {
       assetId: gold,
@@ -456,5 +480,93 @@ describe("tracksAnchor", () => {
     // Unmeasured is not uncorrelated, and it is not correlated either.
     expect(tracksAnchor(beta({ betaEth: 0.573, betaBtc: 0.242, r2: 0.506 }))).toBe(false);
     expect(tracksAnchor(beta({ betaEth: 0.98, confidence: "unmeasured" }))).toBe(false);
+  });
+});
+
+describe("resolveReceiptBetas", () => {
+  // Receipt tokens are never a `Market.inputToken`, so they have no oracle price
+  // history and `measureBetas` correctly returns `unmeasured`. But `shockForAsset`
+  // holds unmeasured collateral at ratio 1 — no shock at all — and $10.4M of aToken
+  // collateral modelled as shock-proof understates the cascade rather than being
+  // cautious about it.
+  const WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+  const AWETH = "0x4d5f47fa6a74757f35c14fd3a6ef8e3c9bc514e8";
+
+  const measured = (over: Partial<AssetBeta> = {}): AssetBeta => ({
+    assetId: WETH,
+    symbol: "WETH",
+    betaEth: 1,
+    betaBtc: 0,
+    r2: 1,
+    observations: 364,
+    volatility: 0.03,
+    confidence: "measured",
+    reason: "factor proxy: defines the ETH shock",
+    ...over,
+  });
+
+  const unmeasured = (assetId: string, symbol: string): AssetBeta => ({
+    assetId,
+    symbol,
+    betaEth: 0,
+    betaBtc: 0,
+    r2: 0,
+    observations: 0,
+    volatility: 0,
+    confidence: "unmeasured",
+    reason: "no daily price history available",
+  });
+
+  const receipt = { assetId: AWETH, assetSymbol: "aEthWETH", underlyingAssetId: WETH };
+
+  it("gives a receipt the beta of the asset it is a receipt for", () => {
+    const betas = resolveReceiptBetas(
+      new Map([
+        [WETH, measured()],
+        [AWETH, unmeasured(AWETH, "aEthWETH")],
+      ]),
+      [receipt],
+    );
+    const a = betas.get(AWETH)!;
+    expect(a.betaEth).toBe(1);
+    expect(a.confidence).toBe("measured");
+    // It keeps its own identity, and says where the number came from.
+    expect(a.assetId).toBe(AWETH);
+    expect(a.symbol).toBe("aEthWETH");
+    expect(a.reason).toMatch(/receipt token for WETH/);
+  });
+
+  it("adds a beta for a receipt the measurement never saw at all", () => {
+    // `measureBetas` only covers the assets it was asked about, so a receipt can be
+    // missing from the map rather than present-and-unmeasured.
+    const betas = resolveReceiptBetas(new Map([[WETH, measured()]]), [receipt]);
+    expect(betas.get(AWETH)?.betaEth).toBe(1);
+  });
+
+  it("does not upgrade a receipt whose underlying is itself unmeasured", () => {
+    // Otherwise the substitution would launder an absence of evidence into a
+    // measured-looking zero, which is the one thing worse than admitting the gap.
+    const betas = resolveReceiptBetas(
+      new Map([
+        ["0xrsETH".toLowerCase(), unmeasured("0xrseth", "rsETH")],
+        [AWETH, unmeasured(AWETH, "aEthrsETH")],
+      ]),
+      [{ assetId: AWETH, assetSymbol: "aEthrsETH", underlyingAssetId: "0xrseth" }],
+    );
+    expect(betas.get(AWETH)!.confidence).toBe("unmeasured");
+  });
+
+  it("leaves a measured receipt alone, and leaves non-receipts alone", () => {
+    const own = measured({ assetId: AWETH, symbol: "aEthWETH", betaEth: 0.9, r2: 0.8 });
+    const betas = resolveReceiptBetas(
+      new Map([
+        [WETH, measured()],
+        [AWETH, own],
+      ]),
+      [receipt, { assetId: WETH, assetSymbol: "WETH" }],
+    );
+    // A real measurement beats an inherited one.
+    expect(betas.get(AWETH)!.betaEth).toBe(0.9);
+    expect(betas.get(WETH)!.reason).toBe(measured().reason);
   });
 });

@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  addReceiptPrices,
   buildPriceIndex,
   normalizePosition,
   normalizeSide,
   toFraction,
   toTokenUnits,
 } from "../normalize";
-import type { RawMarket, RawPosition } from "../types";
+import type { Position, RawMarket, RawPosition } from "../types";
 
 describe("normalizeSide", () => {
   it("maps the schema 2.x spelling", () => {
@@ -235,5 +236,83 @@ describe("normalizePosition", () => {
 
   it("returns null for a zero balance", () => {
     expect(normalizePosition(rawPosition({ balance: "0" }), "x", new Map())).toBeNull();
+  });
+
+  it("records the underlying of a receipt token, and nothing else's", () => {
+    // Downstream, a receipt token has no price index entry and no price history. The
+    // only thing that can resolve either is knowing what it is a receipt for, and
+    // this is the one place that knows.
+    const base = rawPosition();
+    const receipt = normalizePosition(
+      rawPosition({
+        asset: { id: "0xaethweth", symbol: "aEthWETH", decimals: 18 },
+        market: {
+          ...base.market,
+          outputToken: { id: "0xaEthWETH", symbol: "aEthWETH", decimals: 18 },
+        },
+      }),
+      "aave-v3-eth",
+      new Map(),
+    );
+    expect(receipt!.underlyingAssetId).toBe("0xweth");
+
+    // A plain position is not a receipt for anything, and claiming otherwise would
+    // give an asset the beta of whatever market it happened to sit in.
+    expect(normalizePosition(base, "aave-v3-eth", new Map())!.underlyingAssetId).toBeUndefined();
+    const collateralInAReceiptMarket = normalizePosition(
+      rawPosition({
+        asset: { id: "0xwbtc", symbol: "WBTC", decimals: 8 },
+        balance: "100000000",
+        market: { ...base.market, outputToken: { id: "0xcusdcv3", symbol: "cUSDCv3", decimals: 6 } },
+      }),
+      "compound-v3-eth",
+      new Map([["0xwbtc", 60000]]),
+    );
+    expect(collateralInAReceiptMarket!.underlyingAssetId).toBeUndefined();
+  });
+});
+
+describe("addReceiptPrices", () => {
+  // The bug this exists for: the cascade simulator re-derived USD as
+  // `amount x priceIndex[assetId]`, the index is keyed by `Market.inputToken`, and a
+  // receipt token is in it nowhere. Two aToken positions worth $10.4M priced at $0
+  // made a solvent book read as underwater and liquidated $25,177 at a **zero
+  // percent shock**.
+  const position = (over: Partial<Position> = {}): Position => ({
+    id: "p",
+    protocol: "aave-v3-eth",
+    account: "0xa",
+    side: "COLLATERAL",
+    assetId: "0xaethweth",
+    assetSymbol: "aEthWETH",
+    amount: 4,
+    valueUsd: 8000,
+    liquidationThreshold: 0.8,
+    maximumLtv: 0.75,
+    marketId: "m",
+    underlyingAssetId: "0xweth",
+    ...over,
+  });
+
+  it("prices a receipt token so amount x price reproduces valueUsd exactly", () => {
+    const prices = addReceiptPrices(new Map([["0xweth", 2000]]), [position()]);
+    const p = position();
+    expect(prices.get("0xaethweth")).toBe(2000);
+    expect(p.amount * prices.get(p.assetId)!).toBe(p.valueUsd);
+  });
+
+  it("does not overwrite a price the market index already published", () => {
+    // The market's own quote is the authority. An implied price from one position's
+    // rounded balance is not an improvement on it.
+    const prices = addReceiptPrices(new Map([["0xaethweth", 1999]]), [position()]);
+    expect(prices.get("0xaethweth")).toBe(1999);
+  });
+
+  it("adds nothing it cannot derive", () => {
+    const prices = addReceiptPrices(new Map(), [
+      position({ assetId: "0xzero", amount: 0 }),
+      position({ assetId: "0xnegative", valueUsd: -1 }),
+    ]);
+    expect(prices.size).toBe(0);
   });
 });

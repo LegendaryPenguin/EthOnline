@@ -173,6 +173,30 @@ export function tracksAnchor(beta: AssetBeta | undefined): boolean {
 }
 
 /**
+ * A position's USD value at the cascade's price index, not at the value it was
+ * normalized with.
+ *
+ * The two are close but not identical, and the difference matters here in a way it
+ * does not anywhere else. `Position.valueUsd` uses the quote from the position's *own*
+ * market; the cascade's index uses the deepest market quoting that asset. Same asset,
+ * two markets, two oracle reads, so the two valuations differ in the last few digits.
+ *
+ * The simulator prices from the index, because it has to re-price after a shock. So if
+ * E-Mode calibrated a threshold against `valueUsd`, it would be calibrating against a
+ * number the simulator does not use — and `calibrated` mode aims for health *exactly*
+ * 1, which sits on the boundary the simulator tests. That gap liquidated $10,060,018
+ * across 127 rounds at a **zero percent shock**: not a modelling claim, a disagreement
+ * between two ways of adding up the same book.
+ *
+ * Falls back to `valueUsd` for an asset the index does not carry, which after
+ * `addReceiptPrices` should be none.
+ */
+function usdAt(p: Position, prices: Map<string, number>): number {
+  const price = prices.get(p.assetId.toLowerCase());
+  return price === undefined ? p.valueUsd : p.amount * price;
+}
+
+/**
  * Which factor dominates a set of positions by value, if any does.
  */
 export function dominantFactor(
@@ -184,7 +208,7 @@ export function dominantFactor(
   const byFactor: Record<EmodeCategory, number> = { ETH: 0, BTC: 0, USD: 0 };
 
   for (const p of positions) {
-    const value = p.valueUsd;
+    const value = usdAt(p, prices);
     if (value <= 0) continue;
     total += value;
     const category = classifyAsset(betas.get(p.assetId.toLowerCase()));
@@ -228,9 +252,9 @@ export function decideEmode(
   betas: Map<string, AssetBeta>,
   prices: Map<string, number>,
 ): EmodeDecision {
-  const collateralUsd = collateral.reduce((s, p) => s + p.valueUsd, 0);
-  const debtUsd = debt.reduce((s, p) => s + p.valueUsd, 0);
-  const weighted = collateral.reduce((s, p) => s + p.valueUsd * p.liquidationThreshold, 0);
+  const collateralUsd = collateral.reduce((s, p) => s + usdAt(p, prices), 0);
+  const debtUsd = debt.reduce((s, p) => s + usdAt(p, prices), 0);
+  const weighted = collateral.reduce((s, p) => s + usdAt(p, prices) * p.liquidationThreshold, 0);
   const thresholdBefore = collateralUsd > 0 ? weighted / collateralUsd : 0;
   const healthBefore = debtUsd > 0 ? weighted / debtUsd : Infinity;
 
@@ -314,10 +338,10 @@ export function effectiveThresholds(
       }
     }
 
-    const collateralUsd = group.collateral.reduce((s, p) => s + p.valueUsd, 0);
-    const debtUsd = group.debt.reduce((s, p) => s + p.valueUsd, 0);
+    const collateralUsd = group.collateral.reduce((s, p) => s + usdAt(p, prices), 0);
+    const debtUsd = group.debt.reduce((s, p) => s + usdAt(p, prices), 0);
     const weighted = group.collateral.reduce(
-      (s, p) => s + p.valueUsd * (thresholds.get(p.id) ?? p.liquidationThreshold),
+      (s, p) => s + usdAt(p, prices) * (thresholds.get(p.id) ?? p.liquidationThreshold),
       0,
     );
     if (debtUsd <= 0 || weighted / debtUsd >= 1) continue;
@@ -332,7 +356,7 @@ export function effectiveThresholds(
         thresholds.set(p.id, Math.max(thresholds.get(p.id) ?? 0, needed));
       }
       const recomputed = group.collateral.reduce(
-        (s, p) => s + p.valueUsd * (thresholds.get(p.id) ?? 0),
+        (s, p) => s + usdAt(p, prices) * (thresholds.get(p.id) ?? 0),
         0,
       );
       if (recomputed / debtUsd >= 1) continue;

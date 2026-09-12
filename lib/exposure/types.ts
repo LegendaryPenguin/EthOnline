@@ -68,6 +68,18 @@ export type Position = {
   liquidationThreshold: number;
   maximumLtv: number;
   marketId: string;
+  /**
+   * The underlying token, when `assetId` is a market's receipt token (an aToken, a
+   * cToken) rather than the asset itself. Absent otherwise.
+   *
+   * Recorded because a receipt token is priced as `underlying price x exchange rate`
+   * and therefore has, by construction, the underlying's returns — but it is never a
+   * `Market.inputToken`, so it appears in no price index and has no price history of
+   * its own. Anything that needs a price or a factor exposure for a receipt has to
+   * resolve it here; guessing from the symbol would be the invented parameter this
+   * codebase refuses.
+   */
+  underlyingAssetId?: string;
 };
 
 /**

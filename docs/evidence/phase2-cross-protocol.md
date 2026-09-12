@@ -7,22 +7,22 @@ codebase has no mock path and a test enforces that (`lib/__tests__/no-mock-data.
 
 ## The finding
 
-At block **25963731**, across four block-aligned Messari-standardized lending
+At block **25964440**, across four block-aligned Messari-standardized lending
 deployments covering **95.4% of all debt those protocols report**:
 
 > **At least 9.07% of borrowed value — $906M — sits with addresses levered across
 > two or more lending protocols.**
 
-Of 36,487 accounts sampled, 1,062 hold positions on two or more protocols, 71 on
-three, and 2 on all four. 354 of them carry debt.
+Of 37,870 accounts sampled, 1,114 hold positions on two or more protocols, 72 on
+three, and 2 on all four. 359 of them carry debt.
 
 | Protocol pair | Shared accounts |
 |---|---|
-| Aave V3 + Compound V3 | 508 |
+| Aave V3 + Compound V3 | 541 |
+| Aave V3 + Compound V2 | 212 |
 | Compound V2 + Compound V3 | 211 |
-| Aave V3 + Compound V2 | 192 |
 | Compound V3 + Morpho Aave V2 | 161 |
-| Aave V3 + Morpho Aave V2 | 77 |
+| Aave V3 + Morpho Aave V2 | 78 |
 | Compound V2 + Morpho Aave V2 | 65 |
 
 This is the number no individual lending protocol can compute. Each one sees only
@@ -46,13 +46,13 @@ Two reasons, both in the conservative direction:
 
 | Protocol | Schema | Sampled debt | Reported debt | Coverage |
 |---|---|---|---|---|
-| Aave V3 | 3.1.0 | $9,404,394,281 | $9,882,314,203 | 95.16% |
-| Compound V3 | 3.1.0 | $576,434,354 | $580,197,801 | 99.35% |
-| Compound V2 | 2.0.1 | $10,149,094 | $11,949,182 | 84.94% |
-| Morpho Aave V2 | 3.0.1 | $5,513 | $5,970 | 92.35% |
+| Aave V3 | 3.1.0 | $9,407,443,718 | $9,885,846,967 | 95.16% |
+| Compound V3 | 3.1.0 | $576,456,557 | $580,229,135 | 99.35% |
+| Compound V2 | 2.0.1 | $10,147,759 | $11,948,674 | 84.93% |
+| Morpho Aave V2 | 3.0.1 | $5,507 | $5,964 | 92.35% |
 | Aave V2 | 3.1.0 | — | — | **excluded, see below** |
 
-All four included deployments served block 25963731 — the snapshot is block-aligned,
+All four included deployments served block 25964440 — the snapshot is block-aligned,
 not stitched across time.
 
 ## Four things that had to be fixed first
@@ -64,8 +64,8 @@ silently corrupted the headline.
 
 Its position mappings handle `Borrow` but not `Repay`: positions opened in May
 2021 show `borrowCount: 41, repayCount: 0` and were never closed, so `balance` is
-*lifetime cumulative borrowed*, not outstanding debt. It reported $26.9B of
-position debt against $13.97M of protocol debt.
+*lifetime cumulative borrowed*, not outstanding debt. It reported $26.87B of
+position debt against $13.96M of protocol debt.
 
 The fix is not an Aave V2 special case. A sample is a subset, so sampled debt can
 never legitimately exceed reported debt — that inequality is a free integrity
@@ -93,9 +93,14 @@ its health factor for no reason but our own sampling. This is why 4,367 borrower
 initially looked insolvent.
 
 Accounts of interest are now re-fetched exhaustively (`lib/graph/complete.ts`).
-For the 354 multi-protocol borrowers this returns 2,325 positions where the
-stratified sample held 1,492: **36% of their positions were missing.** After
-completion, contradicted borrowers fell from 4,367 to 119.
+For the 359 multi-protocol borrowers this returns 2,402 positions where the
+stratified sample held 1,541: **36% of their positions were missing.**
+
+On the run that surfaced this, 4,367 borrowers looked insolvent before completion
+and 119 after. At this block the post-completion figure is 116 of 359, holding
+$1.08B — and that residue is not sampling. It is Aave V3 E-Mode, which the
+standardized schema does not express; Phase 5 reconstructs it (see
+[emode-groups.md](emode-groups.md)) and recovers most of it.
 
 ### 4. The same standardized field ships in two different units
 

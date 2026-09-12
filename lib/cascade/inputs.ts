@@ -7,7 +7,7 @@
  */
 
 import { readFileSync } from "node:fs";
-import { buildPriceIndex } from "../exposure/normalize";
+import { addReceiptPrices, buildPriceIndex } from "../exposure/normalize";
 import { captureLiquidity, type LiquidityIndex } from "../graph/dex";
 import type { Position, RawMarket } from "../exposure/types";
 
@@ -55,7 +55,9 @@ export function loadCascadeInputs(
   };
 
   const allMarkets = Object.values(snapshot.markets).flat();
-  const prices = buildPriceIndex(allMarkets);
+  // Reconciled with the positions, or receipt-token collateral would be priced at
+  // zero here while carrying a real `valueUsd` — see `addReceiptPrices`.
+  const prices = addReceiptPrices(buildPriceIndex(allMarkets), completed.positions);
 
   const marketParams = new Map<string, MarketParams>();
   for (const m of allMarkets) {

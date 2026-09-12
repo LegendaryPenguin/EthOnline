@@ -42,6 +42,42 @@ export function buildPriceIndex(markets: RawMarket[]): Map<string, number> {
   return new Map([...best].map(([id, v]) => [id, v.price]));
 }
 
+/**
+ * Add the prices of receipt tokens, taken from the positions themselves.
+ *
+ * `buildPriceIndex` is keyed by `Market.inputToken`, so a receipt token — an aToken,
+ * a cToken — is in it nowhere. `normalizePosition` prices those per position, from
+ * the market's own quote times its exchange rate, and that is the correct price. The
+ * problem is that it is then the *only* place that price exists.
+ *
+ * Anything downstream that re-derives USD as `amount x priceIndex[assetId]` therefore
+ * disagrees with `valueUsd` on exactly those positions, and values them at zero. That
+ * is not a rounding difference. It surfaced as the cascade simulator liquidating
+ * $25,177 at a **zero percent shock**: two aToken collateral positions worth $10.4M
+ * priced at $0 by the index, so a book that `effectiveThresholds` scored solvent from
+ * `valueUsd` was underwater in the simulator, at a shock of nothing.
+ *
+ * A price index with a hole in it is worse than one that admits it, because the hole
+ * reads as "worthless" rather than "unknown". So the index is reconciled with the one
+ * component that does know: `valueUsd / amount`, for assets the index lacks. Both
+ * numbers come from `normalizePosition`, so `amount x price` reproduces `valueUsd`
+ * exactly, by construction rather than by agreement.
+ *
+ * Mutates and returns the same map, so callers cannot accidentally keep the hole.
+ */
+export function addReceiptPrices(
+  prices: Map<string, number>,
+  positions: Position[],
+): Map<string, number> {
+  for (const p of positions) {
+    const id = p.assetId.toLowerCase();
+    if (prices.has(id) || p.amount === 0) continue;
+    const implied = p.valueUsd / p.amount;
+    if (Number.isFinite(implied) && implied > 0) prices.set(id, implied);
+  }
+  return prices;
+}
+
 /** Convert a BigInt token balance string to a float in token units. */
 export function toTokenUnits(balance: string, decimals: number): number {
   // Positions can exceed Number.MAX_SAFE_INTEGER in wei, so scale via BigInt
@@ -168,5 +204,11 @@ export function normalizePosition(
     liquidationThreshold: toFraction(raw.market.liquidationThreshold),
     maximumLtv: toFraction(raw.market.maximumLTV),
     marketId: raw.market.id,
+    // Only when this really is the market's receipt token, which `receiptRate`
+    // established by matching `outputToken.id` — not inferred from the price path,
+    // which also fires for the cross-market index fallback.
+    ...(receiptRate !== null
+      ? { underlyingAssetId: raw.market.inputToken.id.toLowerCase() }
+      : {}),
   };
 }

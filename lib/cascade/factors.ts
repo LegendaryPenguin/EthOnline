@@ -273,6 +273,51 @@ export function measureBetas(
 }
 
 /**
+ * Give receipt tokens the factor exposure of the asset they are a receipt for.
+ *
+ * A receipt token — an aToken, a cToken — is never a `Market.inputToken`, so
+ * `MarketDailySnapshot.inputTokenPriceUSD` has no series for it and `measureBetas`
+ * correctly returns `unmeasured`. But unmeasured collateral is held at ratio 1 by
+ * `shockForAsset`, i.e. treated as taking no shock at all, and aEthWETH taking no ETH
+ * shock is not a cautious omission — it is $10.4M of ETH-denominated collateral
+ * modelled as shock-proof, which understates the cascade.
+ *
+ * Substituting the underlying's beta is not an assumption about the receipt. It is the
+ * same fact the pricing already uses: `normalizePosition` values these at the
+ * underlying's oracle price times the market's exchange rate, so the receipt's return
+ * series *is* the underlying's return series plus a monotone accrual. A beta measured
+ * on one is the beta of the other.
+ *
+ * The substitution is recorded in `reason` and the `confidence` stays whatever the
+ * underlying's was, so a receipt cannot come out better-evidenced than the thing it
+ * inherits from. Receipts whose underlying is itself unmeasured stay unmeasured.
+ */
+export function resolveReceiptBetas(
+  betas: Map<string, AssetBeta>,
+  positions: { assetId: string; assetSymbol: string; underlyingAssetId?: string }[],
+): Map<string, AssetBeta> {
+  for (const p of positions) {
+    const id = p.assetId.toLowerCase();
+    const underlyingId = p.underlyingAssetId?.toLowerCase();
+    if (!underlyingId || underlyingId === id) continue;
+    if (betas.get(id)?.confidence === "measured") continue;
+
+    const underlying = betas.get(underlyingId);
+    if (!underlying || underlying.confidence !== "measured") continue;
+
+    betas.set(id, {
+      ...underlying,
+      assetId: id,
+      symbol: p.assetSymbol,
+      reason:
+        `receipt token for ${underlying.symbol}, priced at its oracle price times the ` +
+        `market exchange rate, so it inherits that measurement: ${underlying.reason}`,
+    });
+  }
+  return betas;
+}
+
+/**
  * The return an asset takes under a given factor shock.
  *
  * Linear in the factor returns by construction, which is the model's main

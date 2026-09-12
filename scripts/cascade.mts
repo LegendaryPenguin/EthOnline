@@ -16,7 +16,7 @@ import { DEPLOYMENTS } from "../lib/graph/deployments";
 import { fetchPriceHistory } from "../lib/graph/history";
 import { DEX_DEPLOYMENTS } from "../lib/graph/dex";
 import { loadCascadeInputs, measureLiquidity } from "../lib/cascade/inputs";
-import { ANCHORS, measureBetas } from "../lib/cascade/factors";
+import { ANCHORS, measureBetas, resolveReceiptBetas } from "../lib/cascade/factors";
 import { assertSymmetric, buildCouplingMatrix } from "../lib/cascade/coupling";
 import { simulateCascade, type CascadeResult } from "../lib/cascade/simulate";
 import type { EmodeMode } from "../lib/cascade/emode";
@@ -75,7 +75,10 @@ if (Object.keys(liquidity.rejectedUsdByAsset).length > 0) {
   console.log(`  implied-price gate rejected: ${rejected}`);
 }
 
-const betas = measureBetas(assets, history.byAsset);
+// Receipt tokens have no price history of their own, so they resolve to the beta of
+// the asset they are a receipt for rather than being left unmeasured — which would
+// model ETH-denominated aToken collateral as taking no ETH shock.
+const betas = resolveReceiptBetas(measureBetas(assets, history.byAsset), inputs.positions);
 
 console.log("\n=== factor exposures, regressed on the protocols' own oracle prices ===");
 console.log("asset        collateral        DEX depth   col/depth   bETH   bBTC     R2   obs");
