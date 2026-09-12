@@ -1,0 +1,190 @@
+{
+  "note": "Written by scripts/derive-alert-policy.mts from a Phase 6 backtest run. Scores are measured; nothing here is constructed. Positives are the hour before a cascade, negatives are ordinary hours, both differenced against the same hour a week earlier.",
+  "generatedAt": "2026-09-13T02:33:01.015Z",
+  "head": 25965525,
+  "controlLagHours": 168,
+  "episodes": [
+    {
+      "id": "2026-07-19T10:00Z",
+      "accounts": 341,
+      "liquidatedUsd": 233254.2264606291,
+      "block": 25565890,
+      "protocols": [
+        "aave-v3-eth",
+        "compound-v3-eth"
+      ],
+      "score": 28.89273384668312,
+      "controlScore": 27.164869360909762
+    },
+    {
+      "id": "2026-08-19T11:00Z",
+      "accounts": 35,
+      "liquidatedUsd": 5281451.469783386,
+      "block": 25788623,
+      "protocols": [
+        "aave-v3-eth",
+        "compound-v3-eth"
+      ],
+      "score": 30.343336166732094,
+      "controlScore": 31.121102056259826
+    },
+    {
+      "id": "2026-08-30T23:00Z",
+      "accounts": 6,
+      "liquidatedUsd": 805647.9077186898,
+      "block": 25871140,
+      "protocols": [
+        "aave-v3-eth",
+        "compound-v3-eth"
+      ],
+      "score": 21.83126254089265,
+      "controlScore": 20.595683714306894
+    },
+    {
+      "id": "2026-09-02T09:00Z",
+      "accounts": 4,
+      "liquidatedUsd": 160295.71362489826,
+      "block": 25888429,
+      "protocols": [
+        "aave-v3-eth",
+        "compound-v3-eth"
+      ],
+      "score": 21.910828634269876,
+      "controlScore": 20.40763959385088
+    },
+    {
+      "id": "2026-09-04T08:00Z",
+      "accounts": 9,
+      "liquidatedUsd": 254066.08564259374,
+      "block": 25902428,
+      "protocols": [
+        "aave-v3-eth",
+        "compound-v3-eth"
+      ],
+      "score": 21.761194606448456,
+      "controlScore": 21.219417420654036
+    }
+  ],
+  "quiet": [
+    {
+      "hour": 495577,
+      "block": 25535322,
+      "score": 28.033546107142964,
+      "controlScore": 27.494677110774905
+    },
+    {
+      "hour": 495630,
+      "block": 25551139,
+      "score": 29.197321288141996,
+      "controlScore": 28.284855939001265
+    },
+    {
+      "hour": 495778,
+      "block": 25595308,
+      "score": 31.353628115391253,
+      "controlScore": 27.88046900594746
+    },
+    {
+      "hour": 495832,
+      "block": 25611424,
+      "score": 31.739964491137872,
+      "controlScore": 29.373712867390147
+    },
+    {
+      "hour": 495885,
+      "block": 25627241,
+      "score": 31.409665902648932,
+      "controlScore": 28.809424580014532
+    },
+    {
+      "hour": 495938,
+      "block": 25643059,
+      "score": 31.64993729015539,
+      "controlScore": 30.879011207452056
+    },
+    {
+      "hour": 495992,
+      "block": 25659175,
+      "score": 32.24073267435369,
+      "controlScore": 31.71496485075857
+    },
+    {
+      "hour": 496045,
+      "block": 25674992,
+      "score": 31.75491487135166,
+      "controlScore": 31.419025294700155
+    },
+    {
+      "hour": 496098,
+      "block": 25690809,
+      "score": 30.919210270559066,
+      "controlScore": 31.636046298825736
+    },
+    {
+      "hour": 496152,
+      "block": 25706925,
+      "score": 30.464728886344496,
+      "controlScore": 32.238856301218064
+    },
+    {
+      "hour": 496205,
+      "block": 25722743,
+      "score": 30.370010411819802,
+      "controlScore": 31.800433347643843
+    },
+    {
+      "hour": 496258,
+      "block": 25738560,
+      "score": 31.115326537212905,
+      "controlScore": 30.95137443651351
+    },
+    {
+      "hour": 496312,
+      "block": 25754676,
+      "score": 31.517665774221985,
+      "controlScore": 31.1206441306018
+    },
+    {
+      "hour": 496365,
+      "block": 25770493,
+      "score": 31.242710449140354,
+      "controlScore": 30.38274298321575
+    },
+    {
+      "hour": 496508,
+      "block": 25813170,
+      "score": 20.638929808163578,
+      "controlScore": 31.33470829149455
+    },
+    {
+      "hour": 496562,
+      "block": 25829286,
+      "score": 20.839630801389298,
+      "controlScore": 30.75147224110577
+    },
+    {
+      "hour": 496615,
+      "block": 25845103,
+      "score": 20.343226150777177,
+      "controlScore": 20.446404276521157
+    },
+    {
+      "hour": 496853,
+      "block": 25916132,
+      "score": 21.834574184351187,
+      "controlScore": 21.845715469566716
+    },
+    {
+      "hour": 496907,
+      "block": 25932248,
+      "score": 21.827385781619725,
+      "controlScore": 21.81114107729909
+    },
+    {
+      "hour": 496960,
+      "block": 25948065,
+      "score": 22.25538846741097,
+      "controlScore": 21.93067469896515
+    }
+  ]
+}

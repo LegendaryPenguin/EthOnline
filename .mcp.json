@@ -1,0 +1,30 @@
+{
+  "$comment": [
+    "Two MCP servers, composed on purpose — see docs/AGENT.md.",
+    "sentinel: Sentinel's own tools. Aggregates from the enclave's query plan, every figure",
+    "  cited to a subgraph and a block, per-address selections refused.",
+    "subgraph: The Graph's hosted Subgraph MCP. Schema exploration, subgraph discovery and",
+    "  raw GraphQL across the whole network — the general instrument Sentinel is built on.",
+    "Neither entry contains a secret: GRAPH_API_KEY is read from the environment, and",
+    ".env.local is gitignored."
+  ],
+  "mcpServers": {
+    "sentinel": {
+      "command": "npx",
+      "args": ["tsx", "mcp/sentinel-server.mts"]
+    },
+    "subgraph": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "--header",
+        "Authorization:${AUTH_HEADER}",
+        "https://subgraphs.mcp.thegraph.com/sse"
+      ],
+      "env": {
+        "AUTH_HEADER": "Bearer ${GRAPH_API_KEY}"
+      }
+    }
+  }
+}

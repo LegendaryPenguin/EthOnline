@@ -18,7 +18,10 @@
     "cre:typecheck": "cd cre/sentinel-signal && ./node_modules/.bin/tsc --noEmit",
     "cre:test": "cd cre/sentinel-signal && bun test",
     "leak-demo": "tsx scripts/leak-demo.mts",
-    "consume-signal": "tsx scripts/consume-signal.mts"
+    "consume-signal": "tsx scripts/consume-signal.mts",
+    "alert:derive": "tsx scripts/derive-alert-policy.mts",
+    "agent:ask": "tsx scripts/agent-ask.mts",
+    "mcp:handshake": "tsx scripts/mcp-handshake.mts"
   },
   "dependencies": {
     "next": "16.3.5",
@@ -27,6 +30,7 @@
     "viem": "^2.56.3"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^24.13.4",
     "@types/react": "^19",

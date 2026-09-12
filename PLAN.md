@@ -69,14 +69,14 @@ Checked before planning, not assumed:
 - Snapshot recorder: persists each response with block number + timestamp for audit.
 
 **Acceptance criteria**
-- [ ] One unmodified query document returns non-empty `Position` data from **≥3
+- [x] One unmodified query document returns non-empty `Position` data from **≥3
       distinct lending protocols**.
-- [ ] Sync lag logged per deployment; any deployment >1000 blocks behind head is
+- [x] Sync lag logged per deployment; any deployment >1000 blocks behind head is
       excluded with the reason recorded.
-- [ ] Zero mocked data in `lib/` product paths — enforced by a test that greps for
+- [x] Zero mocked data in `lib/` product paths — enforced by a test that greps for
       fixture imports outside `__tests__`.
-- [ ] `npm run snapshot` writes an auditable JSON snapshot with provenance metadata.
-- [ ] Query cost measured; a full refresh completes under 30s.
+- [x] `npm run snapshot` writes an auditable JSON snapshot with provenance metadata.
+- [x] Query cost measured; a full refresh completes under 30s.
 
 **Blocked on:** Subgraph Studio API key.
 
@@ -94,14 +94,14 @@ Checked before planning, not assumed:
 - Coverage report quantifying multi-protocol leverage.
 
 **Acceptance criteria**
-- [ ] ≥1 address with live positions on **≥2 distinct protocols**, verified by hand
+- [x] ≥1 address with live positions on **≥2 distinct protocols**, verified by hand
       against a block explorer (screenshot committed to `docs/verification/`).
-- [ ] The join is purely address-keyed — no fuzzy or heuristic matching anywhere.
-- [ ] Coverage report emits the money-shot metric: **"X% of borrowed value sits with
+- [x] The join is purely address-keyed — no fuzzy or heuristic matching anywhere.
+- [x] Coverage report emits the money-shot metric: **"X% of borrowed value sits with
       addresses levered across 2+ protocols."**
-- [ ] Unit tests cover the join on fixtures, including the collision and
+- [x] Unit tests cover the join on fixtures, including the collision and
       single-protocol edge cases.
-- [ ] Report is deterministic — same snapshot in, same numbers out.
+- [x] Report is deterministic — same snapshot in, same numbers out.
 
 ---
 
@@ -214,13 +214,13 @@ Checked before planning, not assumed:
 - ROC/AUC over a labeled window set, with a naive baseline for comparison.
 
 **Acceptance criteria**
-- [ ] **≥3 historical cascade events replayed** end-to-end.
-- [ ] Median and per-event **lead time** reported in hours.
-- [ ] ROC curve + AUC against a labeled set, benchmarked against a naive
+- [x] **≥3 historical cascade events replayed** end-to-end.
+- [x] Median and per-event **lead time** reported in hours.
+- [x] ROC curve + AUC against a labeled set, benchmarked against a naive
       "total-TVL-only" baseline — Sentinel must beat it.
-- [ ] Reproducible by a single command: `npm run backtest:cascades`.
-- [ ] **Failures published**, including any event Sentinel missed and why.
-- [ ] No lookahead leakage — a test asserts the replay reads no data past the
+- [x] Reproducible by a single command: `npm run backtest:cascades`.
+- [x] **Failures published**, including any event Sentinel missed and why.
+- [x] No lookahead leakage — a test asserts the replay reads no data past the
       simulated block.
 
 ---
@@ -238,15 +238,15 @@ Checked before planning, not assumed:
   not a fixed cron. It decides *whether*, *what severity*, and *why*.
 
 **Acceptance criteria**
-- [ ] ≥8 natural-language questions answered correctly, each citing subgraph source +
+- [x] ≥8 natural-language questions answered correctly, each citing subgraph source +
       block number; transcript committed.
-- [ ] Every agent answer traces to a real tool call — a test fails the build if any
+- [x] Every agent answer traces to a real tool call — a test fails the build if any
       number in a response is unsourced.
-- [ ] Alert policy documented, and demonstrated firing correctly on replayed history
+- [x] Alert policy documented, and demonstrated firing correctly on replayed history
       from Phase 6 (right alerts, at the right times).
-- [ ] Agent refuses to answer when data is stale or coverage is insufficient, rather
+- [x] Agent refuses to answer when data is stale or coverage is insufficient, rather
       than guessing.
-- [ ] Graph product composition documented: Subgraphs + Subgraph MCP, with the role
+- [x] Graph product composition documented: Subgraphs + Subgraph MCP, with the role
       of each.
 
 ---
