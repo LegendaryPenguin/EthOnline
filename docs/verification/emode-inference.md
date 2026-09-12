@@ -37,54 +37,54 @@ would be exactly the failure precision measures.
 
 | account | our LT | contract LT | our HF | contract HF | contract E-Mode | inferred | verdict |
 |---|---|---|---|---|---|---|---|
-| `0x9600a48ed0f931d0c422d574e3275a90d8b22745` | 0.8008 | 0.9500 | 0.8732 | 1.0316 | yes | yes | agree |
-| `0x741aa7cfb2c7bf2a1e7d4da2e3df6a56ca4131f3` | 0.8299 | 0.8298 | 2.1864 | 2.3277 | no | no | agree |
-| `0xf7462251c14d2fb83c7ab96367a7985423c83010` | 0.7502 | 0.9494 | 0.7898 | 1.0302 | yes | no | false negative |
-| `0xd8495b95a3a6a85f4e3baa003e8b7ed1ed85562d` | 0.7500 | 0.9500 | 0.7856 | 1.0231 | yes | no | false negative |
-| `0xe84a061897afc2e7ff5fb7e3686717c528617487` | 0.8080 | 0.8079 | 2.7631 | 2.7518 | no | no | agree |
-| `0x2e15d7aa0650de1009710fdd45c3468d75ae1392` | 0.8000 | 0.9500 | 0.9151 | 1.0423 | yes | yes | agree |
-| `0x0a0fa2b02ae73bd9eb4c1e086458099eca42476e` | 0.7896 | 0.7895 | 2.5356 | 2.5337 | no | no | agree |
-| `0x418aa6bf98a2b2bc93779f810330d88cde488888` | 0.8300 | 0.8300 | 1.4279 | 1.4291 | no | no | agree |
+| `0x9600a48ed0f931d0c422d574e3275a90d8b22745` | 0.8009 | 0.9500 | 0.8753 | 1.0316 | yes | yes | agree |
+| `0x741aa7cfb2c7bf2a1e7d4da2e3df6a56ca4131f3` | 0.8299 | 0.8298 | 2.1878 | 2.3280 | no | no | agree |
+| `0xf7462251c14d2fb83c7ab96367a7985423c83010` | 0.7502 | 0.9494 | 0.7893 | 1.0302 | yes | no | false negative |
+| `0xd8495b95a3a6a85f4e3baa003e8b7ed1ed85562d` | 0.7500 | 0.9500 | 0.7851 | 1.0231 | yes | no | false negative |
+| `0xe84a061897afc2e7ff5fb7e3686717c528617487` | 0.8080 | 0.8079 | 2.7645 | 2.7521 | no | no | agree |
+| `0x2e15d7aa0650de1009710fdd45c3468d75ae1392` | 0.8000 | 0.9500 | 0.9145 | 1.0423 | yes | yes | agree |
+| `0x0a0fa2b02ae73bd9eb4c1e086458099eca42476e` | 0.7896 | 0.7895 | 2.5380 | 2.5359 | no | no | agree |
+| `0x418aa6bf98a2b2bc93779f810330d88cde488888` | 0.8300 | 0.8300 | 1.4998 | 1.5005 | no | no | agree |
 | `0x13d0503352f34b751cacfbe27e694b58561f2983` | 0.8100 | 0.9500 | 0.8847 | 1.0336 | yes | yes | agree |
-| `0xdf2609ec3d2e07a79d2e25e52960e75250bd9aaa` | 0.7896 | 0.7895 | 1.4043 | 1.4013 | no | no | agree |
-| `0x1e2799e0071e535468097e04ad23b9fe3ae5a6a5` | 0.7973 | 0.9284 | 0.9211 | 1.0647 | yes | no | false negative |
-| `0x0c883bacaf927076c702fd580505275be44fb63e` | 0.8100 | 0.8099 | 1.4267 | 1.4280 | no | no | agree |
-| `0x9332d0ce5d45184515e0ea85bf9f4af09cbf10af` | 0.8082 | 0.8082 | 3.6738 | 3.6040 | no | no | agree |
-| `0x852f79dad4e6c44a89be189dc3ecf51b3c5273c8` | 0.8000 | 0.9500 | 0.8471 | 1.0013 | yes | yes | agree |
-| `0x9ac60bd825eb8fd0240e4daf2646c1050830013e` | 0.8111 | 0.8110 | 1.5323 | 1.5316 | no | no | agree |
-| `0xaf6e0473f86360a91fc88564927372cdf999b8ad` | 0.8000 | 0.9500 | 0.8472 | 1.0013 | yes | yes | agree |
-| `0xaaf5feaa9e5694b2b293e67558e2da8ea4b1fb13` | 0.8000 | 0.9500 | 1.1864 | 1.3967 | yes | no | false negative |
+| `0xdf2609ec3d2e07a79d2e25e52960e75250bd9aaa` | 0.7893 | 0.7895 | 1.4057 | 1.4025 | no | no | agree |
+| `0x1e2799e0071e535468097e04ad23b9fe3ae5a6a5` | 0.7973 | 0.9284 | 0.9207 | 1.0649 | yes | no | false negative |
+| `0x0c883bacaf927076c702fd580505275be44fb63e` | 0.8100 | 0.8099 | 1.4276 | 1.4282 | no | no | agree |
+| `0x9332d0ce5d45184515e0ea85bf9f4af09cbf10af` | 0.8082 | 0.8082 | 3.6760 | 3.6046 | no | no | agree |
+| `0x852f79dad4e6c44a89be189dc3ecf51b3c5273c8` | 0.8000 | 0.9500 | 0.8466 | 1.0013 | yes | yes | agree |
+| `0xaf6e0473f86360a91fc88564927372cdf999b8ad` | 0.8000 | 0.9500 | 0.8467 | 1.0013 | yes | yes | agree |
+| `0x9ac60bd825eb8fd0240e4daf2646c1050830013e` | 0.8111 | 0.8110 | 1.5335 | 1.5324 | no | no | agree |
+| `0xaaf5feaa9e5694b2b293e67558e2da8ea4b1fb13` | 0.8000 | 0.9500 | 1.1856 | 1.3967 | yes | no | false negative |
 | `0xca686974913389d42f3c5f61010503daccdb487a` | 0.8100 | 0.9500 | 0.8719 | 1.0225 | yes | yes | agree |
-| `0xf151ed2caedbda83c17ae39d6990d92909fcf529` | 0.7857 | 0.7856 | 2.5720 | 2.5176 | no | no | agree |
-| `0x4c9f7207be28278b9dca129f2e211acfff48fb01` | 0.8150 | 0.8149 | 2.1995 | 2.1876 | no | no | agree |
-| `0x7df25ed19086f00e0539c7c9a2a6234e0689905e` | 0.8034 | 0.8034 | 2.6375 | 2.6381 | no | no | agree |
-| `0x62897e744e0c71860ea74bd88858b0f4afbf72dd` | 0.7909 | 0.7911 | 1.2699 | 1.2684 | no | no | agree |
-| `0xd480bb579f61edf044d0e86e33cb72310c816d6a` | 0.7500 | 0.9400 | 0.8171 | 1.0243 | yes | no | false negative |
-| `0xe67112647b7aea8b7490f27e1c75208868138df2` | 0.8300 | 0.8300 | 3.8054 | 3.8087 | no | no | agree |
-| `0xb3b45cbc7b4650035a15c4e858bf7c21667a4741` | 0.7953 | 0.7953 | 1.8194 | 1.8177 | no | no | agree |
-| `0x9cbf099ff424979439dfba03f00b5961784c06ce` | 0.7570 | 0.8071 | 0.6596 | 1.7392 | yes | no | false negative |
-| `0x7ef216afdf22d1b336169a0c4bb7b5a531d1e528` | 0.8100 | 0.8100 | 1.3720 | 1.3702 | no | no | agree |
-| `0x2aea39e27fc87de4a63963687c6e188f062197b4` | 0.7949 | 0.7951 | 2.8548 | 2.7165 | no | no | agree |
-| `0xddf6b5699b0c03382d9b45c8434d206890985e7e` | 0.8016 | 0.8016 | 1.3971 | 1.3957 | no | no | agree |
-| `0x1a557354c5b8d7df38ea914209e416dc7065b158` | 0.8300 | 0.9500 | 0.0000 | 1.0015 | yes | yes | agree |
-| `0x160f6ef9fcdde6ff3febc7a57edbfd476a8aab5b` | 0.7902 | 0.7902 | 2.1240 | 2.0535 | no | no | agree |
-| `0x1f9bb27d0c66feb932f3f8b02620a128d072f3d8` | 0.8026 | 0.8033 | 1.8917 | 1.8468 | no | no | agree |
-| `0x3b15cec2d922ab0ef74688bcc1056461049f89cb` | 0.7900 | 0.9500 | 0.9690 | 1.1636 | yes | yes | agree |
-| `0xbdfa4f4492dd7b7cf211209c4791af8d52bf5c50` | 0.7693 | 0.7692 | 3.0330 | 3.0138 | no | no | agree |
-| `0xa0caa6aede25309bfc03143168293f795364de0a` | 0.7800 | 0.7800 | 1.9609 | 1.9285 | no | no | agree |
+| `0xf151ed2caedbda83c17ae39d6990d92909fcf529` | 0.7857 | 0.7856 | 2.5746 | 2.5201 | no | no | agree |
+| `0x4c9f7207be28278b9dca129f2e211acfff48fb01` | 0.8150 | 0.8150 | 2.2006 | 2.1864 | no | no | agree |
+| `0x7df25ed19086f00e0539c7c9a2a6234e0689905e` | 0.8034 | 0.8034 | 2.6395 | 2.6390 | no | no | agree |
+| `0x62897e744e0c71860ea74bd88858b0f4afbf72dd` | 0.7909 | 0.7911 | 1.2711 | 1.2694 | no | no | agree |
+| `0xd480bb579f61edf044d0e86e33cb72310c816d6a` | 0.7499 | 0.9400 | 0.8173 | 1.0242 | yes | no | false negative |
+| `0xe67112647b7aea8b7490f27e1c75208868138df2` | 0.8300 | 0.8300 | 3.8078 | 3.8092 | no | no | agree |
+| `0xb3b45cbc7b4650035a15c4e858bf7c21667a4741` | 0.7953 | 0.7953 | 1.8210 | 1.8193 | no | no | agree |
+| `0x9cbf099ff424979439dfba03f00b5961784c06ce` | 0.7570 | 0.8074 | 0.6579 | 1.7285 | yes | no | false negative |
+| `0x7ef216afdf22d1b336169a0c4bb7b5a531d1e528` | 0.8100 | 0.8100 | 1.3728 | 1.3704 | no | no | agree |
+| `0x2aea39e27fc87de4a63963687c6e188f062197b4` | 0.7949 | 0.7951 | 2.8575 | 2.7189 | no | no | agree |
+| `0xddf6b5699b0c03382d9b45c8434d206890985e7e` | 0.8016 | 0.8016 | 1.3961 | 1.3943 | no | no | agree |
+| `0x1a557354c5b8d7df38ea914209e416dc7065b158` | 0.8000 | 0.9500 | 0.8470 | 1.0016 | yes | yes | agree |
+| `0x160f6ef9fcdde6ff3febc7a57edbfd476a8aab5b` | 0.7902 | 0.7902 | 2.1240 | 2.0538 | no | no | agree |
+| `0x1f9bb27d0c66feb932f3f8b02620a128d072f3d8` | 0.8026 | 0.8033 | 1.8936 | 1.8481 | no | no | agree |
+| `0x3b15cec2d922ab0ef74688bcc1056461049f89cb` | 0.7900 | 0.9500 | 0.9684 | 1.1636 | yes | yes | agree |
+| `0xbdfa4f4492dd7b7cf211209c4791af8d52bf5c50` | 0.7693 | 0.7692 | 3.0348 | 3.0174 | no | no | agree |
+| `0xa0caa6aede25309bfc03143168293f795364de0a` | 0.7800 | 0.7800 | 1.9631 | 1.9308 | no | no | agree |
 | `0x9c483fa4d84a218940bfa02652fcaf01ee8f44f2` | 0.7500 | 0.7500 | 2.0776 | 2.0766 | no | no | agree |
-| `0xa765a629f11f538f6d67e3fdf799baed1506017d` | 0.7500 | 0.9200 | 0.8429 | 1.0335 | yes | yes | agree |
-| `0x919d1a5c82ef275d87819052379a6d01050ae210` | 0.7800 | 0.7800 | 1.6070 | 1.5984 | no | no | agree |
-| `0x5ee96329a93ec738d55c97958df29452a9327ffa` | 0.7800 | 0.7800 | 1.8313 | 1.8300 | no | no | agree |
-| `0x16ea1f673e01419ba9af51365b88138ac492489a` | 0.7895 | 0.7895 | 2.6275 | 2.5701 | no | no | agree |
+| `0xa765a629f11f538f6d67e3fdf799baed1506017d` | 0.7500 | 0.9200 | 0.8430 | 1.0335 | yes | yes | agree |
+| `0x919d1a5c82ef275d87819052379a6d01050ae210` | 0.7800 | 0.7800 | 1.6087 | 1.6003 | no | no | agree |
+| `0x5ee96329a93ec738d55c97958df29452a9327ffa` | 0.7800 | 0.7800 | 1.8333 | 1.8322 | no | no | agree |
+| `0x16ea1f673e01419ba9af51365b88138ac492489a` | 0.7895 | 0.7895 | 2.6013 | 2.5506 | no | no | agree |
 
 ## The misses, in full
 
-- `0xf7462251c14d2fb83c7ab96367a7985423c83010` — health factor 0.790 < 1 but collateral loads on no single factor and debt on ETH, so E-Mode cannot explain it
-- `0xd8495b95a3a6a85f4e3baa003e8b7ed1ed85562d` — health factor 0.786 < 1 but collateral loads on no single factor and debt on ETH, so E-Mode cannot explain it
+- `0xf7462251c14d2fb83c7ab96367a7985423c83010` — health factor 0.789 < 1 but collateral loads on no single factor and debt on ETH, so E-Mode cannot explain it
+- `0xd8495b95a3a6a85f4e3baa003e8b7ed1ed85562d` — health factor 0.785 < 1 but collateral loads on no single factor and debt on ETH, so E-Mode cannot explain it
 - `0x1e2799e0071e535468097e04ad23b9fe3ae5a6a5` — health factor 0.921 < 1 but collateral loads on no single factor and debt on ETH, so E-Mode cannot explain it
 - `0xaaf5feaa9e5694b2b293e67558e2da8ea4b1fb13` — no contradiction to resolve
 - `0xd480bb579f61edf044d0e86e33cb72310c816d6a` — health factor 0.817 < 1 but collateral loads on USD and debt on no single factor, so E-Mode cannot explain it
-- `0x9cbf099ff424979439dfba03f00b5961784c06ce` — health factor 0.660 < 1 but collateral loads on no single factor and debt on no single factor, so E-Mode cannot explain it
+- `0x9cbf099ff424979439dfba03f00b5961784c06ce` — health factor 0.658 < 1 but collateral loads on no single factor and debt on no single factor, so E-Mode cannot explain it
 
 
