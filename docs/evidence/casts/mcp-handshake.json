@@ -1,72 +1,72 @@
 {
   "id": "mcp-handshake",
   "command": "npm run mcp:handshake",
-  "prompt": "sentinel $ ",
+  "prompt": "nrawal@842f579e3dc8 ~ % ",
   "section": "6a — the tools over the wire",
-  "recordedAt": "2026-09-13T05:17:39.319Z",
+  "recordedAt": "2026-09-13T06:45:22.432Z",
   "exitCode": 0,
-  "durationMs": 9600,
+  "durationMs": 9379,
   "cols": 120,
   "rows": 34,
   "events": [
     [
-      217,
+      205,
       "> sentinel@0.1.0 mcp:handshake\r\n> tsx scripts/mcp-handshake.mts\r\n\r\n"
     ],
     [
-      387,
+      373,
       "-> {\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"sentinel-handshake\",\"version\":\"0.1.0\"}}}\r\n"
     ],
     [
-      1205,
+      1044,
       "## [sentinel] MCP server ready: 8 tools, 5 deployments\r\n"
     ],
     [
-      1209,
+      1048,
       "<- {\"result\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{\"tools\":{}},\"serverInfo\":{\"name\":\"sentinel\",\"version\":\"0.1.0\"}},\"jsonrpc\":\"2.0\",\"id\":1}\r\n"
     ],
     [
-      1209,
+      1048,
       "-> {\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}\r\n"
     ],
     [
-      1209,
+      1048,
       "-> {\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\",\"params\":{}}\r\n"
     ],
     [
-      1210,
+      1049,
       "<- {\"result\":{\"tools\":[{\"name\":\"sentinel_signal\",\"description\":\"The current systemic-risk signal: the composite score, how much borrowed value sits with addresses levered across two or more protocols, an\r\n"
     ],
     [
-      1210,
+      1049,
       "-> {\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{\"name\":\"sentinel_alert\",\"arguments\":{}}}\r\n"
     ],
     [
-      1413,
-      "## [sentinel] head 25966363, pinning 25966353\r\n"
+      1252,
+      "## [sentinel] head 25966800, pinning 25966790\r\n"
     ],
     [
-      5170,
-      "## [sentinel] signal at 25966353: score 22.00, 4 deployment(s), 14 calls\r\n"
+      4758,
+      "## [sentinel] signal at 25966790: score 22.01, 4 deployment(s), 14 calls\r\n"
     ],
     [
-      9541,
-      "## [sentinel] control at 25916222: score 21.83\r\n"
+      9328,
+      "## [sentinel] control at 25916659: score 21.84\r\n"
     ],
     [
-      9545,
-      "<- {\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"No alert. The score moved 0.17 points against the same hour last week (21.83 to 22.00), below the weakest calibrated threshold of 0.61.\\n\\n| number | value\r\n"
+      9332,
+      "<- {\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"No alert. The score moved 0.16 points against the same hour last week (21.84 to 22.01), below the weakest calibrated threshold of 0.61.\\n\\n| number | value\r\n"
     ],
     [
-      9546,
+      9332,
       "## handshake ok: 8 tools, sentinel_alert answered 1760 chars\r\n"
     ],
     [
-      9552,
+      9336,
       "\r\nwrote docs/evidence/phase7-mcp-handshake.log\r\n"
     ],
     [
-      9575,
+      9359,
       "⠙\u001b[1G\u001b[0K"
     ]
   ]

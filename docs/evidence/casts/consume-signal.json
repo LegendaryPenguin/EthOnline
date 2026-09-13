@@ -1,76 +1,72 @@
 {
   "id": "consume-signal",
   "command": "npm run consume-signal",
-  "prompt": "sentinel $ ",
+  "prompt": "nrawal@842f579e3dc8 ~ % ",
   "section": "7 — an independent consumer",
-  "recordedAt": "2026-09-13T05:17:48.920Z",
+  "recordedAt": "2026-09-13T06:45:31.812Z",
   "exitCode": 0,
-  "durationMs": 1456,
+  "durationMs": 905,
   "cols": 120,
   "rows": 34,
   "events": [
     [
-      188,
+      168,
       "> sentinel@0.1.0 consume-signal\r\n> tsx scripts/consume-signal.mts\r\n\r\n"
     ],
     [
-      1396,
-      "Sentinel report consumption — accept, then refuse\r\n"
+      847,
+      "Sentinel report consumption: accept, then refuse\r\n"
     ],
     [
-      1396,
-      "\r\npayload         docs/evidence/enclave-local-run.log, base64 ABI block (real, from live subgraph data)\r\nsignatures      4 throwaway dev keys, f = 1 (the DON has not signed this yet)\r\nconsumer        lib/signal/consume.ts, viem only — no CRE toolchain\r\n"
+      847,
+      "\r\npayload         docs/evidence/enclave-local-run.log, base64 ABI block (real, from live subgraph data)\r\nsignatures      4 throwaway dev keys, f = 1 (the DON has not signed this yet)\r\nconsumer        lib/signal/consume.ts, viem only, no CRE toolchain\r\n\r\nACCEPTED\r\n"
     ],
     [
-      1396,
-      "\r\nACCEPTED\r\n"
-    ],
-    [
-      1403,
+      854,
       "  sentinel-signal/1 from sentinel, block 25964421, score 22.0/100, 90 borrowers, $2,866,777,615 evaluable of $5,719,318,802 observed, 1.25% multi-protocol, $1,215,514,673 distressed at a 30% shock, 6 borrowers reconstructed via E-Mode\r\n  quorum 2 of 2 required, distinct signers\r\n"
     ],
     [
-      1404,
-      "  workflow sentinel owned by 0x00000000000000000000000000000000000000a1\r\n\r\n"
+      854,
+      "  workflow sentinel owned by 0x00000000000000000000000000000000000000a1\r\n\r\nREFUSED\r\n"
     ],
     [
-      1404,
-      "REFUSED\r\n"
+      858,
+      "  one byte of the signal body flipped after signing\r\n"
     ],
     [
-      1407,
-      "  one byte of the signal body flipped after signing\r\n      report rejected: 0 of 2 required signatures verified: unknown signer 0xC93Ef817BA83Bc5fA915f58C4212aF11Aecc6c9C; unknown signer 0x810f2F7FDf77ebca1E5fcA05b5908892f0eac935\r\n"
+      858,
+      "      report rejected: 0 of 2 required signatures verified: unknown signer 0xbb47e2B633BCD7CD9559e0640e6c94880F314902; unknown signer 0xd821E3fBC43f63bc9e00A8faBE1e08D630425374\r\n"
     ],
     [
-      1409,
-      "  the header's DON id rewritten after signing\r\n      report rejected: 0 of 2 required signatures verified: unknown signer 0x8b7E269399560412728Cc7B23fCcD86CB7Ede12f; unknown signer 0x9BDdc68a54D678Bbc92c2f34C065c0665e262f13\r\n"
+      860,
+      "  the header's DON id rewritten after signing\r\n      report rejected: 0 of 2 required signatures verified: unknown signer 0x39be32b48D0e0c75B224F0FC98c5f70d835f3473; unknown signer 0x2e1AD031c9B9dEc52b75E5B910dD533e08a02d4a\r\n"
     ],
     [
-      1412,
-      "  replayed under a different DON sequence number\r\n      report rejected: 0 of 2 required signatures verified: unknown signer 0xFd9deE5a82270659f91f802A0B07AD4C6bDA4085; unknown signer 0x8e866bE3313E61b49e520ca15b1B23B1d9152c94\r\n"
+      864,
+      "  replayed under a different DON sequence number\r\n      report rejected: 0 of 2 required signatures verified: unknown signer 0x9a3991556Fb0F57994665831D4F7c2F6a861899B; unknown signer 0xdFA6d08Be6e598F4311a46EA20D99e6a62af1F6b\r\n"
     ],
     [
-      1415,
+      867,
       "  signed by a key outside the DON's signer set\r\n      report rejected: 0 of 2 required signatures verified: unknown signer 0x1d81bc367c85bF86ffD52048805Ed3E9FE6E5835; unknown signer 0xeF27d856c356Cd1FC1a45FBA676fd662F9B1D672\r\n"
     ],
     [
-      1418,
+      869,
       "  one signer's signature repeated to fake a quorum\r\n      report rejected: 1 of 2 required signatures verified: duplicate signer 0x83faA08C337fEf8bF971F7d8bBFcA325402AF91d\r\n"
     ],
     [
-      1419,
+      870,
       "  correctly signed, but by a different workflow the same DON runs\r\n      report rejected: workflow name \"attacker\" is not the trusted \"sentinel\"\r\n"
     ],
     [
-      1422,
+      873,
       "  genuine but stale: the reading is older than the consumer's window\r\n      report rejected: signal is 101 blocks old, past the 100-block limit\r\n\r\n7 of 7 mutations refused; 1 genuine report accepted\r\n"
     ],
     [
-      1423,
+      873,
       "\r\nwrote docs/evidence/consume-signal.md\r\n"
     ],
     [
-      1435,
+      886,
       "⠙\u001b[1G\u001b[0K"
     ]
   ]

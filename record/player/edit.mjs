@@ -108,7 +108,7 @@ export const EDIT = {
         {
           at: 15.0,
           dur: 3.8,
-          html: "At least <b>9.06%</b> of sampled borrowed value sits with addresses levered across two or more protocols.",
+          html: "At least <b>9.07%</b> of sampled borrowed value sits with addresses levered across two or more protocols.",
         },
       ],
     },
@@ -312,7 +312,7 @@ export const EDIT = {
         {
           at: 17.9,
           dur: 5.7,
-          html: "<b>Exit 0.</b> Score 22.0 at block 25966362 — 4 protocols, 90 borrowers, and 3 coupling buckets withheld for k-anonymity.",
+          html: "<b>Exit 0.</b> Score 22.0 at block 25966825 — 4 protocols, 90 borrowers, and 3 coupling buckets withheld for k-anonymity.",
         },
       ],
     },
@@ -378,7 +378,7 @@ export const EDIT = {
         {
           at: 9.2,
           dur: 3.6,
-          html: "Every tool queries Standardized Subgraphs live. One session pins one block: <b>25966353</b>.",
+          html: "Every tool queries Standardized Subgraphs live. One session pins one block: <b>25966790</b>.",
         },
       ],
     },

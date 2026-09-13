@@ -1,28 +1,28 @@
 {
   "id": "cre-test",
   "command": "npm run cre:test",
-  "prompt": "sentinel $ ",
+  "prompt": "nrawal@842f579e3dc8 ~ % ",
   "section": "4c — the enclave aggregates and signs",
-  "recordedAt": "2026-09-13T05:17:24.249Z",
+  "recordedAt": "2026-09-13T06:45:07.518Z",
   "exitCode": 0,
-  "durationMs": 448,
+  "durationMs": 546,
   "cols": 120,
   "rows": 34,
   "events": [
     [
-      124,
-      "> sentinel@0.1.0 cre:test\r\n> cd cre/sentinel-signal && bun test\r\n\r\n"
+      127,
+      "> sentinel@0.1.0 cre:test\r\n> cd cre/sentinel-signal && (test -d node_modules || bun install --frozen-lockfile) && bun test\r\n\r\n"
     ],
     [
-      168,
+      278,
       "\u001b[0m\u001b[1mbun test \u001b[0m\u001b[2mv1.4.2 (744846f84)\u001b[0m\r\n"
     ],
     [
-      424,
-      "\r\n\u001b[0m\u001b[32m 20 pass\u001b[0m\r\n\u001b[0m\u001b[2m 0 fail\u001b[0m\r\n 40 expect() calls\r\nRan 20 tests across 1 file. \u001b[0m\u001b[2m[\u001b[1m259.00ms\u001b[0m\u001b[2m]\u001b[0m\r\n"
+      526,
+      "\r\n\u001b[0m\u001b[32m 20 pass\u001b[0m\r\n\u001b[0m\u001b[2m 0 fail\u001b[0m\r\n 40 expect() calls\r\nRan 20 tests across 1 file. \u001b[0m\u001b[2m[\u001b[1m248.00ms\u001b[0m\u001b[2m]\u001b[0m\r\n"
     ],
     [
-      430,
+      532,
       "⠙\u001b[1G\u001b[0K"
     ]
   ]

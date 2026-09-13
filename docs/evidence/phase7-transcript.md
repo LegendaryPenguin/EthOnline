@@ -21,7 +21,7 @@ Nothing in this file is hand-written. Each answer is the string a tool returned,
 
 ## 1. How much borrowed value is levered across more than one protocol right now?
 
-**Tool** `sentinel_signal` — routed on "how much", "levered across"
+**Tool** `sentinel_signal` · routed on "how much", "levered across"
 
 The systemic risk score is 22.01 on a scale bounded at a hundred. Of $5,720,859,090 in observed borrowing, $35,923,817 (1.25%) is held by 5 addresses levered across two or more of the 4 deployments read, at block 25965572. The sample covers 54.6% of the borrowing those protocols report for themselves, so every figure is a measured lower bound rather than a total.
 
@@ -136,7 +136,7 @@ Thresholds are quantiles of the week-on-week change over 20 ordinary hours: watc
 
 ## 8. What total borrow does Aave V3 report for itself in the raw subgraph?
 
-**Tool** `sentinel_query_subgraph` — routed on "raw", "total borrow"
+**Tool** `sentinel_query_subgraph` · routed on "raw", "total borrow"
 
 ```json
 {
@@ -158,7 +158,7 @@ Thresholds are quantiles of the week-on-week change over 20 ordinary hours: watc
 
 ## 9. List the addresses levered across Aave and Compound, largest first.
 
-**Tool** `sentinel_query_subgraph` — routed on "addresses"
+**Tool** `sentinel_query_subgraph` · routed on "addresses"
 
 ```json
 {
@@ -167,9 +167,9 @@ Thresholds are quantiles of the week-on-week change over 20 ordinary hours: watc
 }
 ```
 
-Refused. That document selects per-address rows, and this tool does not return them at any size. Per-address positions are read inside the enclave and leave it only as aggregates — ask sentinel_signal or sentinel_coupling for the aggregate form of the same question.
+Refused. That document selects per-address rows, and this tool does not return them at any size. Per-address positions are read inside the enclave and leave it only as aggregates. Ask sentinel_signal or sentinel_coupling for the aggregate form of the same question.
 
-**Refused** — gate `per-address`.
+**Refused** · gate `per-address`.
 
 ## 10. Will ETH go up tomorrow?
 

@@ -103,7 +103,7 @@ mkdirSync("docs/evidence", { recursive: true });
 writeFileSync(
   LOG,
   [
-    `# Sentinel MCP server handshake — ${new Date().toISOString()}`,
+    `# Sentinel MCP server handshake · ${new Date().toISOString()}`,
     `# Written by scripts/mcp-handshake.mts. '->' is client to server, '<-' server to`,
     `# client, '##' the server's own stderr. Raw frames, unedited.`,
     "",

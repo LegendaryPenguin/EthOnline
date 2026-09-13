@@ -129,14 +129,14 @@ const capability = new Map<string, { ok: boolean; detail?: string }>();
 await pool(DEPLOYMENTS, async (d) => {
   const res = await canTimeTravel(d, from);
   capability.set(d.key, res.ok ? { ok: true } : { ok: false, detail: res.detail });
-  console.log(`  ${d.key.padEnd(20)} ${res.ok ? "history served" : `no history — ${res.detail.slice(0, 90)}`}`);
+  console.log(`  ${d.key.padEnd(20)} ${res.ok ? "history served" : `no history: ${res.detail.slice(0, 90)}`}`);
 });
 
 const replayable = DEPLOYMENTS.filter((d) => capability.get(d.key)?.ok);
 const notReplayable = DEPLOYMENTS.filter((d) => !capability.get(d.key)?.ok);
 
 if (replayable.length === 0) {
-  throw new Error("no deployment serves historical state — the backtest cannot run");
+  throw new Error("no deployment serves historical state, so the backtest cannot run");
 }
 
 console.log(`\n${replayable.length} of ${DEPLOYMENTS.length} deployments are replayable`);
@@ -155,11 +155,11 @@ await pool(DEPLOYMENTS, async (d) => {
     console.log(`  ${d.key}: ${found.length} liquidations`);
   } catch (err) {
     unreachable.push({ protocol: d.key, detail: (err as Error).message });
-    console.log(`  ${d.key}: FAILED — ${(err as Error).message}`);
+    console.log(`  ${d.key}: FAILED: ${(err as Error).message}`);
   }
 });
 
-if (events.length === 0) throw new Error("no liquidations found in the window — nothing to score");
+if (events.length === 0) throw new Error("no liquidations found in the window, so nothing to score");
 
 /**
  * One liquidation transaction emits a `Liquidate` per asset seized, and all of them
@@ -276,7 +276,7 @@ const recall = scored.length > 0 ? hits.length / scored.length : 0;
 // not the known time-travel limitation and must not be filed under it.
 if (errored.length > 0) {
   console.log(`\n${errored.length} episodes failed on a replayable deployment:`);
-  for (const r of errored) console.log(`  ${r.protocol} ${r.account} @${r.block} — ${r.error}`);
+  for (const r of errored) console.log(`  ${r.protocol} ${r.account} @${r.block}: ${r.error}`);
 }
 if (scored.length < 50) {
   throw new Error(`only ${scored.length} episodes scored; Phase 3 requires at least 50`);
@@ -905,7 +905,7 @@ ${
 ${
   errored.length === 0
     ? ""
-    : `**Episodes that failed on a replayable deployment.** Capability was verified at block ${from} before scoring, so these are not the time-travel limitation.\n\n${errored.map((r) => `- \`${r.account}\` on ${r.protocol} @${r.block} — ${r.error}`).join("\n")}\n`
+    : `**Episodes that failed on a replayable deployment.** Capability was verified at block ${from} before scoring, so these are not the time-travel limitation.\n\n${errored.map((r) => `- \`${r.account}\` on ${r.protocol} @${r.block}: ${r.error}`).join("\n")}\n`
 }
 `,
 );

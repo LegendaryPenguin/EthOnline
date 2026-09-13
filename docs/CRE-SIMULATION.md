@@ -103,11 +103,16 @@ class of mistake this whole project is about. Consequences:
 - Never put one on screen — it is excluded from the demo recording for this reason.
 - If you have run one, treat the key as disclosed and rotate it.
 
-Two other warnings the CLI raised, both benign and both left alone deliberately:
+Two other warnings the CLI raised. One is gone, one is benign and left alone deliberately:
 
-- *Secret "GRAPH_API_KEY" uses itself as the env var name.* The CLI suggests a `CRE_`-prefixed
-  alias. Left as-is so the name matches `.env.example` and the rest of the repo; one name for one
-  secret is worth more here than the CLI's preference.
+- *Secret "GRAPH_API_KEY" uses itself as the env var name.* Taken, not declined. `cre/secrets.yaml`
+  now maps each secret id to the `CRE_`-prefixed env var the CLI asks for
+  (`GRAPH_API_KEY` → `CRE_GRAPH_API_KEY`, `SENTINEL_RISK_POLICY` → `CRE_SENTINEL_RISK_POLICY`), and
+  `cre/.env` and `cre/.env.example` were renamed to match. The secret *ids* the workflow asks for are
+  unchanged, so nothing in `workflow.ts` moved. This was originally left as-is for one-name-per-secret
+  tidiness; it was reversed once the demo recording proved these two lines were the only em dashes
+  left anywhere in any cast, and the video's own rule forbids them. Following the tool's advice was
+  cheaper than arguing with its punctuation.
 - *`[ethereum-testnet-sepolia]` failed RPC health check.* A public RPC endpoint timing out. Sentinel
   reads its data from The Graph, not from that RPC, so it does not affect the run — and the
   transcript keeps the warning rather than hiding it.

@@ -237,7 +237,7 @@ console.log(
 );
 if (headline.unmodellableSalesUsd > 0) {
   console.log(
-    `unmodellable forced sales (no measurable depth): ${usd(headline.unmodellableSalesUsd)} — ` +
+    `unmodellable forced sales (no measurable depth): ${usd(headline.unmodellableSalesUsd)}: ` +
       `no price impact applied, so the cascade is understated by this much selling`,
   );
 }

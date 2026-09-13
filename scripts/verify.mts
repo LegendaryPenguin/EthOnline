@@ -57,11 +57,11 @@ const FAST = process.argv.includes("--fast");
 function creAuthMissing(): string | null {
   const probe = spawnSync("cre", ["whoami"], { stdio: "ignore" });
   if (probe.error) {
-    return "the `cre` CLI is not on PATH — export PATH=\"$HOME/.cre/bin:$PATH\"";
+    return "the `cre` CLI is not on PATH: export PATH=\"$HOME/.cre/bin:$PATH\"";
   }
   return probe.status === 0
     ? null
-    : "not authenticated with CRE — run `cre login` or set CRE_API_KEY (see docs/CRE-SIMULATION.md)";
+    : "not authenticated with CRE: run `cre login` or set CRE_API_KEY (see docs/CRE-SIMULATION.md)";
 }
 const NPM = "npm";
 const run = (script: string) => ({ command: NPM, args: ["run", script] });
@@ -121,7 +121,7 @@ const STEPS: Step[] = [
   },
   {
     name: "cre:simulate",
-    proves: "Phase 5: the CRE CLI simulation — the TEE handler dispatched and run by Chainlink's own tooling",
+    proves: "Phase 5: the CRE CLI simulation, with the TEE handler dispatched and run by Chainlink's own tooling",
     ...run("cre:simulate"),
     // Not required, because it needs credentials a fresh clone won't have, and the rest of the
     // pipeline is provable without them. Skipped rather than failed in that case: a stranger
@@ -210,18 +210,18 @@ async function main() {
   let aborted: string | null = null;
 
   console.log(
-    `Sentinel verify — ${STEPS.length} stages${FAST ? ", --fast (two stages skipped)" : ", full live run"}\n`,
+    `Sentinel verify: ${STEPS.length} stages${FAST ? ", --fast (two stages skipped)" : ", full live run"}\n`,
   );
 
   for (const [i, step] of STEPS.entries()) {
     const skip = step.skipIf?.();
     const label = `[${i + 1}/${STEPS.length}] ${step.name}`;
     if (skip) {
-      console.log(`\n${"─".repeat(78)}\n${label} — skipped: ${skip}`);
+      console.log(`\n${"─".repeat(78)}\n${label} skipped: ${skip}`);
       outcomes.push({ step, status: "skipped", ms: 0, reason: skip });
       continue;
     }
-    console.log(`\n${"─".repeat(78)}\n${label} — ${step.proves}`);
+    console.log(`\n${"─".repeat(78)}\n${label} · ${step.proves}`);
     const { code, ms } = await execute(step);
     if (code === 0) {
       outcomes.push({ step, status: "ok", ms });
@@ -278,8 +278,8 @@ async function main() {
   }
   console.log(
     skipped.length === 0
-      ? "\nverify OK — every stage green on live data."
-      : `\nverify OK — every stage green, ${skipped.length} skipped by --fast. ` +
+      ? "\nverify OK. Every stage green on live data."
+      : `\nverify OK. Every stage green, ${skipped.length} skipped by --fast. ` +
           "Run without --fast before making any claim about the whole flow.",
   );
 }

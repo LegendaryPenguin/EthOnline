@@ -17,9 +17,9 @@ anything else runs.
 **Last full run — 18 stages, all green:**
 
 ```
-  total 120.4s across 18 stages
+  total 120.5s across 18 stages
   cold-start flow (preflight → snapshot → cascade → shock:ladder → cre:test
-                   → fixture:report → consume-signal → build): 61.3s
+                   → fixture:report → consume-signal → build): 61.4s
 ```
 
 That is the run replayed in the demo video, captured byte for byte at
@@ -341,12 +341,12 @@ A judge's time is better spent on what is real, so:
 
 - **We did not author or extend a standardized subgraph.** We consume two of them.
 - **`sampleCoverageOfReported` is 13.97%, not 62.66%.** The cascade model runs on the completed
-  cross-protocol snapshot — $1.46B of borrowed value against $10.478B reported. 62.66% is
+  cross-protocol snapshot: $1.46B of borrowed value against $10.478B reported. 62.66% is
   `multiProtocolDebtShareOfSample`, a different quantity. Conflating the two would inflate the
   project by 4.5×, so the dashboard states the difference in prose. (This was a real bug caught
   in Phase 9; see `docs/evidence/phase9-ui.md`.)
 - **`systemicRiskScoreBps` = 2201 is a composite whose *level* is not comparable across
-  months** — only its change is. Both the UI caption and `docs/SIGNAL.md` say so.
+  months**, and only its change is. Both the UI caption and `docs/SIGNAL.md` say so.
 - **Distress figures are bounds, not point estimates**, because Aave V3 E-Mode is not in the
   standardized schema. Every distress number on the dashboard shows its upper bound.
 - **The backtest publishes its misses.** `docs/BACKTEST.md` and

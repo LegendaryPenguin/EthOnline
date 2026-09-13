@@ -136,7 +136,7 @@ for (const a of answers) {
   if (a.tool) {
     say(
       `**Tool** \`${a.tool}\`${
-        a.matched.length ? ` — routed on ${a.matched.map((m) => `"${m}"`).join(", ")}` : ""
+        a.matched.length ? ` · routed on ${a.matched.map((m) => `"${m}"`).join(", ")}` : ""
       }`,
     );
     if (Object.keys(a.args).length > 0) {
@@ -156,7 +156,7 @@ for (const a of answers) {
     say();
   }
   if (a.result.refusal) {
-    say(`**Refused** — gate \`${a.result.refusal.gate}\`.`);
+    say(`**Refused** · gate \`${a.result.refusal.gate}\`.`);
     say();
   }
   if (a.result.cited.length > 0) {

@@ -29,11 +29,11 @@ The baseline is not a straw man. Borrow-over-TVL is the strongest statistic obta
 
 | policy | stated FPR | threshold on Δ | episodes detected | median lead |
 |---|---|---|---|---|
-| p90 of ordinary Δ | 10% | 2.39 | 0 / 5 | — |
+| p90 of ordinary Δ | 10% | 2.39 | 0 / 5 | n/a |
 | p80 of ordinary Δ | 20% | 0.87 | 3 / 5 | 24h |
 | p70 of ordinary Δ | 30% | 0.61 | 3 / 5 | 24h |
 
-Three operating points, reported rather than chosen. With 5 episodes, picking between them by which detects more would be fitting the operating point to the labels — so the whole trade-off is published and a consumer with a cost of a false alarm picks their own row. The first row is the primary result.
+Three operating points, reported rather than chosen. With 5 episodes, picking between them by which detects more would be fitting the operating point to the labels, so the whole trade-off is published and a consumer with a cost of a false alarm picks their own row. The first row is the primary result.
 
 The reason the strictest row detects nothing is worth stating precisely, because it is not that the episodes are invisible. The ordinary-hour Δ distribution is **-10.7, -9.9, -1.8, -1.4, -0.7, -0.1, -0.0, 0.0, 0.2, 0.3, 0.3, 0.4, 0.5, 0.5, 0.8, 0.9, 0.9, 2.4, 2.6, 3.5** — seventeen weeks of near-zero movement, and three outliers that set the p90 above every episode's Δ. Those outliers are one structural break, not ordinary noise: between 2026-08-20 and 2026-08-30 the multi-protocol share of sampled debt halves from 1.4% to 0.8% and the score steps down about nine points. That is a real change in cross-protocol leverage — the headline component of the score, doing exactly what it is built to do — and any week-long pair straddling it inherits a ±10 point difference. Excluding those pairs would raise the detection count and would also be deciding, after the fact, which weeks count.
 

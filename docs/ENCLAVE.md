@@ -76,7 +76,7 @@ The fifteen published fields, defined once in `lib/signal/report.ts`
 
 ### What never crosses out
 
-- Any address, in any form — account, asset, or market id.
+- Any address, in any form: account, asset, or market id.
 - Any per-address row: leverage, protocols, collateral composition, liquidation shock.
 - Per-pair coupling below *k* = 3 borrowers.
 - The secrets, or anything derived from them closely enough to invert: the raw beta

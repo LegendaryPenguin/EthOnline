@@ -104,11 +104,11 @@ async function main() {
   const seen = await verifySignalReport(genuine, { ...policy, maxBlockAge: UNBOUNDED }, UNBOUNDED);
   const accepted = await verifySignalReport(genuine, policy, seen.signal.asOfBlock);
 
-  say("Sentinel report consumption — accept, then refuse");
+  say("Sentinel report consumption: accept, then refuse");
   say("");
   say(`payload         ${LOG}, base64 ABI block (real, from live subgraph data)`);
   say(`signatures      ${KEYS.length} throwaway dev keys, f = 1 (the DON has not signed this yet)`);
-  say(`consumer        lib/signal/consume.ts, viem only — no CRE toolchain`);
+  say(`consumer        lib/signal/consume.ts, viem only, no CRE toolchain`);
   say("");
   say("ACCEPTED");
   say(`  ${describeSignal(accepted)}`);

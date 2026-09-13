@@ -13,7 +13,8 @@
  * screen recording is unfalsifiable in the wrong direction — you cannot check it against anything.
  *
  * What is *not* claimed: these are not photographs of a terminal window. `docs/VIDEO.md` says so on
- * the tin, and the video labels the terminal sections with the cast they came from.
+ * the tin, and the closing card of the v2 cut names `docs/evidence/casts/` as the source of every
+ * terminal frame in it, so the claim is in the video and not only in the repo.
  *
  * ## Real timings, and what we do with them
  *
@@ -49,8 +50,13 @@ import { countSecretSurvivors, redactForScreen } from "../lib/redact.mts";
 
 const OUT_DIR = resolve("docs/evidence/casts");
 
-/** The prompt drawn before the command in the replay. No path, so no personal directory in frame. */
-const PROMPT = "sentinel $ ";
+/**
+ * The prompt drawn before the command in the replay: the operator's own zsh prompt, so the footage
+ * looks like the terminal the commands were actually run from. `~` rather than the repository path,
+ * because a personal directory in frame is noise, and the working directory is not what any of these
+ * commands prove.
+ */
+const PROMPT = process.env.SENTINEL_PROMPT ?? "nrawal@842f579e3dc8 ~ % ";
 
 type Shot = {
   /** Cast file name, and the id the timeline refers to. */

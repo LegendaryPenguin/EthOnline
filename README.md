@@ -85,10 +85,10 @@ CRE workflow is a bun package with its own lockfile — `npm install` does not r
 `cre:*` scripts install it themselves), **forge** for the Solidity consumer, and the **cre** CLI for
 the TEE simulation. Only bun is blocking; the other two gate stages that skip with a reason.
 
-Last full run: **18 stages green, 120.4s total** (`docs/evidence/casts/verify.json` — the run in
-the video). The cold-start flow — API key to rendered dashboard — took **61.3s**, so it straddles
+Last full run: **18 stages green, 120.5s total** (`docs/evidence/casts/verify.json` — the run in
+the video). The cold-start flow — API key to rendered dashboard — took **61.4s**, so it straddles
 the 60-second target we set ourselves and misses it on some runs. One gateway-bound stage accounts
-for nearly all of it: `cascade` makes 636 live DEX-depth queries and took 47.8s of the 120.4s.
+for nearly all of it: `cascade` makes 636 live DEX-depth queries and took 47.5s of the 120.5s.
 Measured in `docs/EVIDENCE.md`.
 
 ## The interesting parts

@@ -65,7 +65,7 @@ for (const stream of [child.stdout, child.stderr]) {
 child.on("error", (err) => {
   console.error(
     `\ncould not run \`cre\`: ${err.message}\n` +
-      `  the CLI lives in ~/.cre/bin — export PATH="$HOME/.cre/bin:$PATH"`,
+      `  the CLI lives in ~/.cre/bin: export PATH="$HOME/.cre/bin:$PATH"`,
   );
   process.exit(1);
 });
@@ -77,7 +77,7 @@ child.on("close", (code) => {
   console.log(`transcript written to ${OUT} (redacted, verified free of 32-hex tokens)`);
   if (code !== 0) {
     console.error(
-      `\ncre workflow simulate exited ${code}. If this is an auth failure, run \`cre login\` — ` +
+      `\ncre workflow simulate exited ${code}. If this is an auth failure, run \`cre login\`. ` +
         `see docs/CRE-SIMULATION.md.`,
     );
   }

@@ -1,20 +1,20 @@
 {
   "id": "cre-typecheck",
   "command": "npm run cre:typecheck; echo \"tsc exit=$?\"",
-  "prompt": "sentinel $ ",
+  "prompt": "nrawal@842f579e3dc8 ~ % ",
   "section": "4b — compiles against the SDK",
-  "recordedAt": "2026-09-13T05:17:23.303Z",
+  "recordedAt": "2026-09-13T06:45:06.445Z",
   "exitCode": 0,
-  "durationMs": 945,
+  "durationMs": 1072,
   "cols": 120,
   "rows": 34,
   "events": [
     [
-      161,
-      "> sentinel@0.1.0 cre:typecheck\r\n> cd cre/sentinel-signal && ./node_modules/.bin/tsc --noEmit\r\n\r\n"
+      160,
+      "> sentinel@0.1.0 cre:typecheck\r\n> cd cre/sentinel-signal && (test -x node_modules/.bin/tsc || bun install --frozen-lockfile) && ./node_modules/.bin/tsc --noEmit\r\n\r\n"
     ],
     [
-      923,
+      1052,
       "⠙\u001b[1G\u001b[0Ktsc exit=0\r\n"
     ]
   ]

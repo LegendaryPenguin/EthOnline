@@ -507,8 +507,8 @@ say(
     `${baseline.deltaDetected} / ${panels.length} |`,
 );
 say(
-  `| **median lead time** | **${sentinel.deltaMedianLeadHours === null ? "—" : `${sentinel.deltaMedianLeadHours}h`}** | ` +
-    `${baseline.deltaMedianLeadHours === null ? "—" : `${baseline.deltaMedianLeadHours}h`} |`,
+  `| **median lead time** | **${sentinel.deltaMedianLeadHours === null ? "n/a" : `${sentinel.deltaMedianLeadHours}h`}** | ` +
+    `${baseline.deltaMedianLeadHours === null ? "n/a" : `${baseline.deltaMedianLeadHours}h`} |`,
 );
 say(`| alert threshold on the change (p${100 * ALERT_QUANTILE} of ordinary Δ) | ${fmt(sentinel.deltaThreshold, 2)} | ${fmt(baseline.deltaThreshold, 5)} |`);
 say(`| episodes detected by an *absolute* threshold | ${sentinel.detected} / ${panels.length} | ${baseline.detected} / ${panels.length} |`);
@@ -534,14 +534,14 @@ for (const p of sentinel.deltaPolicies) {
   say(
     `| p${(100 * p.quantile).toFixed(0)} of ordinary Δ | ${(100 * p.falsePositiveRate).toFixed(0)}% | ` +
       `${fmt(p.threshold, 2)} | ${p.detected} / ${panels.length} | ` +
-      `${p.medianLeadHours === null ? "—" : `${p.medianLeadHours}h`} |`,
+      `${p.medianLeadHours === null ? "n/a" : `${p.medianLeadHours}h`} |`,
   );
 }
 say();
 say(
   `Three operating points, reported rather than chosen. With ${panels.length} episodes, ` +
     `picking between them by which detects more would be fitting the operating point to ` +
-    `the labels — so the whole trade-off is published and a consumer with a cost of a ` +
+    `the labels, so the whole trade-off is published and a consumer with a cost of a ` +
     `false alarm picks their own row. The first row is the primary result.`,
 );
 say();

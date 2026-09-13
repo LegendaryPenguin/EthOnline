@@ -1,72 +1,56 @@
 {
   "id": "forge-test",
   "command": "npm run forge:test",
-  "prompt": "sentinel $ ",
+  "prompt": "nrawal@842f579e3dc8 ~ % ",
   "section": "7 — the on-chain consumer",
-  "recordedAt": "2026-09-13T05:17:50.376Z",
+  "recordedAt": "2026-09-13T06:45:32.717Z",
   "exitCode": 0,
-  "durationMs": 768,
+  "durationMs": 565,
   "cols": 120,
   "rows": 34,
   "events": [
     [
-      134,
+      124,
       "> sentinel@0.1.0 forge:test\r\n> cd contracts && forge test -vv\r\n\r\n"
     ],
     [
-      597,
+      414,
       "\r\u001b[2K\r"
     ],
     [
-      698,
+      519,
       "\u001b[1m[\u001b[32m⠃\u001b[0m]\u001b[0m Compiling...\r\u001b[2K\r\u001b[1m[\u001b[32m⠊\u001b[0m]\u001b[0m Compiling...\r\n"
     ],
     [
-      700,
+      519,
       "No files changed, compilation skipped\r\n"
     ],
     [
-      738,
+      536,
       "\r\nRan 24 tests for test/SentinelConsumer.t.sol:SentinelConsumerTest\r\n"
     ],
     [
-      738,
-      "\u001b[32m[PASS]\u001b[0m test_AcceptsADifferentPairFromTheSignerSet() (gas: 274535)\r\n"
+      536,
+      "\u001b[32m[PASS]\u001b[0m test_AcceptsADifferentPairFromTheSignerSet() (gas: 274535)\r\n\u001b[32m[PASS]\u001b[0m test_AcceptsTheOldestFreshSignal() (gas: 276262)\r\n\u001b[32m[PASS]\u001b[0m test_ChecksIdentityBeforeSignatures() (gas: 51663)\r\n\u001b[32m[PASS]\u001b[0m test_DecodesEveryFieldOfTheRealPayload() (gas: 784447)\r\n\u001b[32m[PASS]\u001b[0m test_FixtureSignersMatchDerivedKeys() (gas: 20566)\r\n\u001b[32m[PASS]\u001b[0m test_ForkedMainnetHasReachedTheRecordedBlock() (gas: 4132)\r\n\u001b[32m[PASS]\u001b[0m test_ParsesTheHeaderIdentity() (gas: 279635)\r\n\u001b[32m[PASS]\u001b[0m test_RefusesADuplicatedSignerAtDeployment() (gas: 313750)\r\n\u001b[32m[PASS]\u001b[0m test_RefusesAnUnreachableQuorumAtDeployment() (gas: 312148)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsADuplicatedSignature() (gas: 98752)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsAFlippedBodyByte() (gas: 250690)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsAFutureBlock() (gas: 273647)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsAMalformedSignature() (gas: 93409)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsAReplayUnderADifferentSequenceNumber() (gas: 116499)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsARewrittenDonId() (gas: 250374)\r\n"
     ],
     [
-      738,
-      "\u001b[32m[PASS]\u001b[0m test_AcceptsTheOldestFreshSignal() (gas: 276262)\r\n\u001b[32m[PASS]\u001b[0m test_ChecksIdentityBeforeSignatures() (gas: 51663)\r\n\u001b[32m[PASS]\u001b[0m test_DecodesEveryFieldOfTheRealPayload() (gas: 784447)\r\n"
+      536,
+      "\u001b[32m[PASS]\u001b[0m test_RejectsASignalWithNoBlock() (gas: 219013)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsASignerOutsideTheSet() (gas: 100386)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsASingleSignature() (gas: 92354)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsAStaleSignal() (gas: 274013)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsATruncatedReport() (gas: 37339)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsAValidlySignedReportFromAnotherWorkflow() (gas: 40821)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsAnUnknownSignalVersion() (gas: 217456)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsAnotherOwnersReport() (gas: 40895)\r\n\u001b[32m[PASS]\u001b[0m test_TheDecodeIsNotVacuous() (gas: 274115)\r\n"
     ],
     [
-      738,
-      "\u001b[32m[PASS]\u001b[0m test_FixtureSignersMatchDerivedKeys() (gas: 20566)\r\n\u001b[32m[PASS]\u001b[0m test_ForkedMainnetHasReachedTheRecordedBlock() (gas: 4132)\r\n\u001b[32m[PASS]\u001b[0m test_ParsesTheHeaderIdentity() (gas: 279635)\r\n\u001b[32m[PASS]\u001b[0m test_RefusesADuplicatedSignerAtDeployment() (gas: 313750)\r\n\u001b[32m[PASS]\u001b[0m test_RefusesAnUnreachableQuorumAtDeployment() (gas: 312148)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsADuplicatedSignature() (gas: 98752)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsAFlippedBodyByte() (gas: 250690)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsAFutureBlock() (gas: 273647)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsAMalformedSignature() (gas: 93409)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsAReplayUnderADifferentSequenceNumber() (gas: 116499)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsARewrittenDonId() (gas: 250374)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsASignalWithNoBlock() (gas: 219013)\r\n"
+      536,
+      "Suite result: \u001b[32mok\u001b[0m. \u001b[32m24\u001b[0m passed; \u001b[31m0\u001b[0m failed; \u001b[33m0\u001b[0m skipped; finished in 11.61ms (9.16ms CPU time)\r\n"
     ],
     [
-      738,
-      "\u001b[32m[PASS]\u001b[0m test_RejectsASignerOutsideTheSet() (gas: 100386)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsASingleSignature() (gas: 92354)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsAStaleSignal() (gas: 274013)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsATruncatedReport() (gas: 37339)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsAValidlySignedReportFromAnotherWorkflow() (gas: 40821)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsAnUnknownSignalVersion() (gas: 217456)\r\n\u001b[32m[PASS]\u001b[0m test_RejectsAnotherOwnersReport() (gas: 40895)\r\n\u001b[32m[PASS]\u001b[0m test_TheDecodeIsNotVacuous() (gas: 274115)\r\n"
-    ],
-    [
-      738,
-      "Suite result: \u001b[32mok\u001b[0m. \u001b[32m24\u001b[0m passed; \u001b[31m0\u001b[0m failed; \u001b[33m0\u001b[0m skipped; finished in 20.73ms (36.61ms CPU time)\r\n"
-    ],
-    [
-      739,
+      541,
       "\r\nRan 13 tests for test/GuardedVault.t.sol:GuardedVaultTest\r\n\u001b[32m[PASS]\u001b[0m test_AllowsBorrowingOnceAFreshSignalExists() (gas: 410452)\r\n"
     ],
     [
-      740,
-      "\u001b[32m[PASS]\u001b[0m test_CapacityFallsAsTheStanceTightens() (gas: 846009)\r\n\u001b[32m[PASS]\u001b[0m test_ComparesAgainstTheWeekOldBaselineNotThePreviousReport() (gas: 1533629)\r\n\u001b[32m[PASS]\u001b[0m test_DoesNotFireOnAFallHoweverLarge() (gas: 551207)\r\n\u001b[32m[PASS]\u001b[0m test_FirstSignalIsNormalWhateverItsLevel() (gas: 315932)\r\n\u001b[32m[PASS]\u001b[0m test_PausesNewBorrowingUnderAlert() (gas: 578024)\r\n\u001b[32m[PASS]\u001b[0m test_RefusesAnUnauthenticatedSubmission() (gas: 88685)\r\n\u001b[32m[PASS]\u001b[0m test_RefusesToBorrowBeforeAnySignal() (gas: 29768)\r\n\u001b[32m[PASS]\u001b[0m test_RefusesToRewindToAnOlderReport() (gas: 807095)\r\n"
+      541,
+      "\u001b[32m[PASS]\u001b[0m test_CapacityFallsAsTheStanceTightens() (gas: 846009)\r\n\u001b[32m[PASS]\u001b[0m test_ComparesAgainstTheWeekOldBaselineNotThePreviousReport() (gas: 1533629)\r\n\u001b[32m[PASS]\u001b[0m test_DoesNotFireOnAFallHoweverLarge() (gas: 551207)\r\n\u001b[32m[PASS]\u001b[0m test_FirstSignalIsNormalWhateverItsLevel() (gas: 315932)\r\n\u001b[32m[PASS]\u001b[0m test_PausesNewBorrowingUnderAlert() (gas: 578024)\r\n\u001b[32m[PASS]\u001b[0m test_RefusesAnUnauthenticatedSubmission() (gas: 88685)\r\n\u001b[32m[PASS]\u001b[0m test_RefusesToBorrowBeforeAnySignal() (gas: 29768)\r\n\u001b[32m[PASS]\u001b[0m test_RefusesToRewindToAnOlderReport() (gas: 807095)\r\n\u001b[32m[PASS]\u001b[0m test_RollsTheBaselineForwardAfterAWeek() (gas: 847886)\r\n\u001b[32m[PASS]\u001b[0m test_StartsClosedRatherThanNormal() (gas: 19531)\r\n\u001b[32m[PASS]\u001b[0m test_StopsBorrowingWhenTheSignalGoesStale() (gas: 414692)\r\n\u001b[32m[PASS]\u001b[0m test_TightensAtEachOperatingPoint() (gas: 1370030)\r\nSuite result: \u001b[32mok\u001b[0m. \u001b[32m13\u001b[0m passed; \u001b[31m0\u001b[0m failed; \u001b[33m0\u001b[0m skipped; finished in 16.53ms (45.69ms CPU time)\r\n\r\nRan 2 test suites in 17.67ms (28.14ms CPU time): \u001b[32m37\u001b[0m tests passed, \u001b[31m0\u001b[0m failed, \u001b[33m0\u001b[0m skipped (37 total tests)\r\n"
     ],
     [
-      740,
-      "\u001b[32m[PASS]\u001b[0m test_RollsTheBaselineForwardAfterAWeek() (gas: 847886)\r\n\u001b[32m[PASS]\u001b[0m test_StartsClosedRatherThanNormal() (gas: 19531)\r\n\u001b[32m[PASS]\u001b[0m test_StopsBorrowingWhenTheSignalGoesStale() (gas: 414692)\r\n\u001b[32m[PASS]\u001b[0m test_TightensAtEachOperatingPoint() (gas: 1370030)\r\nSuite result: \u001b[32mok\u001b[0m. \u001b[32m13\u001b[0m passed; \u001b[31m0\u001b[0m failed; \u001b[33m0\u001b[0m skipped; finished in 22.57ms (45.74ms CPU time)\r\n"
-    ],
-    [
-      740,
-      "\r\nRan 2 test suites in 29.26ms (43.30ms CPU time): \u001b[32m37\u001b[0m tests passed, \u001b[31m0\u001b[0m failed, \u001b[33m0\u001b[0m skipped (37 total tests)\r\n"
-    ],
-    [
-      748,
+      548,
       "⠙\u001b[1G\u001b[0K"
     ]
   ]

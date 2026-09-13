@@ -203,7 +203,7 @@ const say = (line = "") => {
   console.log(line);
 };
 
-say("# Leak demo — the same pipeline, with the enclave removed");
+say("# Leak demo: the same pipeline, with the enclave removed");
 say();
 say(`Run ${new Date().toISOString()}. Addresses ${FULL ? "in full" : "truncated for this file"}.`);
 say();
@@ -223,7 +223,7 @@ say();
 say(
   "Each row below is individually actionable: the trigger column is the price decline " +
     "at which the position can be liquidated, and the collateral column is what to sell " +
-    "into. Cross-protocol rows are the novel harm — each protocol's own interface shows " +
+    "into. Cross-protocol rows are the novel harm, because each protocol's own interface shows " +
     "only its slice, and that slice can look comfortable while the aggregate does not.",
 );
 say();
@@ -234,7 +234,7 @@ for (const [i, r] of rows.slice(0, 25).entries()) {
     `| ${i + 1} | \`${addr(r.account)}\` | ${r.protocols.length} (${r.protocols.join(", ")}) | ` +
       `${usd(r.debtUsd)} | ${usd(r.collateralUsd)} | ${r.aggregateLeverageRatio.toFixed(2)}x | ` +
       `\`${addr(r.topCollateralAsset)}\` | ` +
-      `${r.distressedAtShock === null ? "—" : `−${(100 * r.distressedAtShock).toFixed(0)}%`} |`,
+      `${r.distressedAtShock === null ? "n/a" : `−${(100 * r.distressedAtShock).toFixed(0)}%`} |`,
   );
 }
 say();
@@ -246,7 +246,7 @@ say(
   "`docs/evidence/enclave-local-run.log` is the same data through " +
     "`aggregateSignal`: a single systemic risk score, a multi-protocol share of debt, " +
     "a shock ladder of aggregate distressed value, and coupling buckets suppressed " +
-    "below the policy's k-anonymity floor. No row above survives that boundary — " +
+    "below the policy's k-anonymity floor. No row above survives that boundary: " +
     "`assertAggregateOnly` walks the output and throws on anything address-shaped, " +
     "checking object keys as well as string values.",
 );

@@ -206,13 +206,13 @@ That last line is Chainlink's own tooling stating the property this project is b
 
 ```
 ✓ Workflow Simulation Result:
-"score 22.0/100, block 25966362, 4 protocols, 90 borrowers, 1.25% of evaluable debt is
- multi-protocol, 2866M USD evaluable of 5717M observed, 1215158822 USD distressed at the
+"score 22.0/100, block 25966825, 4 protocols, 90 borrowers, 1.25% of evaluable debt is
+ multi-protocol, 2867M USD evaluable of 5719M observed, 1215530120 USD distressed at the
  deepest shock, 3 buckets suppressed for k-anonymity, 1 deployment notes"
 ```
 
 That is the run in the video, byte for byte — `docs/evidence/casts/cre-simulate.json`, replayed on
-screen at 1:31. `docs/evidence/cre-simulation.log` is a later run of the same command at block
+screen at 1:30 in the first cut and 1:37 in the second. `docs/evidence/cre-simulation.log` is a later run of the same command at block
 25966510; every figure moves with the chain except the ones that are the point (4 protocols, 90
 borrowers, 3 buckets suppressed).
 

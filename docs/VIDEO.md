@@ -1,7 +1,7 @@
 # Demo video — script, and how it is rendered
 
-**As rendered:** 3:47 (226.5s, 6795 frames), 1080p (1920×1080), 30 fps, burned-in captions, no
-voiceover (captions carry the narrative; silent).
+**As rendered:** v1 3:47 (226.5s, 6795 frames), v2 3:59 (238.5s, 7155 frames). Both 1080p
+(1920×1080), 30 fps, burned-in captions, no voiceover (captions carry the narrative; silent).
 **Constraint the script is written against:** every frame is real footage of this repo — a real
 command's real output, the running dashboard, or a real file on screen. Nothing is mocked up for the
 camera.
@@ -24,12 +24,15 @@ Why this way rather than pointing a recorder at a screen:
   frames, no variable-rate output.
 - **Reproducibility.** Re-running the renderer on the same inputs produces the same mp4.
 
-What is *not* claimed: the terminal sections are not photographs of a terminal window. Every one is
-labelled on screen for its full duration with the cast it replays and the timestamp it was recorded
-at (`docs/evidence/casts/verify.json · recorded 2026-09-13T…Z`), plus its exit code.
+What is *not* claimed: the terminal sections are not photographs of a terminal window. In v1 every one
+is labelled on screen for its full duration with the cast it replays, the timestamp it was recorded at
+(`docs/evidence/casts/verify.json · recorded 2026-09-13T…Z`) and its exit code. In v2 that chrome is
+gone, because no terminal has it, and the same claim is made once on the closing card instead: every
+terminal frame is a replay of a run committed in `docs/evidence/casts/`. See *The second cut* below.
 
-`record/player/edit.mjs` is the executable shot list — segment order, durations, caption text and
-cues. Where it and the script below disagree, it is the one that shipped.
+`record/player/edit.mjs` (v1) and `record/player/edit.v2.mjs` (v2) are the executable shot lists:
+segment order, durations, caption text and cues. Where they and the script below disagree, they are
+what shipped.
 
 **Proof rules (these drive the whole edit).** Six of the eight sections are terminal footage,
 because a claim that runs is worth more than a claim that is stated:
@@ -47,7 +50,55 @@ because a claim that runs is worth more than a claim that is stated:
 5. **Nothing is re-run for a prettier number.** Whatever the live run says is what ships in the
    caption, and if it disagrees with this script the caption changes, not the run.
 
-**Status:** approved, captured and rendered. `record/out/sentinel-demo.mp4`.
+**Status:** approved, captured and rendered. Two cuts exist.
+
+| cut | shot list | output | length |
+|---|---|---|---|
+| v1 | `record/player/edit.mjs` | `record/out/sentinel-demo.mp4` | 3:46 |
+| v2 | `record/player/edit.v2.mjs` | `record/out/sentinel-demo-v2.mp4` | 3:59 |
+
+---
+
+## The second cut
+
+One engine, two edits: `?cut=v2` in the player URL and `RENDER_CUT=v2` for the renderer select
+`edit.v2.mjs` and write to their own mp4, so re-rendering one can never overwrite the other. Same
+casts, same proof rules, same figures. Four things differ, and all four are answers to watching v1
+back.
+
+**The terminal is a terminal.** v1's title bar carried the cast file name and the recording
+timestamp. Honest, and nothing any terminal has ever shown, which made every terminal shot read as a
+widget. v2 draws what macOS draws (three lights and the session) and the prompt is the operator's own,
+`nrawal@842f579e3dc8 ~ %`, captured from the pty rather than substituted at draw time: the casts were
+re-recorded with `SENTINEL_PROMPT` set, so the prompt on screen is a string the recording actually
+contains. Each shot also ends on that prompt returning, which is how a real terminal shows a command
+finished. The prompt is the one string in frame the cast did not record, because `script` captures the
+child and not the interactive shell that spawned it, so it is the cast's own prompt written a second
+time and nothing more. It claims no more than the recorded exit code, which is 0 for all nine shots
+(`npm run record:terminal` refuses to finish otherwise).
+
+**The provenance moved rather than disappeared.** It is now on the closing card, in frame: every
+terminal frame in this video is a replay of a run committed in `docs/evidence/casts/` with per-chunk
+timings, and a judge can diff any frame against it. That claim belongs somewhere a viewer reads it
+once, not in a chrome field on every shot.
+
+**Callouts explain instead of decorating.** A v2 card has three registers, styled differently on
+purpose so a viewer can tell which one is speaking: a `label` naming what they are looking at, the
+cast's own bytes in the terminal's typeface (still sliced out of the cast by the engine, so a card
+cannot quote a line the command did not print), and an `explain` line that is the video's voice and is
+set in the video's typeface. The card snaps in over four frames and then holds absolutely still; v1's
+slow continuous zoom is what made it read as a template.
+
+**The lower third assumes the judge has not used this technology.** Each cue has a `kicker` naming the
+sponsor product in use, an `html` claim, and a `detail` line saying what that product does here and
+why the project needed it. A judge should be able to answer *what did they use The Graph for, and what
+did they use Chainlink CRE for* from the lower third alone.
+
+And one hard constraint on v2: **no em dash anywhere in its own writing.** It is enforced in
+`scripts/record/render.mts`, which refuses to encode if any v2 caption register contains one, rather
+than trusted to proofreading. The casts are clean of them too, which is why `cre/secrets.yaml` now
+uses the `CRE_`-prefixed env var names the CRE CLI asks for: those two warnings were the last em dashes
+left in any recorded output. See `docs/CRE-SIMULATION.md`.
 
 ---
 
@@ -115,7 +166,7 @@ is the entire ask of this track and a source screenshot does not demonstrate exe
 | **CAPTION 6** | `And the CRE CLI's own simulator agrees about where it ran:` |
 | **CAPTION 7** | *(the TEE box on screen, zoomed, held 4s — no caption competing with it; this is Chainlink's tooling stating our core claim for us)* |
 | **CAPTION 8** | `"During real execution, user logs for this trigger will not be visible, and will not leave the TEE." — that's the CLI, not us.` |
-| **CAPTION 9** | `Exit 0. Score 22.0 at block 25966362 — 4 protocols, 90 borrowers, and 3 coupling buckets withheld for k-anonymity.` |
+| **CAPTION 9** | `Exit 0. Score 22.0 at block 25966825 — 4 protocols, 90 borrowers, and 3 coupling buckets withheld for k-anonymity.` |
 | **ASSET** | source stills; **[record]** all four terminal runs. Transcript already committed at `docs/evidence/cre-simulation.log`. |
 
 > **Editing note — do not skip.** The frame that shows the CLI's TEE box is the single most

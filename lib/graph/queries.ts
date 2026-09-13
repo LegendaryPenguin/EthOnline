@@ -7,9 +7,9 @@
  *
  * One concession, measured and worth naming: `positionsQuery` varies by *schema
  * version*, because `Position.asset` was added in 3.x and Compound V2 is live on
- * 2.0.1 today. That is a weaker admission than a per-protocol adapter — five
+ * 2.0.1 today. That is a weaker admission than a per-protocol adapter: five
  * protocols still share one query shape, keyed on a version string the subgraph
- * itself reports — but it is the honest limit of the standard as deployed.
+ * itself reports. It is the honest limit of the standard as deployed.
  */
 
 /** Protocol-level totals plus sync state. */

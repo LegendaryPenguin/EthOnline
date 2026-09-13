@@ -529,7 +529,7 @@ export function initWorkflow(config: Config) {
 
 	return [
 		// `handlerInTee`, not `handler`: the aggregation itself runs in the enclave.
-		// There is no non-TEE path in this workflow — the signal has exactly one
+		// There is no non-TEE path in this workflow, and the signal has exactly one
 		// producer, and it is this handler.
 		cre.handlerInTee(cronTrigger.trigger({ schedule: config.schedule }), onCronTrigger, [
 			{ tee: 'nitro', regions: ['us-west-2'] },

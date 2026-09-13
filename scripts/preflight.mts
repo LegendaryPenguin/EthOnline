@@ -81,25 +81,25 @@ function checkToolchain() {
   const present = (bin: string, args: string[]) => spawnSync(bin, args, { stdio: "ignore" }).error === undefined;
 
   if (present("bun", ["--version"])) {
-    ok("bun — the CRE workflow package's own toolchain (`cre:typecheck`, `cre:test`)");
+    ok("bun: the CRE workflow package's own toolchain (`cre:typecheck`, `cre:test`)");
   } else {
     bad(
-      "bun is not on PATH — `npm install` does not install cre/sentinel-signal's dependencies, so " +
+      "bun is not on PATH. `npm install` does not install cre/sentinel-signal's dependencies, so " +
         "the two required CRE stages cannot run",
       "curl -fsSL https://bun.sh/install | bash   (then `npm run verify` installs that package itself)",
     );
   }
 
   if (present("forge", ["--version"])) {
-    ok("forge — the Solidity consumer tests (`forge:test`)");
+    ok("forge: the Solidity consumer tests (`forge:test`)");
   } else {
-    warn("forge not on PATH — `npm run forge:test` will fail and verify reports it as optional (curl -L https://foundry.paradigm.xyz | bash)");
+    warn("forge not on PATH, so `npm run forge:test` will fail and verify reports it as optional (curl -L https://foundry.paradigm.xyz | bash)");
   }
 
   if (present("cre", ["--version"])) {
-    ok("cre — the CRE CLI (`cre:simulate`)");
+    ok("cre: the CRE CLI (`cre:simulate`)");
   } else {
-    warn('cre CLI not on PATH — the TEE simulation stage is skipped with that reason (export PATH="$HOME/.cre/bin:$PATH")');
+    warn('cre CLI not on PATH, so the TEE simulation stage is skipped with that reason (export PATH="$HOME/.cre/bin:$PATH")');
   }
 }
 
@@ -108,7 +108,7 @@ function checkPolicy() {
   const raw = process.env.SENTINEL_RISK_POLICY;
   if (!raw) {
     bad(
-      "SENTINEL_RISK_POLICY is not set — the signal has no weights and no leverage watch level",
+      "SENTINEL_RISK_POLICY is not set, so the signal has no weights and no leverage watch level",
       "see .env.example for the shape; there are deliberately no defaults, because a signal " +
         "published under weights nobody chose is worse than no signal",
     );
@@ -122,7 +122,7 @@ function checkPolicy() {
       `valid: ${policy.shocks.length} shock rungs, ${Object.keys(policy.assetBeta).length} calibrated ` +
         `assets, k-anonymity ${policy.kAnonymity}, ${Object.keys(policy.weights).length} score weights`,
     );
-    ok("leverage watch level present (not printed — it is what makes the signal hard to game)");
+    ok("leverage watch level present (not printed, because it is what makes the signal hard to game)");
   } catch (error) {
     bad(`SENTINEL_RISK_POLICY is invalid: ${(error as Error).message}`, "fix the JSON in .env.local; .env.example documents every field");
   }
@@ -138,13 +138,13 @@ async function checkKeyAndSync() {
     key = requireApiKey();
   } catch {
     bad(
-      "GRAPH_API_KEY is not set — there is no mock mode to fall back to",
+      "GRAPH_API_KEY is not set, and there is no mock mode to fall back to",
       "create a free key at https://thegraph.com/studio/apikeys/ and put it in .env.local",
     );
     return;
   }
   if (!/^[0-9a-f]{32}$/i.test(key)) {
-    warn(`does not look like a gateway key (${key.length} chars, expected 32 hex) — trying it anyway`);
+    warn(`does not look like a gateway key (${key.length} chars, expected 32 hex), trying it anyway`);
   } else {
     ok("present, 32 hex chars");
   }
@@ -170,12 +170,12 @@ async function checkKeyAndSync() {
       const message = (error as Error).message.replace(/https:\/\/\S+/g, "<gateway url withheld>");
       if (/auth|401|403|payment|deprecated key/i.test(message)) {
         bad(
-          `${deployment.label}: the gateway rejected the key — ${message}`,
+          `${deployment.label}: the gateway rejected the key: ${message}`,
           "the key is set but not usable: check it is not revoked and has query volume left",
         );
         return;
       }
-      warn(`${deployment.label}: unreachable — ${message}`);
+      warn(`${deployment.label}: unreachable: ${message}`);
     }
   }
 
@@ -188,7 +188,7 @@ async function checkKeyAndSync() {
     const behind = head - lag;
     if (behind > MAX_BLOCK_LAG) {
       warn(
-        `${label} is ${behind} blocks behind head — the snapshot will exclude it loudly rather ` +
+        `${label} is ${behind} blocks behind head, so the snapshot will exclude it loudly rather ` +
           `than mix stale data in (MAX_BLOCK_LAG is ${MAX_BLOCK_LAG})`,
       );
     }
@@ -199,9 +199,9 @@ async function checkKeyAndSync() {
 function checkOptional() {
   console.log("optional");
   if (process.env.RPC_URL) {
-    ok("RPC_URL set — the on-chain health reconciliation can run");
+    ok("RPC_URL set: the on-chain health reconciliation can run");
   } else {
-    warn("RPC_URL not set — `npm run verify:health` and `npm run verify:emode` will be skipped");
+    warn("RPC_URL not set, so `npm run verify:health` and `npm run verify:emode` will be skipped");
   }
 }
 
@@ -218,7 +218,7 @@ function checkArtifacts() {
     const hours = age / 3_600_000;
     const label = hours < 1 ? `${Math.round(age / 60_000)} min old` : `${hours.toFixed(1)} h old`;
     if (hours > 24) {
-      warn(`${artifact.path} is ${label} — the UI will say so; re-run ${artifact.produce} for a fresh reading`);
+      warn(`${artifact.path} is ${label}, so the UI will say so; re-run ${artifact.produce} for a fresh reading`);
     } else {
       ok(`${artifact.path.padEnd(24)} ${label}`);
     }
@@ -226,7 +226,7 @@ function checkArtifacts() {
 }
 
 async function main() {
-  console.log("Sentinel preflight — no mock mode, so this fails before the pipeline does\n");
+  console.log("Sentinel preflight: no mock mode, so this fails before the pipeline does\n");
   checkNode();
   checkToolchain();
   checkPolicy();
@@ -243,7 +243,7 @@ async function main() {
   }
   console.log(
     warnings.length === 0
-      ? "preflight OK — everything needed for a live reading is in place."
+      ? "preflight OK. Everything needed for a live reading is in place."
       : `preflight OK with ${warnings.length} warning${warnings.length === 1 ? "" : "s"} (listed above). ` +
           "None of them would make a published number wrong.",
   );

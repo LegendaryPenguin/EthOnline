@@ -450,7 +450,7 @@ const querySubgraphTool: Tool = {
         answer:
           `Refused. That document selects per-address rows, and this tool does not return ` +
           `them at any size. Per-address positions are read inside the enclave and leave it ` +
-          `only as aggregates — ask sentinel_signal or sentinel_coupling for the aggregate ` +
+          `only as aggregates. Ask sentinel_signal or sentinel_coupling for the aggregate ` +
           `form of the same question.`,
         cited: [],
         refusal: { gate: "per-address", reason: "document selects per-address rows" },
