@@ -137,7 +137,7 @@ const STEPS: Step[] = [
   },
   {
     name: "backtest",
-    proves: "Phase 6: replayed events, lead time measured against real liquidations",
+    proves: "Phase 6: recall over 96 replayed liquidations, and precision over a pre-registered panel",
     ...run("backtest"),
     required: false,
   },

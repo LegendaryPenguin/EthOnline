@@ -5,7 +5,7 @@
  * *here*, loudly and specifically, instead of thirty seconds into a pipeline with a stack
  * trace about `undefined`. So this checks, in the order that things go wrong:
  *
- *   1. Node version.
+ *   1. Node version, then the three toolchains this repo does not vendor (bun, forge, cre).
  *   2. `GRAPH_API_KEY` present, plausible, and *accepted by the live gateway* — a syntactically
  *      valid key that has been revoked is the failure a length check misses.
  *   3. `SENTINEL_RISK_POLICY` present and valid, reported without printing it. The policy is as
@@ -19,6 +19,7 @@
  */
 
 import { config } from "dotenv";
+import { spawnSync } from "node:child_process";
 import { existsSync, statSync } from "node:fs";
 import { DEPLOYMENTS } from "../lib/graph/deployments";
 import { MAX_BLOCK_LAG, query, requireApiKey } from "../lib/graph/client";
@@ -61,6 +62,44 @@ function checkNode() {
     bad(`node ${process.versions.node} is too old`, "install node 20 or newer (this repo is developed on 24)");
   } else {
     ok(`node ${process.versions.node}`);
+  }
+}
+
+/**
+ * The three toolchains this repo does not vendor. Found by a fresh-clone test: `npm install` does
+ * not install the CRE workflow's dependencies, because that package is a bun package with its own
+ * lockfile — so `cre:typecheck` failed thirty seconds in with
+ * `./node_modules/.bin/tsc: No such file or directory`, which tells a stranger nothing.
+ *
+ * `bun` is blocking and the other two are not, and the split is the same one `verify` makes:
+ * `cre:typecheck` and `cre:test` are required stages, while `cre:simulate` and `forge:test` are
+ * skipped-with-a-reason when their tool is absent. A missing tool should fail where it can be
+ * named, not where it happens to be dereferenced.
+ */
+function checkToolchain() {
+  console.log("toolchain");
+  const present = (bin: string, args: string[]) => spawnSync(bin, args, { stdio: "ignore" }).error === undefined;
+
+  if (present("bun", ["--version"])) {
+    ok("bun — the CRE workflow package's own toolchain (`cre:typecheck`, `cre:test`)");
+  } else {
+    bad(
+      "bun is not on PATH — `npm install` does not install cre/sentinel-signal's dependencies, so " +
+        "the two required CRE stages cannot run",
+      "curl -fsSL https://bun.sh/install | bash   (then `npm run verify` installs that package itself)",
+    );
+  }
+
+  if (present("forge", ["--version"])) {
+    ok("forge — the Solidity consumer tests (`forge:test`)");
+  } else {
+    warn("forge not on PATH — `npm run forge:test` will fail and verify reports it as optional (curl -L https://foundry.paradigm.xyz | bash)");
+  }
+
+  if (present("cre", ["--version"])) {
+    ok("cre — the CRE CLI (`cre:simulate`)");
+  } else {
+    warn('cre CLI not on PATH — the TEE simulation stage is skipped with that reason (export PATH="$HOME/.cre/bin:$PATH")');
   }
 }
 
@@ -189,6 +228,7 @@ function checkArtifacts() {
 async function main() {
   console.log("Sentinel preflight — no mock mode, so this fails before the pipeline does\n");
   checkNode();
+  checkToolchain();
   checkPolicy();
   await checkKeyAndSync();
   checkOptional();
