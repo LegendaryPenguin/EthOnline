@@ -11,16 +11,21 @@ per-address map of who is levered where — and that map is a hunting list for l
 a deanonymization aid for everyone else. **So Sentinel computes it inside a TEE and publishes only
 the aggregate.** The private intermediate value never leaves the enclave.
 
-On live mainnet data, 2026-09-13, at block ~25,965,980:
+On live mainnet data, 2026-09-13, at block 25,966,506 — the run in the demo video, and the run
+`npm run verify` reproduces:
 
 | | |
 |---|---|
-| accounts scanned across 5 lending protocols | **37,866** |
-| borrowing at 2 protocols | 1,041 |
+| accounts scanned across 5 lending protocols | **37,862** |
+| borrowing at 2 protocols | 1,042 |
 | at 3 | 72 |
 | at 4 | 2 |
-| **debt levered across >1 protocol on the same collateral** | **$35,923,754** — 125 bps of evaluable debt |
+| **debt levered across >1 protocol on the same collateral** | **$35.9M** — 125 bps of evaluable debt |
 | composite systemic risk score | 2201 bps *(a level that is only meaningful as a change; see `docs/SIGNAL.md`)* |
+
+Every figure here moves with the chain, which is the point: these are readings, not constants. The
+shape of the finding does not move — a four-figure population of addresses, low single-digit
+percentages of debt, and a number nobody else publishes.
 
 No mock mode exists. `lib/__tests__/no-mock-data.test.ts` fails the build if one appears.
 
@@ -45,7 +50,7 @@ No mock mode exists. `lib/__tests__/no-mock-data.test.ts` fails the build if one
    ║                 ──▶ SENTINEL_RISK_POLICY   (thresholds are themselves sensitive)   ║
    ║                                                                                  ║
    ║   raw Position rows  ──▶  per-address cross-protocol leverage map                 ║
-   ║   (37,866 accounts)         ▲ THE PRIVATE INTERMEDIATE VALUE — never emitted      ║
+   ║   (37,862 accounts)         ▲ THE PRIVATE INTERMEDIATE VALUE — never emitted      ║
    ║                             │                                                    ║
    ║                        aggregate · k-anonymity suppress · sign                    ║
    ╚═════════════════════════════════════╪════════════════════════════════════════════╝
@@ -68,17 +73,18 @@ figure; `npm run check:ui` proves **zero** 40-hex strings cross the wire on eith
 cp .env.example .env.local     # GRAPH_API_KEY + SENTINEL_RISK_POLICY, both documented in the file
 npm install
 npm run preflight              # does your setup produce real numbers? checks key, sync lag, artifacts
-npm run verify                 # 18 stages, live, ~4 min — re-verifies every claim in this README
+npm run verify                 # 18 stages, live, ~2 min — re-verifies every claim in this README
 npm run dev                    # the dashboard
 ```
 
 `npm run verify -- --fast` skips the two slowest stages and says so in its summary, so a fast run
 can never be mistaken for a full one.
 
-Last full run: **18 stages green, 251.7s total.** The cold-start flow — API key to rendered
-dashboard — takes **53.6s to 62.5s** across runs, so it straddles the 60-second target we set
-ourselves and misses it on some runs. One gateway-bound stage accounts for nearly all of it, and
-`cre:simulate` accounts for 148s of the total on its own. Both measured in `docs/EVIDENCE.md`.
+Last full run: **18 stages green, 120.4s total** (`docs/evidence/casts/verify.json` — the run in
+the video). The cold-start flow — API key to rendered dashboard — took **61.3s**, so it straddles
+the 60-second target we set ourselves and misses it on some runs. One gateway-bound stage accounts
+for nearly all of it: `cascade` makes 636 live DEX-depth queries and took 47.8s of the 120.4s.
+Measured in `docs/EVIDENCE.md`.
 
 ## The interesting parts
 
@@ -96,7 +102,7 @@ that a subset cannot exceed its own total. Zero Aave-specific code, and the reas
 provenance. Keeping that row is the evidence the gate does something.
 
 **Where the standard breaks down is quantified, not ignored.** Aave V3 E-Mode is absent from the
-standardized schema, so 116 of 359 completed multi-protocol borrowers compute as `HF < 1` while
+standardized schema, so 116 of 360 completed multi-protocol borrowers compute as `HF < 1` while
 being live and un-liquidated, carrying $1.07B. That is our parameters being wrong, not those
 borrowers being unsafe — so every distress figure on the dashboard is printed as a **bound**.
 

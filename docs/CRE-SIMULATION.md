@@ -49,18 +49,18 @@ here in the first place.
 The workflow compiled, registered its trigger, ran end to end against live subgraphs, and returned:
 
 ```
-2026-09-13T00:50:04Z [USER LOG] enclave: 90 borrowers, score 22.0, 0 coupling buckets,
+2026-09-13T01:47:44Z [USER LOG] enclave: 90 borrowers, score 22.0, 0 coupling buckets,
                                 3 suppressed, 1 deployment notes
-2026-09-13T00:50:04Z [USER LOG] enclave: aave-v2-eth excluded at discovery: sampled debt is
+2026-09-13T01:47:44Z [USER LOG] enclave: aave-v2-eth excluded at discovery: sampled debt is
                                 1011.0x the protocol-reported total, so its position mappings
                                 disagree with its own totals
 
 ✓ Workflow Simulation Result:
-"score 22.0/100, block 25966223, 4 protocols, 90 borrowers, 1.25% of evaluable debt is
- multi-protocol, 2866M USD evaluable of 5717M observed, 1215158822 USD distressed at the
+"score 22.0/100, block 25966510, 4 protocols, 90 borrowers, 1.25% of evaluable debt is
+ multi-protocol, 2867M USD evaluable of 5718M observed, 1215254005 USD distressed at the
  deepest shock, 3 buckets suppressed for k-anonymity, 1 deployment notes"
 
-2026-09-13T00:50:04Z [SIMULATION] Execution finished signal received
+2026-09-13T01:47:44Z [SIMULATION] Execution finished signal received
 ```
 
 Exit code 0. Reading that result against the track's bullets:
@@ -69,7 +69,7 @@ Exit code 0. Reading that result against the track's bullets:
 |---|---|
 | registers and uses a confidential TEE handler | the CLI's own "Trigger requested TEE Execution … AWS Nitro in us-west-2" box |
 | processes a **secret** in the enclave | `Loaded secrets from ../secrets.yaml`; both `GRAPH_API_KEY` and `SENTINEL_RISK_POLICY` resolve inside the handler |
-| processes a **confidential API response** | 4 live Messari deployments queried at block 25966223 from inside the handler |
+| processes a **confidential API response** | 4 live Messari deployments queried at block 25966510 from inside the handler |
 | processes a **private intermediate value** | 90 multi-protocol borrowers aggregated; the per-address map is never in the result string |
 | **meaningfully integrated**, not a placeholder | the reconciliation gate fires *inside* the enclave and excludes `aave-v2-eth` on its own evidence; k-anonymity withholds 3 of the coupling buckets. Both are real decisions taken on data the operator cannot see. |
 | successful execution with evidence | exit 0, full transcript committed |

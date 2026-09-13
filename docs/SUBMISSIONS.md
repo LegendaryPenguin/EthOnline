@@ -16,8 +16,8 @@ Paste-ready. Every figure here is live-verified; every claim links to the file t
 
 Sentinel measures how much borrowed value sits with addresses levered across *multiple* lending
 protocols on the *same* collateral — the debt that liquidates twice in one price move. On live
-mainnet data it found **$35,923,754** of such debt, 125 bps of evaluable debt, held by **1,115
-addresses borrowing at 2, 3 or 4 protocols at once** out of 37,866 scanned.
+mainnet data it found **$35.9M** of such debt, 125 bps of evaluable debt, held by **1,116
+addresses borrowing at 2, 3 or 4 protocols at once** out of 37,862 scanned, at block 25,966,506.
 
 **How it uses standardized and composed Graph products**
 
@@ -52,7 +52,7 @@ registry: no adapter, no new query, no mapping code.
   and that inequality is a free integrity check that works for any protocol. Keeping the row in the
   registry is the evidence the gate does something.
 - **Aave V3 E-Mode is absent from the standardized schema,** and we quantified the absence rather
-  than ignoring it: 116 of 359 completed multi-protocol borrowers compute as `HF < 1` while being
+  than ignoring it: 116 of 360 completed multi-protocol borrowers compute as `HF < 1` while being
   live and un-liquidated, carrying $1.07B. That is our parameters being wrong, not those borrowers
   being unsafe — so every distress figure we publish is a **bound**, not a point estimate.
 
@@ -62,7 +62,7 @@ served at; deployments more than 1000 blocks behind head are excluded with the r
 
 **What we do not claim:** we did not author or extend a standardized subgraph. We consume two.
 
-**Verify it:** `npm run verify` — 18 stages, live, ~4 minutes, every stage green. Evidence map with file and line for every
+**Verify it:** `npm run verify` — 18 stages, live, ~2 minutes, every stage green. Evidence map with file and line for every
 bullet above: `docs/EVIDENCE.md`.
 
 **Your qualification requirements, in order**
@@ -74,7 +74,7 @@ bullet above: `docs/EVIDENCE.md`.
 | "Simply querying one Subgraph with no composition or standardization does not qualify" | Nine deployments, two schemas, one query document per schema, zero per-protocol adapters |
 | "Authoring or extending a Standardized Subgraph… is in scope" | **Not claimed.** We consume the standard. What we contribute instead is a measurement of two places it breaks down, above |
 | "Make the standards leverage clear: show what became easier because a shared schema or composed product was used" | The primary-key cross-protocol join, which is the only reason the project is possible; and a sixth protocol costs one registry row |
-| "Submit a public repository and a short demo video (two to four minutes)" | Public repo with per-phase commit history; 3:34 captioned video |
+| "Submit a public repository and a short demo video (two to four minutes)" | Public repo with per-phase commit history; 3:38 captioned video |
 
 And the description's own bar — *"one query pattern spanning many protocols"* — is exactly what the
 first shot of the video shows.
@@ -182,7 +182,7 @@ enclave**, and they are genuinely different kinds of sensitive:
 | **secret** | the Graph gateway API key, fetched from the Vault DON inside the enclave (`workflow.ts:157`) |
 | **private parameter** | `SENTINEL_RISK_POLICY` — leverage watch level, shock ladder, composite weights, k-anonymity floor. As sensitive as the key: publish the threshold and a borrower sits one basis point under it (`workflow.ts:158`) |
 | **sensitive input** | the borrower set itself — which addresses are under evaluation. Knowing who Sentinel is looking at is already a signal |
-| **confidential API response** | raw `Position` rows — every address, balance and collateral flag across 37,866 accounts — read over an authenticated request made from inside the enclave (`workflow.ts:438`) |
+| **confidential API response** | raw `Position` rows — every address, balance and collateral flag across 37,862 accounts — read over an authenticated request made from inside the enclave (`workflow.ts:438`) |
 | **intermediate value** | the per-address cross-protocol leverage map. Computed in the enclave, **never emitted** — this is the value the whole design exists to protect (`lib/signal/aggregate.ts`) |
 
 One implementation note, recorded because it is the kind of thing a judge asks: `ConfidentialHTTPClient`
@@ -206,10 +206,15 @@ That last line is Chainlink's own tooling stating the property this project is b
 
 ```
 ✓ Workflow Simulation Result:
-"score 22.0/100, block 25966223, 4 protocols, 90 borrowers, 1.25% of evaluable debt is
+"score 22.0/100, block 25966362, 4 protocols, 90 borrowers, 1.25% of evaluable debt is
  multi-protocol, 2866M USD evaluable of 5717M observed, 1215158822 USD distressed at the
  deepest shock, 3 buckets suppressed for k-anonymity, 1 deployment notes"
 ```
+
+That is the run in the video, byte for byte — `docs/evidence/casts/cre-simulate.json`, replayed on
+screen at 1:31. `docs/evidence/cre-simulation.log` is a later run of the same command at block
+25966510; every figure moves with the chain except the ones that are the point (4 protocols, 90
+borrowers, 3 buckets suppressed).
 
 **Meaningfully integrated, not a placeholder.** Two decisions visible in that one line were both
 taken inside the enclave on data the operator cannot see: a reconciliation gate excluded a

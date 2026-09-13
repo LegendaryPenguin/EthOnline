@@ -17,30 +17,35 @@ anything else runs.
 **Last full run — 18 stages, all green:**
 
 ```
-  total 251.7s across 18 stages
+  total 120.4s across 18 stages
   cold-start flow (preflight → snapshot → cascade → shock:ladder → cre:test
-                   → fixture:report → consume-signal → build): 62.5s
+                   → fixture:report → consume-signal → build): 61.3s
 ```
+
+That is the run replayed in the demo video, captured byte for byte at
+`docs/evidence/casts/verify.json` — so any frame of the video's last section can be diffed against
+what the command actually printed.
 
 **The cold-start flow has been observed between 53.6s and 62.5s, so it straddles our own 60-second
 target and misses it on some runs.** We are recording the miss rather than requoting the faster run,
 because a target you only report when you clear it is not a target.
 
 The reason is a single stage and it is not ours to fix: `cascade` makes 636 live DEX-depth queries
-and has been observed between **40.6s and 57.2s**. That stage is gateway-bound, not client-bound —
+and has been observed between **40.6s and 57.2s** (47.8s on the run above). That stage is gateway-bound, not client-bound —
 measured at concurrency 10 (46.5s) and 40 (45.4s), zero failures either way — so widening the client
 buys ~1s and risks rate limits. Everything else in the flow put together, including five protocols
 queried and joined, the enclave run, the signed report, an independent consumer and the production
 build, is about 15 seconds. The honest claim is therefore *"about a minute from an API key to a
 rendered dashboard, dominated by one gateway-bound stage"*, not *"under 60 seconds"*.
 
-The full run is now ~4 minutes rather than ~90s because `cre:simulate` alone takes **148.4s** —
-compiling the workflow to WASM and running it through Chainlink's simulator. It is not part of the
-cold-start flow, and it skips cleanly with a printed reason on any machine without CRE credentials.
+`cre:simulate` — compiling the workflow to WASM and running it through Chainlink's simulator — took
+**14.7s** here against **148.4s** on a cold Go build cache; the range is the toolchain's, not ours.
+It is not part of the cold-start flow, and it skips cleanly with a printed reason on any machine
+without CRE credentials.
 
 **Where the numbers in this document come from.** Live queries on 2026-09-13 against five
 Messari Lending/CDP deployments and four Messari DEX AMM deployments at mainnet block
-~25,965,980. Sentinel has no mock mode; `lib/__tests__/no-mock-data.test.ts` enforces that.
+25,966,506. Sentinel has no mock mode; `lib/__tests__/no-mock-data.test.ts` enforces that.
 
 ---
 
@@ -105,7 +110,7 @@ What we *do* contribute back is a measurement of where the standard breaks down,
   Aave-specific code** and records the reason in provenance. Keeping that row in the registry is
   the evidence that the gate does something.
 - **Aave V3 E-Mode is absent from the standardized schema**, and that absence is quantified
-  rather than ignored: 116 of 359 completed multi-protocol borrowers compute as `HF < 1` while
+  rather than ignored: 116 of 360 completed multi-protocol borrowers compute as `HF < 1` while
   being live and un-liquidated, carrying **$1,074,472,124**. That is our parameters being wrong,
   not those borrowers being unsafe. `lib/cascade/emode.ts` therefore reports a **bound**, not a
   point estimate, and the UI prints the upper bound next to every distress figure.
@@ -121,7 +126,7 @@ That is the only reason this project exists. Measured on live data (`npm run sna
 
 | | |
 |---|---|
-| accounts scanned | 37,866 |
+| accounts scanned | 37,862 |
 | borrowing at exactly 1 protocol | 36,751 |
 | **at 2 protocols** | **1,041** |
 | **at 3** | **72** |
@@ -266,7 +271,7 @@ are genuinely different kinds of sensitive:
 | **Secret** | the Graph gateway API key, fetched from the Vault DON *inside* the enclave | `workflow.ts:157` |
 | **Private parameter** | `SENTINEL_RISK_POLICY` — the leverage watch level and composite weights. As sensitive as the key: publish the threshold and a borrower sits one basis point under it. | `workflow.ts:158` |
 | **Sensitive input** | the borrower set under evaluation. Which addresses Sentinel is looking at is already a signal, before any figure is computed from them. | `workflow.ts:438` |
-| **Confidential API response** | raw `Position` rows — every address, balance and collateral flag for 37,866 accounts — read over an authenticated gateway request made from inside the enclave | `workflow.ts:438` |
+| **Confidential API response** | raw `Position` rows — every address, balance and collateral flag for 37,862 accounts — read over an authenticated gateway request made from inside the enclave | `workflow.ts:438` |
 | **Intermediate value** | the per-address cross-protocol leverage map itself. Computed in the enclave, **never emitted.** | `lib/signal/aggregate.ts` |
 
 The doc-comment at `workflow.ts:152` states the property that makes this real: *"Neither value
@@ -301,7 +306,7 @@ each is tested separately.
 The signal that leaves the enclave is 12 aggregate fields, specified in `docs/SIGNAL.md` and
 verified on-chain in `contracts/src/SentinelSignal.sol`. The dashboard verifies the signer
 quorum before rendering a single figure, and `npm run check:ui` proves **zero** 40-hex strings
-cross the wire on either route — checked against the 359-account sample, 139 of which are
+cross the wire on either route — checked against the 360-account sample, 139 of which are
 multi-protocol borrowers. The enclave boundary and the UI boundary are tested separately
 because they are separate claims.
 
@@ -309,7 +314,7 @@ because they are separate claims.
 
 | Evidence | What it shows |
 |---|---|
-| **`docs/evidence/cre-simulation.log`** | **the CRE CLI simulation, exit 0** — `npm run cre:simulate`. The CLI's own output confirms the dispatch: *"Trigger requested TEE Execution … AWS Nitro in us-west-2"*, and *"During real execution, user logs for this trigger will not be visible, and will not leave the TEE."* That second line is Chainlink's tooling independently corroborating the design claim this whole project rests on. Result: score 22.0 at block 25966223, 4 protocols, 90 borrowers, **3 buckets suppressed for k-anonymity**. Walked bullet by bullet in `docs/CRE-SIMULATION.md`. |
+| **`docs/evidence/cre-simulation.log`** | **the CRE CLI simulation, exit 0** — `npm run cre:simulate`. The CLI's own output confirms the dispatch: *"Trigger requested TEE Execution … AWS Nitro in us-west-2"*, and *"During real execution, user logs for this trigger will not be visible, and will not leave the TEE."* That second line is Chainlink's tooling independently corroborating the design claim this whole project rests on. Result: score 22.0 at block 25966510, 4 protocols, 90 borrowers, **3 buckets suppressed for k-anonymity**. Walked bullet by bullet in `docs/CRE-SIMULATION.md`. |
 | `docs/evidence/enclave-local-run.log` | a full local enclave run: secrets, queries, aggregation, signing |
 | `npm run cre:test` | the workflow's own test suite: aggregation, k-anonymity suppression, signing |
 | `npm run cre:typecheck` | compiles against the real CRE SDK |
