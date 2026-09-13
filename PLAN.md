@@ -330,7 +330,12 @@ Checked before planning, not assumed:
 - [ ] No secrets in git history (scanned).
 - [ ] Commit history granular and honest across the whole build.
 - [ ] Three submission drafts written, each in the sponsor's own vocabulary.
-- [ ] Full flow completes in under 60s from cold start on live data.
+- [~] Full flow completes in under 60s from cold start on live data. **Missed, and recorded as
+      missed: observed 53.6s–62.5s across runs, so it clears the target on some runs and not
+      others.** Nearly all of it is one gateway-bound stage (`cascade`, 636 live DEX-depth
+      queries, 40.6s–57.2s), measured at concurrency 10 and 40 with no improvement, so this is
+      not a client-side problem we declined to fix. The claim in the README was changed to match
+      the measurement rather than the measurement being requoted to match the claim.
 
 ---
 

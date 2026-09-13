@@ -68,16 +68,17 @@ figure; `npm run check:ui` proves **zero** 40-hex strings cross the wire on eith
 cp .env.example .env.local     # GRAPH_API_KEY + SENTINEL_RISK_POLICY, both documented in the file
 npm install
 npm run preflight              # does your setup produce real numbers? checks key, sync lag, artifacts
-npm run verify                 # 17 stages, live, ~90s — re-verifies every claim in this README
+npm run verify                 # 18 stages, live, ~4 min — re-verifies every claim in this README
 npm run dev                    # the dashboard
 ```
 
 `npm run verify -- --fast` skips the two slowest stages and says so in its summary, so a fast run
 can never be mistaken for a full one.
 
-Last full run: **17 stages green, 91.4s total; the cold-start flow — key to rendered dashboard —
-53.6s.** One stage dominates and it is gateway-bound, not ours; the measurement is in
-`docs/EVIDENCE.md`.
+Last full run: **18 stages green, 251.7s total.** The cold-start flow — API key to rendered
+dashboard — takes **53.6s to 62.5s** across runs, so it straddles the 60-second target we set
+ourselves and misses it on some runs. One gateway-bound stage accounts for nearly all of it, and
+`cre:simulate` accounts for 148s of the total on its own. Both measured in `docs/EVIDENCE.md`.
 
 ## The interesting parts
 
@@ -89,8 +90,10 @@ code.
 
 **Aave V2 is registered on purpose and rejected at runtime on purpose.** Its mappings handle
 `Borrow` but not `Repay`, so `balance` is lifetime cumulative borrowing and overstates outstanding
-debt by ~1925×. The reconciliation gate catches it with zero Aave-specific code and records the
-reason in provenance. Keeping that row is the evidence the gate does something.
+debt by three orders of magnitude — 1925× on one snapshot, 1011× on another. The multiple moves
+with whichever positions the sample draws; the gate keys on the part that doesn't move, which is
+that a subset cannot exceed its own total. Zero Aave-specific code, and the reason is recorded in
+provenance. Keeping that row is the evidence the gate does something.
 
 **Where the standard breaks down is quantified, not ignored.** Aave V3 E-Mode is absent from the
 standardized schema, so 116 of 359 completed multi-protocol borrowers compute as `HF < 1` while
@@ -118,8 +121,9 @@ Listed here rather than buried, because it is the fastest way to judge the rest:
 - Distress figures are bounds, not point estimates.
 - The backtest **publishes its misses**, and only 2 of 5 deployments support time-travel queries,
   so it replays 96 of 319 liquidation episodes.
-- `cre workflow simulate` is blocked on interactive `cre login`. Status, exact command, and what
-  the local enclave run stands in for meanwhile: `docs/CRE-SIMULATION.md`.
+- The CRE CLI **simulation passes** (`npm run cre:simulate`, transcript in
+  `docs/evidence/cre-simulation.log`). We have **not** deployed to the CRE network — that needs
+  deploy access, and the track scopes in either one.
 
 ## Docs
 

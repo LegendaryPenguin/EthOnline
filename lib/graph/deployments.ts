@@ -34,7 +34,11 @@ export const DEPLOYMENTS: Deployment[] = [
     // Registered on purpose, and rejected at runtime on purpose. Its position
     // mappings handle Borrow but not Repay — positions show up to 41 borrows and
     // zero repays — so `balance` is lifetime cumulative borrowing, overstating
-    // outstanding debt by ~1925x. The reconciliation gate in snapshot.ts catches
+    // outstanding debt by three orders of magnitude: 1925x on one snapshot,
+    // 1011x on another. The multiple moves with whichever positions the sample
+    // draws; what does not move is that sampled debt exceeds protocol-reported
+    // debt, and a subset cannot legitimately exceed its total. The gate keys on
+    // that inequality, not on the size of the miss. The gate in snapshot.ts catches
     // this without any Aave-specific code and records the reason in provenance.
     // Keeping the row is the evidence that the gate does something.
     key: "aave-v2-eth",

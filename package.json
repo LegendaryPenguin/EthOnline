@@ -17,6 +17,7 @@
     "backtest:cascades": "tsx scripts/backtest-cascades.mts",
     "cre:typecheck": "cd cre/sentinel-signal && ./node_modules/.bin/tsc --noEmit",
     "cre:test": "cd cre/sentinel-signal && bun test",
+    "cre:simulate": "tsx scripts/cre-simulate.mts",
     "leak-demo": "tsx scripts/leak-demo.mts",
     "consume-signal": "tsx scripts/consume-signal.mts",
     "alert:derive": "tsx scripts/derive-alert-policy.mts",

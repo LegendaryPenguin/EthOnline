@@ -8,27 +8,35 @@ Reproduce the whole thing with one command:
 ```sh
 cp .env.example .env.local   # then fill in GRAPH_API_KEY and SENTINEL_RISK_POLICY
 npm install
-npm run verify               # 17 stages, live, ~2 minutes
+npm run verify               # 18 stages, live, ~2 minutes
 ```
 
 `npm run preflight` alone tells you whether your setup can produce real numbers, before
 anything else runs.
 
-**Last full run — 17 stages, all green:**
+**Last full run — 18 stages, all green:**
 
 ```
-  total 91.4s across 17 stages
+  total 251.7s across 18 stages
   cold-start flow (preflight → snapshot → cascade → shock:ladder → cre:test
-                   → fixture:report → consume-signal → build): 53.6s
+                   → fixture:report → consume-signal → build): 62.5s
 ```
 
-53.6 seconds from an API key to a rendered dashboard, against a 60-second target — and worth
-one caveat, because the margin is thin and not ours to control. One stage dominates: `cascade`
-makes 636 live DEX-depth queries, and it has been observed between **40.6s and 57.2s** across
-runs. That stage is gateway-bound, not client-bound — measured at concurrency 10 (46.5s) and 40
-(45.4s), zero failures either way — so widening the client buys nothing and only risks rate
-limits. Everything else put together, including five protocols queried and joined, the enclave
-run, the signed report, an independent consumer and the production build, is about 13 seconds.
+**The cold-start flow has been observed between 53.6s and 62.5s, so it straddles our own 60-second
+target and misses it on some runs.** We are recording the miss rather than requoting the faster run,
+because a target you only report when you clear it is not a target.
+
+The reason is a single stage and it is not ours to fix: `cascade` makes 636 live DEX-depth queries
+and has been observed between **40.6s and 57.2s**. That stage is gateway-bound, not client-bound —
+measured at concurrency 10 (46.5s) and 40 (45.4s), zero failures either way — so widening the client
+buys ~1s and risks rate limits. Everything else in the flow put together, including five protocols
+queried and joined, the enclave run, the signed report, an independent consumer and the production
+build, is about 15 seconds. The honest claim is therefore *"about a minute from an API key to a
+rendered dashboard, dominated by one gateway-bound stage"*, not *"under 60 seconds"*.
+
+The full run is now ~4 minutes rather than ~90s because `cre:simulate` alone takes **148.4s** —
+compiling the workflow to WASM and running it through Chainlink's simulator. It is not part of the
+cold-start flow, and it skips cleanly with a printed reason on any machine without CRE credentials.
 
 **Where the numbers in this document come from.** Live queries on 2026-09-13 against five
 Messari Lending/CDP deployments and four Messari DEX AMM deployments at mainnet block
@@ -87,9 +95,13 @@ What we *do* contribute back is a measurement of where the standard breaks down,
 `docs/verification/health-reconciliation.md` and `docs/evidence/emode-groups.md`:
 
 - **Aave V2's deployment is registered on purpose and rejected at runtime on purpose**
-  (`lib/graph/deployments.ts:40`). Its mappings handle `Borrow` but not `Repay`, so `balance` is
-  lifetime cumulative borrowing and overstates outstanding debt by **~1925×**. The
-  reconciliation gate in `lib/graph/snapshot.ts` catches this **without a single line of
+  (`lib/graph/deployments.ts:44`). Its mappings handle `Borrow` but not `Repay`, so `balance` is
+  lifetime cumulative borrowing and overstates outstanding debt by **three orders of magnitude**.
+  The multiple is sample-dependent and we quote both readings rather than the bigger one: **1925×**
+  on the snapshot in `docs/evidence/phase2-cross-protocol.md`, **1011×** in the CRE simulation
+  (`docs/evidence/cre-simulation.log`). What is invariant is the inequality the gate actually keys
+  on — a sample is a subset, so sampled debt cannot legitimately exceed protocol-reported debt.
+  The reconciliation gate in `lib/graph/snapshot.ts:172` catches this **without a single line of
   Aave-specific code** and records the reason in provenance. Keeping that row in the registry is
   the evidence that the gate does something.
 - **Aave V3 E-Mode is absent from the standardized schema**, and that absence is quantified
@@ -287,16 +299,24 @@ because they are separate claims.
 
 | Evidence | What it shows |
 |---|---|
+| **`docs/evidence/cre-simulation.log`** | **the CRE CLI simulation, exit 0** — `npm run cre:simulate`. The CLI's own output confirms the dispatch: *"Trigger requested TEE Execution … AWS Nitro in us-west-2"*, and *"During real execution, user logs for this trigger will not be visible, and will not leave the TEE."* That second line is Chainlink's tooling independently corroborating the design claim this whole project rests on. Result: score 22.0 at block 25966223, 4 protocols, 90 borrowers, **3 buckets suppressed for k-anonymity**. Walked bullet by bullet in `docs/CRE-SIMULATION.md`. |
 | `docs/evidence/enclave-local-run.log` | a full local enclave run: secrets, queries, aggregation, signing |
 | `npm run cre:test` | the workflow's own test suite: aggregation, k-anonymity suppression, signing |
 | `npm run cre:typecheck` | compiles against the real CRE SDK |
 | `contracts/test/fixtures/report.json` | the signed report, consumed and verified by `npm run consume-signal` and by 24 Solidity tests |
 | `docs/ENCLAVE.md` | the confidentiality argument: what crosses the boundary and why each field is safe |
 
-**Outstanding:** `cre workflow simulate` requires `cre login`, which needs the user's
-credentials, and Confidential Workflows access requires an approved request form. The local
-enclave run above stands in until then, and this document will not pretend otherwise. See
-`docs/CRE-SIMULATION.md` for the exact command and the state it is blocked at.
+**On deployment, as distinct from simulation.** The bullet reads "simulation **or** a live
+deployment", and the simulation is done. A live deployment additionally needs deploy access —
+`cre whoami` reports `Deploy Access: Not enabled`, requestable via `cre account access`. We are not
+claiming a deployment.
+
+**One thing worth flagging to anyone reproducing this.** With `-g`, the CRE engine logs full
+outbound request URLs, and the Graph gateway carries the API key as a path segment — our first raw
+transcript contained the live key 28 times. `npm run cre:simulate` therefore redacts in-flight and
+**refuses to write the file at all** if any 32-hex token survives, rather than trusting a human to
+remember. Details in `docs/CRE-SIMULATION.md`; the reasoning is in
+`scripts/cre-simulate.mts:1`.
 
 ---
 

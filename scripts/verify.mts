@@ -23,7 +23,7 @@
  *   npm run verify -- --fast  # skip the snapshot and the browser capture
  */
 
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 
 type Step = {
@@ -46,6 +46,23 @@ type Step = {
 };
 
 const FAST = process.argv.includes("--fast");
+
+/**
+ * Ask the CLI whether it is authenticated, rather than going looking for where it keeps its
+ * credentials. Two reasons: where the CLI stores a token is its business and may change between
+ * versions, and a script that reads around in credential stores is a script nobody should trust —
+ * this repo is not the place to make an exception. `cre whoami` is the CLI's own answer to the
+ * only question we have. Its output is discarded; only the exit code is used.
+ */
+function creAuthMissing(): string | null {
+  const probe = spawnSync("cre", ["whoami"], { stdio: "ignore" });
+  if (probe.error) {
+    return "the `cre` CLI is not on PATH — export PATH=\"$HOME/.cre/bin:$PATH\"";
+  }
+  return probe.status === 0
+    ? null
+    : "not authenticated with CRE — run `cre login` or set CRE_API_KEY (see docs/CRE-SIMULATION.md)";
+}
 const NPM = "npm";
 const run = (script: string) => ({ command: NPM, args: ["run", script] });
 
@@ -101,6 +118,16 @@ const STEPS: Step[] = [
     ...run("fixture:report"),
     required: true,
     flow: true,
+  },
+  {
+    name: "cre:simulate",
+    proves: "Phase 5: the CRE CLI simulation — the TEE handler dispatched and run by Chainlink's own tooling",
+    ...run("cre:simulate"),
+    // Not required, because it needs credentials a fresh clone won't have, and the rest of the
+    // pipeline is provable without them. Skipped rather than failed in that case: a stranger
+    // running verify should not see a red stage for not being us.
+    required: false,
+    skipIf: creAuthMissing,
   },
   {
     name: "leak-demo",

@@ -60,12 +60,18 @@ not stitched across time.
 Each was found by reading live output rather than trusting it, and each would have
 silently corrupted the headline.
 
-### 1. Aave V2 overstates debt by 1925x
+### 1. Aave V2 overstates debt by three orders of magnitude
 
 Its position mappings handle `Borrow` but not `Repay`: positions opened in May
 2021 show `borrowCount: 41, repayCount: 0` and were never closed, so `balance` is
 *lifetime cumulative borrowed*, not outstanding debt. It reported $26.87B of
-position debt against $13.96M of protocol debt.
+position debt against $13.96M of protocol debt — **1925x** on this snapshot.
+
+The multiple is not a constant, and it would be sloppy to quote it as one: the
+same gate measured **1011x** during the CRE simulation
+(`docs/evidence/cre-simulation.log`), because the ratio moves with whichever
+positions the sample happens to draw. The finding is invariant; its magnitude
+is not.
 
 The fix is not an Aave V2 special case. A sample is a subset, so sampled debt can
 never legitimately exceed reported debt — that inequality is a free integrity

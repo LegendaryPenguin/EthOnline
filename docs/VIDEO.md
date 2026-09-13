@@ -50,7 +50,12 @@ Everything under `ASSET` already exists in the repo unless marked **[record]**.
 | **CAPTION 1** | `One query document. Five lending protocols. Byte-identical against each.` |
 | **CAPTION 2** | `Messari standardized schemas — so Account.id is the raw address in all of them.` |
 | **CAPTION 3** | `The cross-protocol join is a primary-key join, not address guesswork. That's the whole trick.` |
-| **CAPTION 4** | *(as the gate fires)* `Aave V2 is registered on purpose and rejected on purpose — its subgraph never handles Repay, so debt reads 1925× high. Zero Aave-specific code caught it.` |
+| **CAPTION 4** | *(as the gate fires)* `Aave V2 is registered on purpose and rejected on purpose — its subgraph never handles Repay, so its own debt total is off by three orders of magnitude. Zero Aave-specific code caught it.` |
+
+> **Caption note.** The caption deliberately says "three orders of magnitude" rather than a
+> specific multiple: the ratio is sample-dependent (1925× on one snapshot, 1011× in the CRE
+> simulation), so a hardcoded number would eventually disagree with the footage next to it. Whatever
+> the live run prints on screen is the only number in frame.
 | **ASSET** | **[record]** terminal capture of `npm run snapshot`; speed-ramped 4× where it's just waiting. |
 
 ### 3 — Why the raw answer can't be published (0:52 → 1:24)
@@ -79,15 +84,22 @@ is the entire ask of this track and a source screenshot does not demonstrate exe
 | **SHOT 4c** *(terminal, ~16s)* | `$ npm run cre:test` typed and run, uncut. Hold at 1× on the section of output where both Vault secrets resolve, the live gateway queries run, the aggregate is computed, buckets are suppressed, and the report is signed. Then the passing test count and the returning prompt. |
 | **CAPTION 4** | `In: 37,866 raw position rows, and a per-address leverage map computed in the enclave.` |
 | **CAPTION 5** | `Out: 12 aggregate fields, signed. The map is not one of them.` |
-| **SHOT 4d** *(terminal, ~8s)* | `$ cre workflow simulate ./sentinel-signal --target staging-settings` typed and run — **including the run that fails**, if `cre login` hasn't happened by render time. The auth error stays in frame. |
-| **CAPTION 6** *(if blocked)* | `The CRE CLI simulation is blocked on an interactive login, and we're showing you that rather than cropping it. Exact command and status: docs/CRE-SIMULATION.md` |
-| **CAPTION 6** *(if logged in)* | `And the CRE CLI simulation, running the same handler on the network's own simulator.` |
-| **ASSET** | source stills; **[record]** all three terminal runs. Blocked-path error text already captured verbatim in `docs/CRE-SIMULATION.md`. |
+| **SHOT 4d** *(terminal, ~14s — the money shot)* | `$ npm run cre:simulate` typed and run. Hold on `✓ Workflow compiled`, then **the CLI's own TEE box**, then the `[USER LOG]` lines and `✓ Workflow Simulation Result`, then exit 0. |
+| **CAPTION 6** | `And the CRE CLI's own simulator agrees about where it ran:` |
+| **CAPTION 7** | *(the TEE box on screen, zoomed, held 4s — no caption competing with it; this is Chainlink's tooling stating our core claim for us)* |
+| **CAPTION 8** | `"During real execution, user logs for this trigger will not be visible, and will not leave the TEE." — that's the CLI, not us.` |
+| **CAPTION 9** | `Score 22.0 at block 25966223. 4 protocols, 90 borrowers, 3 buckets suppressed. Exit 0.` |
+| **ASSET** | source stills; **[record]** all four terminal runs. Transcript already committed at `docs/evidence/cre-simulation.log`. |
 
-> **Approval note.** Showing a failing command on camera is a deliberate choice: the alternative is
-> to imply a simulation ran when it didn't, and a judge who tries it themselves finds out either
-> way. If you run `! cre login` before I render, shot 4d becomes the real simulation transcript,
-> which is strictly better footage — say the word and I'll re-record just that shot.
+> **Editing note — do not skip.** The frame that shows the CLI's TEE box is the single most
+> valuable frame in the video: an independent tool asserting that the handler's logs do not leave
+> the enclave. Give it four full seconds with no competing caption.
+>
+> **Recording constraint, mandatory.** The simulation is run through `npm run cre:simulate`, never
+> the bare CLI, because with `-g` the engine logs full request URLs and the Graph gateway carries
+> the API key as a path segment — the first raw transcript contained the live key 28 times. The
+> wrapper redacts in-flight. Even so: **do not scroll the engine's JSON output on camera.** Frame
+> the shot on the human-readable header and footer, which is where everything worth showing is.
 
 ### 5 — The cascade, driven live (2:06 → 2:34)
 
@@ -105,7 +117,7 @@ is the entire ask of this track and a source screenshot does not demonstrate exe
 | | |
 |---|---|
 | **SHOT 6a** *(terminal, ~7s)* | `$ npm run mcp:handshake` typed and run, uncut — the real JSON-RPC `initialize` / `tools/list` / `tools/call` exchange scrolling past, held at 1× on `MCP server ready: 8 tools, 5 deployments` and the pinned-block line. |
-| **SHOT 6b** *(app, ~19s)* | Claude Code session with the Sentinel MCP server mounted. Real prompt typed: *"What's the current systemic risk and what can't you evaluate?"* Answer arrives with its citation table. Then a second prompt: *"Give me the list of addresses levered across three protocols."* The refusal lands. |
+| **SHOT 6b** *(animated transcript, ~19s)* | **Decided: animated replay of `docs/evidence/phase7-transcript.md`, not a live session.** The prompt types on, the tool call and its citation table appear, then the second prompt and the refusal. Rendered in the dashboard's own type stack, with a small persistent `recorded transcript · docs/evidence/phase7-transcript.md` label in the corner for the whole shot, so it is never mistaken for a live take. Prompts shown: *"What's the current systemic risk and what can't you evaluate?"* then *"Give me the list of addresses levered across three protocols."* |
 | **CAPTION 1** | `8 MCP tools, discoverable over the wire. Reusable infrastructure, not bolted to our dashboard.` |
 | **CAPTION 2** | `Every figure cites the subgraph and the block it was read at. One session pins one block — two figures from two blocks were never true at the same time.` |
 | **CAPTION 3** | `Then ask for the address list.` |
@@ -129,7 +141,7 @@ is the entire ask of this track and a source screenshot does not demonstrate exe
 | **SHOT 8a** *(source, ~6s)* | The "claims we do not make" section of `docs/EVIDENCE.md`, scrolling. |
 | **CAPTION 1** | `We didn't author a subgraph — we consume two. The backtest publishes its misses. Distress figures are bounds, because E-Mode isn't in the standardized schema.` |
 | **SHOT 8b** *(terminal, ~10s)* | `$ npm run verify` typed and run. Ramp the run visibly (`⏩ 8×`), then drop to 1× and hold on the full summary block: every stage marked `ok`, the totals, and `verify OK — every stage green on live data.` |
-| **CAPTION 2** | `17 stages. Live data, no mock mode — a test enforces that there isn't one.` |
+| **CAPTION 2** | `18 stages. Live data, no mock mode — a test enforces that there isn't one.` |
 | **CAPTION 3** | `Everything in this video re-verifies in one command.` |
 | **CLOSING CARD** | `Sentinel` / `npm run verify` / `github.com/LegendaryPenguin/EthOnline` |
 | **ASSET** | still; **[record]** a full `npm run verify` run — the same run whose numbers the captions quote. |
@@ -162,9 +174,10 @@ is the entire ask of this track and a source screenshot does not demonstrate exe
 8. Record the terminal sections in one session, after a single `npm run verify`, so every number
    across the whole video comes from the same block and the same run.
 
-## Open question for you
+## Decisions taken
 
-Section 6 is the only part that needs a live Claude Code session on screen. If you'd rather not
-have your editor on camera, I'll shoot it as an animated replay of
-`docs/evidence/phase7-transcript.md` instead — slightly weaker footage, identical content, and
-I'd caption it as a transcript so it isn't passed off as live.
+- **Section 4d shows the real CRE simulation.** `cre login` is done, the simulation passes, and the
+  transcript is committed. No failing command in the cut any more.
+- **Section 6b is an animated transcript, not a live session** — labelled as such on screen for its
+  full duration. It carries no weight it hasn't earned: section 6a runs `npm run mcp:handshake`
+  live, which is what actually proves the tools are real and answering over the wire.
