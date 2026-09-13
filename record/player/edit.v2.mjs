@@ -49,6 +49,31 @@ const TRACK = {
 export const EDIT = {
   style: "v2",
   segments: [
+    // ── 0. One note before the demo starts ───────────────────────────────────
+    //
+    // The only line in this cut that is about the video rather than about the product, kept because a
+    // viewer hearing a synthetic voice with no explanation will spend the next four minutes wondering
+    // instead of watching. Small type, no accent, and off screen before the hook: an apology, not a
+    // title card.
+    {
+      kind: "card",
+      id: "note",
+      dur: 3.6,
+      lines: [
+        {
+          at: 0.25,
+          hold: 3.1,
+          class: "sub",
+          html:
+            // Broken by hand rather than left to wrap: at this size the sentence runs just past the
+            // measure and orphans the ":)" onto a line of its own.
+            '<span style="font-size:34px;line-height:1.5;display:block">' +
+            "I lost my voice recently, so the narration here is synthesised<br>" +
+            "rather than read. Please excuse it :)</span>",
+        },
+      ],
+    },
+
     // ── 1. The number nobody publishes ───────────────────────────────────────
     {
       kind: "card",

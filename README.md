@@ -5,7 +5,7 @@
 <video src="https://github.com/LegendaryPenguin/EthOnline/raw/main/docs/demo.mp4" controls width="100%"></video>
 
 [![Sentinel dashboard](docs/evidence/screens/dashboard-dark.png)](https://github.com/LegendaryPenguin/EthOnline/raw/main/docs/demo.mp4)
-*Click the image above to play the 3:53 demo video (`docs/demo.mp4`), in case GitHub strips the inline player.*
+*Click the image above to play the 3:57 demo video (`docs/demo.mp4`), in case GitHub strips the inline player.*
 
 > **Judging or grading this repo? Start at [START-HERE.md](START-HERE.md).** It is a 5 minute path: one command that proves everything, the three prize slots mapped to the exact file that satisfies each, and four files to read in order.
 

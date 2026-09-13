@@ -1,7 +1,8 @@
 # Demo video — script, and how it is rendered
 
-**As rendered:** v1 3:47 (226.5s, 6795 frames), v2 3:53 (233.0s, 6990 frames). Both 1080p
-(1920×1080), 30 fps, burned-in captions, no voiceover (captions carry the narrative; silent).
+**As rendered:** v1 3:47 (226.5s, 6795 frames), v2 3:57 (236.6s, 7098 frames). Both 1080p
+(1920×1080), 30 fps, burned-in captions. The rendered picture is silent; `npm run record:narrate`
+adds a voice track without touching a frame of it (see **Audio** below).
 **Constraint the script is written against:** every frame is real footage of this repo — a real
 command's real output, the running dashboard, or a real file on screen. Nothing is mocked up for the
 camera.
@@ -15,7 +16,26 @@ frame from committed inputs; there is no screen recorder anywhere in the pipelin
 | `npm run record:dashboard` | Drives the running dashboard in Playwright and records `record/assets/dashboard.webm`. The slider is driven by `ArrowRight` keypresses, not a mouse — Playwright's recorder does not draw a cursor, and keyboard operation is a stated acceptance criterion of the interface anyway. |
 | `npm run record:render` | Serves `record/player/` (the video as a web page whose entire visual state is a pure function of `SENTINEL.seek(t)`), replays the casts into a real xterm.js terminal, screenshots every frame at 30 fps and pipes them into ffmpeg. |
 
-Why this way rather than pointing a recorder at a screen:
+## Audio
+
+The picture is rendered silent, and the narration is added afterwards by `npm run record:narrate`
+(`scripts/record/narrate.mts`). Three properties are worth stating, because each was a choice:
+
+- **The narration is derived from the captions, not written beside them.** It reads
+  `record/out/timeline.v2.json`, which the renderer emits, and speaks one line per caption at that
+  caption's own cue time. A second hand-written script would be a second thing that can drift, and a
+  voice contradicting the text on screen is worse than no voice.
+- **The mux is `-c:v copy`.** Adding audio cannot change a single frame, so the video whose frames
+  diff against the casts is the same video that has a voice track. Adding a voiceover does not
+  re-open any of the verification above.
+- **`NARRATE_VOICE=human` prefers recorded takes.** `docs/NARRATION.md` is the same script timecoded,
+  one numbered file per line under `record/narration/`, with synthesis as the fallback for anything
+  not recorded. The version submitted here is synthesised, and the video's first card says so in
+  three and a half seconds rather than letting a viewer wonder about it for four minutes. That card
+  is the one line in v2 that is about the video rather than the product, which is a cost paid
+  deliberately: an unexplained synthetic voice is a distraction for the whole runtime.
+
+Why render rather than pointing a recorder at a screen:
 
 - **The casts are committed**, so a judge can diff any frame of the video against the bytes the
   command actually produced. A screen recording is unfalsifiable in the wrong direction — there is
@@ -55,7 +75,7 @@ because a claim that runs is worth more than a claim that is stated:
 | cut | shot list | output | length |
 |---|---|---|---|
 | v1 | `record/player/edit.mjs` | `record/out/sentinel-demo.mp4` | 3:46 |
-| v2 | `record/player/edit.v2.mjs` | `record/out/sentinel-demo-v2.mp4` | 3:53 |
+| v2 | `record/player/edit.v2.mjs` | `record/out/sentinel-demo-v2.mp4` | 3:57 |
 
 ---
 
@@ -260,7 +280,7 @@ straight from each sponsor's own prize page; this table says where each one is o
 | "Simply querying one Subgraph… does not qualify" | answered by construction at **0:14** and **1:54**: nine deployments, two schemas |
 | "Make the standards leverage clear: show what became easier" | **0:14** caption 3b — the primary-key join, stated as what the standard bought us |
 | "Authoring or extending a Standardized Subgraph… is in scope" | **3:09** — stated as *not claimed*, out loud |
-| "a short demo video (two to four minutes)" | v1 3:47, v2 3:53 |
+| "a short demo video (two to four minutes)" | v1 3:47, v2 3:57 |
 
 **The Graph — Best AI Tooling or AI Use Case (Start Fresh)**
 

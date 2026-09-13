@@ -39,8 +39,11 @@ const WORK = join(OUT, "narration-work");
 
 const CUT = process.env.NARRATE_CUT ?? "v2";
 const TIMELINE = join(OUT, CUT === "v2" ? "timeline.v2.json" : "timeline.json");
-const VIDEO_IN = join(OUT, CUT === "v2" ? "sentinel-demo-video.mp4" : "sentinel-demo.mp4");
-const VIDEO_OUT = join(OUT, CUT === "v2" ? "sentinel-demo-video-narrated.mp4" : "sentinel-demo-narrated.mp4");
+/* Names kept in step with `OUT_FILE` in scripts/record/render.mts, which is where the picture is
+ * written. They have to be read from there rather than guessed: pointing this at a plausible-looking
+ * stale mp4 produces a narrated video that is a cut behind the one that was just rendered, silently. */
+const VIDEO_IN = join(OUT, CUT === "v2" ? "sentinel-demo-v2.mp4" : "sentinel-demo.mp4");
+const VIDEO_OUT = join(OUT, "Sentinel-EthOnline.mp4");
 const MODE = (process.env.NARRATE_VOICE ?? "say").toLowerCase();
 const SAY_VOICE = process.env.NARRATE_SAY_VOICE ?? "Samantha";
 
