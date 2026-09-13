@@ -47,9 +47,10 @@ Everything under `ASSET` already exists in the repo unless marked **[record]**.
 | | |
 |---|---|
 | **SHOT** | Split: left, `lib/graph/queries.ts` scrolling slowly to the `positionsQuery` doc-comment. Right, a live terminal with `$ npm run snapshot` typed and running — real output streaming, 5 deployments resolving, the reconciliation gate firing on Aave V2, ending on the returning prompt. |
-| **CAPTION 1** | `One query document. Five lending protocols. Byte-identical against each.` |
-| **CAPTION 2** | `Messari standardized schemas — so Account.id is the raw address in all of them.` |
-| **CAPTION 3** | `The cross-protocol join is a primary-key join, not address guesswork. That's the whole trick.` |
+| **CAPTION 1** | `One shared schema across every protocol of a type — so one query pattern spans many protocols.` |
+| **CAPTION 2** | `Messari Standardized Subgraphs. Five lending protocols, one query document, byte-identical against each.` |
+| **CAPTION 3** | `Live data from a Graph provider — no mocked, local-only or static datasets anywhere in this project.` |
+| **CAPTION 3b** | `Account.id is the raw address in all of them, so the cross-protocol join is a primary-key join, not address guesswork. That's what the standard bought us.` |
 | **CAPTION 4** | *(as the gate fires)* `Aave V2 is registered on purpose and rejected on purpose — its subgraph never handles Repay, so its own debt total is off by three orders of magnitude. Zero Aave-specific code caught it.` |
 
 > **Caption note.** The caption deliberately says "three orders of magnitude" rather than a
@@ -77,13 +78,13 @@ is the entire ask of this track and a source screenshot does not demonstrate exe
 | | |
 |---|---|
 | **SHOT 4a** *(source, ~8s)* | `cre/sentinel-signal/workflow.ts` at line 534, `cre.handlerInTee` highlighted. Cut to lines 157–158, the two `getSecret` calls highlighted. Filename and line numbers visible in frame so each can be checked. |
-| **CAPTION 1** | `handlerInTee, not handler. There is no non-TEE path in this workflow.` |
-| **CAPTION 2** | `Both secrets are fetched from the Vault DON inside the enclave — the gateway API key, and the risk policy itself. Publish a threshold and a borrower sits one basis point under it.` |
+| **CAPTION 1** | `A registered confidential TEE handler: handlerInTee. Not handler — there is no non-TEE path in this workflow.` |
+| **CAPTION 2** | `Secrets fetched directly inside the enclave — the gateway API key, and the risk policy itself. Publish a threshold and a borrower sits one basis point under it.` |
 | **SHOT 4b** *(terminal, ~10s)* | `$ npm run cre:typecheck` typed and run, uncut, to a clean exit. |
 | **CAPTION 3** | `It compiles against the real CRE SDK — handlerInTee, TeeRuntime<Config>, getSecret. Not an approximation of the confidential API.` |
 | **SHOT 4c** *(terminal, ~16s)* | `$ npm run cre:test` typed and run, uncut. Hold at 1× on the section of output where both Vault secrets resolve, the live gateway queries run, the aggregate is computed, buckets are suppressed, and the report is signed. Then the passing test count and the returning prompt. |
-| **CAPTION 4** | `In: 37,866 raw position rows, and a per-address leverage map computed in the enclave.` |
-| **CAPTION 5** | `Out: 12 aggregate fields, signed. The map is not one of them.` |
+| **CAPTION 4** | `Sensitive inputs, confidential API responses, and intermediate computation — all four categories, all inside the enclave.` |
+| **CAPTION 5** | `The intermediate value is the per-address leverage map. Out come 12 aggregate fields, signed. The map is not one of them.` |
 | **SHOT 4d** *(terminal, ~14s — the money shot)* | `$ npm run cre:simulate` typed and run. Hold on `✓ Workflow compiled`, then **the CLI's own TEE box**, then the `[USER LOG]` lines and `✓ Workflow Simulation Result`, then exit 0. |
 | **CAPTION 6** | `And the CRE CLI's own simulator agrees about where it ran:` |
 | **CAPTION 7** | *(the TEE box on screen, zoomed, held 4s — no caption competing with it; this is Chainlink's tooling stating our core claim for us)* |
@@ -108,7 +109,7 @@ is the entire ask of this track and a source screenshot does not demonstrate exe
 | **SHOT** | Screen recording of the running dashboard. Drag the shock slider from 0% to −40% in one smooth pass; the contagion graph fills and the cascade rounds tick over. Hold on the fully-propagated state. Then the in-app frame meter. |
 | **CAPTION 1** | `A liquidation you can't sell into real depth isn't a liquidation.` |
 | **CAPTION 2** | `So the cascade model reads exit liquidity from four DEX AMM subgraphs — 636 live depth queries, deduped by pool.` |
-| **CAPTION 3** | `Two standardized schemas, composed. Lending risk parameters meet actual market depth.` |
+| **CAPTION 3** | `Two standardized schemas, composed into one pipeline. Lending risk parameters meet actual market depth.` |
 | **CAPTION 4** | `41 rungs, precomputed. 61 fps measured over 71 frames, worst frame 16.8 ms.` |
 | **ASSET** | **[record]** dashboard screen capture at 1080p60, downsampled to 30 fps for delivery (slider motion still reads smooth). Real cursor visible. |
 
@@ -118,20 +119,23 @@ is the entire ask of this track and a source screenshot does not demonstrate exe
 |---|---|
 | **SHOT 6a** *(terminal, ~7s)* | `$ npm run mcp:handshake` typed and run, uncut — the real JSON-RPC `initialize` / `tools/list` / `tools/call` exchange scrolling past, held at 1× on `MCP server ready: 8 tools, 5 deployments` and the pinned-block line. |
 | **SHOT 6b** *(animated transcript, ~19s)* | **Decided: animated replay of `docs/evidence/phase7-transcript.md`, not a live session.** The prompt types on, the tool call and its citation table appear, then the second prompt and the refusal. Rendered in the dashboard's own type stack, with a small persistent `recorded transcript · docs/evidence/phase7-transcript.md` label in the corner for the whole shot, so it is never mistaken for a live take. Prompts shown: *"What's the current systemic risk and what can't you evaluate?"* then *"Give me the list of addresses levered across three protocols."* |
-| **CAPTION 1** | `8 MCP tools, discoverable over the wire. Reusable infrastructure, not bolted to our dashboard.` |
+| **CAPTION 1** | `An MCP server and an agent SKILL: making The Graph easier to use from AI environments. Reusable infrastructure, not a single end-user app.` |
+| **CAPTION 1b** | `8 tools, discoverable over the wire. Every one of them queries Standardized Subgraphs live.` |
 | **CAPTION 2** | `Every figure cites the subgraph and the block it was read at. One session pins one block — two figures from two blocks were never true at the same time.` |
 | **CAPTION 3** | `Then ask for the address list.` |
 | **CAPTION 4** | `The refusal is in the server, not in a prompt. It survives an adversarial user.` |
-| **ASSET** | **[record]** live Claude Code session; existing transcript `docs/evidence/phase7-transcript.md` as the fallback still if the live take is slow. |
+| **CAPTION 5** | `Reasoning, decisions and automation — not printing a raw query result. This is a risk monitor with The Graph as its live source of blockchain data.` |
+| **ASSET** | **[record]** `npm run mcp:handshake`; animated replay built from `docs/evidence/phase7-transcript.md`. |
 
 ### 7 — It ends on-chain (3:02 → 3:16)
 
 | | |
 |---|---|
 | **SHOT** | Terminal, two commands typed and run uncut: `$ npm run consume-signal` — an independent consumer verifying the signer quorum and reacting — then `$ npm run forge:test`, held at 1× on the passing Solidity test count and the returning prompt. |
-| **CAPTION 1** | `A stranger's consumer verifies the quorum from the signed report alone. No trust in us required.` |
-| **CAPTION 2** | `GuardedVault consumes the signal on-chain and pauses new borrowing under alert. Advisory dashboards don't stop cascades.` |
-| **CAPTION 3** | `Signer quorum, staleness and replay, all verified in Solidity.` |
+| **CAPTION 1** | `We control exactly what leaves the enclave — for DON consensus, external delivery, and onchain settlement. Twelve aggregate fields, and nothing else.` |
+| **CAPTION 2** | `A stranger's consumer verifies the signer quorum from the signed report alone. No trust in us required.` |
+| **CAPTION 3** | `GuardedVault consumes the signal onchain and pauses new borrowing under alert. Advisory dashboards don't stop cascades.` |
+| **CAPTION 4** | `Automated liquidation protection, using private risk thresholds. Signer quorum, staleness and replay all verified in Solidity.` |
 | **ASSET** | **[record]** both commands. |
 
 ### 8 — What we don't claim, and one command for all of it (3:16 → 3:34)
@@ -147,6 +151,57 @@ is the entire ask of this track and a source screenshot does not demonstrate exe
 | **ASSET** | still; **[record]** a full `npm run verify` run — the same run whose numbers the captions quote. |
 
 ---
+
+## Track wording map — every requirement, and the second it lands
+
+The captions above deliberately reuse the sponsors' own phrases rather than our paraphrases of them,
+so a judge holding the prize page can tick bullets without translating. Verbatim requirements are in
+`docs/TRACKS.md`; this table says where each one is on screen.
+
+**The Graph — Best Use of Composable or Standardized Graph Products**
+
+| Their words | Where |
+|---|---|
+| "one shared schema across every protocol of a type" · "a single query across many protocols" | **0:22** caption 1–2 |
+| "build meaningfully on a standardized schema (for example the Messari Standardized Subgraphs)" | **0:22** caption 2, on screen as `lib/graph/deployments.ts` |
+| "Consume live data from a Graph provider… Mocked, local-only, or static datasets do not qualify" | **0:22** caption 3, over a live `npm run snapshot` |
+| "compose two or more of The Graph's products" | **2:06** caption 3 — two standardized schemas composed into one pipeline |
+| "Simply querying one Subgraph… does not qualify" | answered by construction at **0:22** and **2:06**: nine deployments, two schemas |
+| "Make the standards leverage clear: show what became easier" | **0:22** caption 3b — the primary-key join, stated as what the standard bought us |
+| "Authoring or extending a Standardized Subgraph… is in scope" | **3:16** — stated as *not claimed*, out loud |
+| "a short demo video (two to four minutes)" | 3:34 total |
+
+**The Graph — Best AI Tooling or AI Use Case (Start Fresh)**
+
+| Their words | Where |
+|---|---|
+| "makes The Graph easier to use from AI environments like Claude, Cursor, and ChatGPT (new or extended MCP servers, agent SKILLs…)" | **2:34** caption 1 |
+| "reusable infrastructure, not a single end-user app" | **2:34** caption 1, verbatim |
+| "Use The Graph as a load-bearing part of the project" | **2:34** caption 1b — every tool queries Standardized Subgraphs live |
+| "risk monitors" *(their own example of a qualifying AI app)* | **2:34** caption 5, using their word |
+| "Do meaningful work with the data: reasoning, decisions, automation… not just printing a raw query result" | **2:34** caption 5 and **3:02** (the vault acting on the signal) |
+| "Consume live data… Mocked, local-only, or static datasets do not qualify" | **2:34** shot 6a, live handshake |
+| "a clear README or SKILL.md so judges can run it" | **3:16** closing card |
+| "document any pre-existing work" | `docs/DISCLOSURE.md`, linked in the submission — not in the cut, since a disclosure belongs in writing |
+
+**Chainlink — Best Confidential Workflow**
+
+| Their words | Where |
+|---|---|
+| "register and use a confidential TEE handler, such as `handlerInTee`" | **1:24** shot 4a + caption 1, `handlerInTee` on screen |
+| "Secrets can be fetched directly inside the enclave" | **1:24** caption 2, both `getSecret` calls on screen |
+| "sensitive inputs, API responses, and intermediate computation remain protected" | **1:24** captions 4–5, all four categories named |
+| "hardware-isolated Trusted Execution Environment (TEE)" | **1:24** shot 4d — the CLI's own box naming AWS Nitro |
+| "execute a meaningful part of the application" · "A placeholder handler… will not qualify" | **0:52** (leak-demo: remove the enclave and there is no safe product) and **1:24** caption 9 (suppression firing on real data) |
+| "Developers explicitly control what stays confidential and what leaves the enclave for DON consensus, external delivery, or onchain settlement" | **3:02** caption 1, using all three of their destinations |
+| "Demonstrate a successful execution through… A Confidential Workflow simulation using the CRE CLI" | **1:24** shot 4d, exit 0 in frame |
+| "Provide evidence… such as a demo video, terminal output, execution logs" | the whole cut is terminal output; log committed at `docs/evidence/cre-simulation.log` |
+| their example use case: "Automated liquidation protection using private risk thresholds" | **3:02** caption 4, using their phrase |
+| their example use case: "Privacy-preserving risk assessment and policy enforcement" | **0:52** and **3:02** — the assessment is private, the vault is the enforcement |
+
+One gap, named rather than hidden: the track description mentions layering **the Subgraph MCP** on
+top for cross-protocol analysis. We ship our *own* MCP server over Standardized Subgraphs; we do not
+use The Graph's Subgraph MCP. The composition claim rests on two standardized schemas, not on that.
 
 ## Caption style
 

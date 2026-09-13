@@ -65,6 +65,20 @@ served at; deployments more than 1000 blocks behind head are excluded with the r
 **Verify it:** `npm run verify` — 18 stages, live, ~4 minutes, every stage green. Evidence map with file and line for every
 bullet above: `docs/EVIDENCE.md`.
 
+**Your qualification requirements, in order**
+
+| Requirement | Sentinel |
+|---|---|
+| "Either compose two or more of The Graph's products, or build meaningfully on a standardized schema (for example the Messari Standardized Subgraphs)" | **Both.** Two Messari Standardized Subgraph schemas — Lending/CDP and DEX AMM — composed into one pipeline, nine deployments |
+| "Consume live data from a Graph provider… Mocked, local-only, or static datasets do not qualify" | Every figure is a live gateway query. **No mock mode exists**, and `lib/__tests__/no-mock-data.test.ts` fails the build if one appears |
+| "Simply querying one Subgraph with no composition or standardization does not qualify" | Nine deployments, two schemas, one query document per schema, zero per-protocol adapters |
+| "Authoring or extending a Standardized Subgraph… is in scope" | **Not claimed.** We consume the standard. What we contribute instead is a measurement of two places it breaks down, above |
+| "Make the standards leverage clear: show what became easier because a shared schema or composed product was used" | The primary-key cross-protocol join, which is the only reason the project is possible; and a sixth protocol costs one registry row |
+| "Submit a public repository and a short demo video (two to four minutes)" | Public repo with per-phase commit history; 3:34 captioned video |
+
+And the description's own bar — *"one query pattern spanning many protocols"* — is exactly what the
+first shot of the video shows.
+
 ---
 
 ## Draft 2 — The Graph: Best AI Tooling or AI Use Case (From Scratch)
@@ -120,6 +134,20 @@ be published safely.
 transcript including the refusals in `docs/evidence/phase7-transcript.md`; everything re-verified by
 `npm run verify`.
 
+**Your qualification requirements, in order**
+
+| Requirement | Sentinel |
+|---|---|
+| "Use The Graph as a load-bearing part of the project: either the AI tooling targets The Graph's products… or the agent/app uses The Graph… as its source of blockchain data" | **Both halves.** The tooling targets Standardized Subgraphs, and the app is a **risk monitor** — your own example of a qualifying AI app — with The Graph as its only source of blockchain data |
+| "Consume live data from a Graph provider… Mocked, local-only, or static datasets do not qualify" | Every tool call hits the gateway with a Subgraph Studio API key. Proven by the JSON-RPC handshake log, reproducible with `npm run mcp:handshake` |
+| "Do meaningful work with the data: reasoning, decisions, automation, or a natural-language interface, not just printing a raw query result" | All four: block-pinned reasoning with citations, an alert decision against a calibrated policy, on-chain automation via `GuardedVault`, and a natural-language interface through the SKILL |
+| "Tooling submissions must be reusable infrastructure, not a single end-user app" | An MCP server any MCP client can mount and a SKILL.md any Claude Code user can install. The dashboard is *a* consumer, not the product |
+| "Open-source the code with a clear README or SKILL.md so judges can run it" | Both, plus `npm run verify` as one command that re-checks every claim on live data |
+| "Select the pool that matches how you built… document any pre-existing work" | **Start Fresh.** Prior work disclosed unprompted in `docs/DISCLOSURE.md`, naming both earlier repositories |
+
+Your description lists the tooling forms that count — *"new or extended MCP servers, agent SKILLs"* —
+and this submission is the first two of those, built for the second half of the same sentence.
+
 ---
 
 ## Draft 3 — Chainlink: Best Confidential Workflow
@@ -146,14 +174,20 @@ cre.handlerInTee(cronTrigger.trigger({ schedule: config.schedule }), onCronTrigg
 **the TEE runtime is the only runtime this workflow has.** There is no non-TEE path; the signal has
 exactly one producer.
 
-**All four categories of sensitive input, processed inside the enclave**
+**Requirement 3 asks for "at least one" of five categories. All five are processed inside the
+enclave**, and they are genuinely different kinds of sensitive:
 
-| Category | What |
+| Your category | What, in Sentinel |
 |---|---|
-| **Secret** | the Graph gateway API key, fetched from the Vault DON inside the enclave |
-| **Private parameter** | `SENTINEL_RISK_POLICY` — leverage watch level and composite weights. As sensitive as the key: publish the threshold and a borrower sits one basis point under it. |
-| **Confidential API response** | raw `Position` rows — every address, balance and collateral flag — read over an authenticated request made from inside the enclave |
-| **Intermediate value** | the per-address cross-protocol leverage map. Computed in the enclave, **never emitted.** |
+| **secret** | the Graph gateway API key, fetched from the Vault DON inside the enclave (`workflow.ts:157`) |
+| **private parameter** | `SENTINEL_RISK_POLICY` — leverage watch level, shock ladder, composite weights, k-anonymity floor. As sensitive as the key: publish the threshold and a borrower sits one basis point under it (`workflow.ts:158`) |
+| **sensitive input** | the borrower set itself — which addresses are under evaluation. Knowing who Sentinel is looking at is already a signal |
+| **confidential API response** | raw `Position` rows — every address, balance and collateral flag across 37,866 accounts — read over an authenticated request made from inside the enclave (`workflow.ts:438`) |
+| **intermediate value** | the per-address cross-protocol leverage map. Computed in the enclave, **never emitted** — this is the value the whole design exists to protect (`lib/signal/aggregate.ts`) |
+
+One implementation note, recorded because it is the kind of thing a judge asks: `ConfidentialHTTPClient`
+is deliberately **not** used — it has no `TeeRuntime` overload, whereas `HTTPClient.sendRequest` does,
+so the gateway call is made through the TEE runtime instead (`workflow.ts:427`).
 
 Neither secret is ever passed to `usingTheDons()`, so neither reaches Workflow DON node memory.
 
@@ -187,10 +221,30 @@ And the integration is demonstrable in the negative, which is the strongest form
 leak-demo` shows exactly what the enclave refuses to publish and what an attacker gains if the
 boundary is removed** (`docs/evidence/leak-demo.md`).
 
-**What leaves the enclave:** 12 aggregate fields, signed, specified in `docs/SIGNAL.md` and verified
-on-chain in `contracts/src/SentinelSignal.sol`. `contracts/src/GuardedVault.sol` consumes them and
-pauses new borrowing under alert. The dashboard verifies the signer quorum before rendering a single
-figure, and `npm run check:ui` proves **zero** 40-hex strings cross the wire on either route.
+**Explicit control over what leaves the enclave, for all three of your destinations.** 12 aggregate
+fields, signed — specified field by field in `docs/SIGNAL.md`:
+
+- **DON consensus** — the aggregate is what reaches consensus; neither secret is ever passed to
+  `usingTheDons()`.
+- **External delivery** — the dashboard verifies the signer quorum before rendering a single figure,
+  and `npm run check:ui` proves **zero** 40-hex strings cross the wire on either route.
+- **Onchain settlement** — verified in `contracts/src/SentinelSignal.sol`; `GuardedVault.sol` pauses
+  new borrowing under alert.
+
+**Your qualification requirements, in order**
+
+| Requirement | Sentinel |
+|---|---|
+| "Build a CRE Workflow that uses the Confidential Workflows to execute a meaningful part of the application" | The confidential part *is* the application — without the enclave there is no publishable product |
+| "must register and use a confidential TEE handler, such as `handlerInTee` in TypeScript" | `cre.handlerInTee(...)` at `cre/sentinel-signal/workflow.ts:534`, with `{ tee: 'nitro' }`. No non-TEE path exists |
+| "must process at least one sensitive input, secret, confidential API response, private parameter, or intermediate value inside the enclave" | **All five categories**, tabled above |
+| "must be meaningfully integrated into the project's core functionality. A placeholder handler or an isolated example… will not qualify" | Two enclave-internal decisions visible in the simulation output: a deployment excluded on its own evidence, and 3 coupling buckets withheld by k-anonymity. `npm run leak-demo` shows what removing the boundary would cost |
+| "Demonstrate a successful execution through either: A Confidential Workflow simulation using the CRE CLI or a live deployment" | **CRE CLI simulation, exit 0.** `npm run cre:simulate` |
+| "Provide evidence of the successful simulation or deployment… such as a demo video, terminal output, execution logs" | All three: the video's longest section is this simulation, and the full execution log is committed at `docs/evidence/cre-simulation.log` |
+
+Your description says developers *"designate sensitive parts of a CRE Workflow to execute inside a
+hardware-isolated Trusted Execution Environment"* — here the sensitive part is the only part, and the
+CLI's own output names the enclave it was dispatched to.
 
 **One finding worth passing to the CRE team.** With `-g`, the engine logs full outbound request
 URLs. The Graph gateway carries the API key as a path segment, so our first raw transcript contained

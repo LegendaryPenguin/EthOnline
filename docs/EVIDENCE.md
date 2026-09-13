@@ -212,7 +212,8 @@ Code user can install. Not bound to our dashboard.
 - Transcript, including the refusals: `docs/evidence/phase7-transcript.md`. Design:
   `docs/AGENT.md`.
 
-**Automation, end to end:** the risk monitor is not advisory. `contracts/src/GuardedVault.sol`
+**Automation, end to end.** The track lists *"risk monitors"* among the AI apps that qualify, and
+that is precisely the category Sentinel is in — but the risk monitor here is not advisory. `contracts/src/GuardedVault.sol`
 consumes the signal on-chain and pauses new borrowing under alert — 13 Solidity tests covering
 staleness, replay, and the week-old baseline (`npm run forge:test`).
 
@@ -257,12 +258,14 @@ The handler signature is `(runtime: TeeRuntime<Config>) => string`
 
 ### 3. "The confidential portion must process at least one sensitive input, secret, confidential API response, private parameter, or intermediate value inside the enclave."
 
-All four categories, which is worth spelling out because they are different kinds of sensitive:
+The bullet asks for **at least one** of five. All five are, which is worth spelling out because they
+are genuinely different kinds of sensitive:
 
 | Category | What | Where |
 |---|---|---|
 | **Secret** | the Graph gateway API key, fetched from the Vault DON *inside* the enclave | `workflow.ts:157` |
 | **Private parameter** | `SENTINEL_RISK_POLICY` — the leverage watch level and composite weights. As sensitive as the key: publish the threshold and a borrower sits one basis point under it. | `workflow.ts:158` |
+| **Sensitive input** | the borrower set under evaluation. Which addresses Sentinel is looking at is already a signal, before any figure is computed from them. | `workflow.ts:438` |
 | **Confidential API response** | raw `Position` rows — every address, balance and collateral flag for 37,866 accounts — read over an authenticated gateway request made from inside the enclave | `workflow.ts:438` |
 | **Intermediate value** | the per-address cross-protocol leverage map itself. Computed in the enclave, **never emitted.** | `lib/signal/aggregate.ts` |
 
@@ -287,6 +290,13 @@ boundary is removed** (`docs/evidence/leak-demo.md`). k-anonymity suppression is
 output — the recorded report suppresses **3 of its coupling buckets** because fewer than `k`
 distinct accounts stood behind them, and publishes 0 rather than a number that would identify
 someone. Suppression that never fires is decoration; this one fires.
+
+The track description says developers *"explicitly control what stays confidential and what leaves
+the enclave for DON consensus, external delivery, or onchain settlement."* Sentinel exercises all
+three destinations, which is why the boundary had to be specified field by field rather than
+gestured at: the aggregate reaches **DON consensus**; the dashboard is **external delivery**; and
+`SentinelSignal.sol` is **onchain settlement**. Each is a separate place a leak could happen, so
+each is tested separately.
 
 The signal that leaves the enclave is 12 aggregate fields, specified in `docs/SIGNAL.md` and
 verified on-chain in `contracts/src/SentinelSignal.sol`. The dashboard verifies the signer
