@@ -316,20 +316,38 @@ Checked before planning, not assumed:
   on the headline number.
 
 **Acceptance criteria**
-- [ ] **Fresh-clone test passes on a clean checkout**: clone → `npm i` → set one key →
-      `npm run verify` → live data, TEE sim, signal, consumer, and UI all green.
-- [ ] Preflight fails loudly and usefully on a bad/missing key — never a silent
-      fallback to mock data.
-- [ ] Every acceptance criterion from Phases 1–9 re-verified green in one run.
-- [ ] `docs/EVIDENCE.md` maps all three tracks' bullets to concrete artifacts.
-- [ ] Video is **2:00–4:00**, 1080p, captioned, edited, with no dead air; script
-      approved before render.
-- [ ] Video shows: the headline finding, one query spanning many protocols, the TEE
+- [x] **Fresh-clone test passes on a clean checkout**: clone → `npm i` → set one key →
+      `npm run verify` → live data, TEE sim, signal, consumer, and UI all green. Run on a
+      clean `git clone` (24 MB, no build artifacts), 18/18 green, cold-start flow 61.5s,
+      keyboard drive 60.6 fps with a worst frame of 16.8 ms.
+      **It failed the first time, which is what the test is for:** `npm install` does not
+      install `cre/sentinel-signal`'s dependencies — that package has its own bun lockfile —
+      so a required stage died on `./node_modules/.bin/tsc: No such file or directory`.
+      Fixed in two places rather than one: the `cre:*` scripts install that package if it
+      has no `node_modules`, and `npm run preflight` now checks for bun, forge and cre up
+      front, blocking on bun (two required stages need it) and warning on the other two
+      (their stages are skipped-with-a-reason). A missing tool should be named where it can
+      be explained, not dereferenced thirty seconds in.
+- [x] Preflight fails loudly and usefully on a bad/missing key — never a silent
+      fallback to mock data. Checked on the clean checkout three ways: no key at all
+      (2 blocking problems, nothing run), a syntactically valid revoked key (`the
+      gateway rejected the key — auth error: API key not found`, and the gateway URL
+      withheld because the key is a path segment of it), and a missing toolchain.
+- [x] Every acceptance criterion from Phases 1–9 re-verified green in one run.
+- [x] `docs/EVIDENCE.md` maps all three tracks' bullets to concrete artifacts.
+- [x] Video is **2:00–4:00**, 1080p, captioned, edited, with no dead air; script
+      approved before render. 3:47, 1920×1080, 30 fps.
+- [x] Video shows: the headline finding, one query spanning many protocols, the TEE
       simulation logs, the backtest result with lead time, the cascade animation, and
-      a consumer reacting to the signal.
-- [ ] No secrets in git history (scanned).
-- [ ] Commit history granular and honest across the whole build.
-- [ ] Three submission drafts written, each in the sponsor's own vocabulary.
+      a consumer reacting to the signal. The lead-time shot is the operating-point table
+      `npm run backtest:cascades` wrote (`docs/evidence/phase6-early-warning.md`): 3 of 5
+      episodes at a 24h median lead at 20% FPR, and **0 of 5 at the primary 10% row**,
+      which is the row the captions lead with. The first render had no backtest in it at
+      all; this shot was added afterwards for that reason.
+- [x] No secrets in git history (scanned): `git log -p --all | grep -Eo '[0-9a-f]{32}'`
+      over all 529 objects returns nothing.
+- [x] Commit history granular and honest across the whole build.
+- [x] Three submission drafts written, each in the sponsor's own vocabulary.
 - [~] Full flow completes in under 60s from cold start on live data. **Missed, and recorded as
       missed: observed 53.6s–62.5s across runs, so it clears the target on some runs and not
       others.** Nearly all of it is one gateway-bound stage (`cascade`, 636 live DEX-depth

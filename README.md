@@ -80,6 +80,11 @@ npm run dev                    # the dashboard
 `npm run verify -- --fast` skips the two slowest stages and says so in its summary, so a fast run
 can never be mistaken for a full one.
 
+Three toolchains are not vendored, and preflight names each one before anything runs: **bun** (the
+CRE workflow is a bun package with its own lockfile — `npm install` does not reach it, so the
+`cre:*` scripts install it themselves), **forge** for the Solidity consumer, and the **cre** CLI for
+the TEE simulation. Only bun is blocking; the other two gate stages that skip with a reason.
+
 Last full run: **18 stages green, 120.4s total** (`docs/evidence/casts/verify.json` — the run in
 the video). The cold-start flow — API key to rendered dashboard — took **61.3s**, so it straddles
 the 60-second target we set ourselves and misses it on some runs. One gateway-bound stage accounts
@@ -140,7 +145,7 @@ Listed here rather than buried, because it is the fastest way to judge the rest:
 | `docs/ENCLAVE.md` | the confidentiality boundary, field by field |
 | `docs/SIGNAL.md` | the 12 published fields and what each one means |
 | `docs/AGENT.md` | the MCP tools and why they constrain the model |
-| `docs/BACKTEST.md` | lead time on real liquidation episodes, hits and misses |
+| `docs/BACKTEST.md` | recall over replayed liquidations, hits and misses; lead time is in `docs/evidence/phase6-early-warning.md` |
 | `docs/DATAVIZ.md` | the design system's rules and the reason for each |
 | `docs/DISCLOSURE.md` | prior-work disclosure, unprompted |
 | `docs/evidence/` | the raw artifacts every claim above is drawn from |

@@ -479,6 +479,30 @@ export const EDIT = {
     },
 
     // ── 8. What we do not claim, and one command for all of it ───────────────
+    //
+    // The backtest earns its place here rather than in the results sections, because what it
+    // measured is an argument against our own alert policy. `npm run backtest:cascades` writes
+    // this table; the shot is the file it wrote, not a slide about it.
+    {
+      kind: "doc",
+      file: "docs/evidence/phase6-early-warning.md",
+      from: 28,
+      to: 36,
+      note: "npm run backtest:cascades — 5 episodes, 20 controls",
+      dur: 9,
+      captions: [
+        {
+          at: 0.2,
+          dur: 4.0,
+          html: "Backtested against real liquidation episodes, each paired against the same hour of the previous week: <b>3 of 5 detected at a 24-hour median lead time</b>, at a 20% false-alarm rate.",
+        },
+        {
+          at: 4.4,
+          dur: 4.4,
+          html: "<b>At the strictest operating point it detects nothing</b>, and that row is the primary result. All three are published rather than the flattering one chosen — with 5 episodes, picking would be fitting the policy to the labels.",
+        },
+      ],
+    },
     {
       kind: "doc",
       file: "docs/EVIDENCE.md",

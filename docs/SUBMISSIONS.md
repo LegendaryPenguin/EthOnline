@@ -74,7 +74,7 @@ bullet above: `docs/EVIDENCE.md`.
 | "Simply querying one Subgraph with no composition or standardization does not qualify" | Nine deployments, two schemas, one query document per schema, zero per-protocol adapters |
 | "Authoring or extending a Standardized Subgraph… is in scope" | **Not claimed.** We consume the standard. What we contribute instead is a measurement of two places it breaks down, above |
 | "Make the standards leverage clear: show what became easier because a shared schema or composed product was used" | The primary-key cross-protocol join, which is the only reason the project is possible; and a sixth protocol costs one registry row |
-| "Submit a public repository and a short demo video (two to four minutes)" | Public repo with per-phase commit history; 3:38 captioned video |
+| "Submit a public repository and a short demo video (two to four minutes)" | Public repo with per-phase commit history; 3:47 captioned video |
 
 And the description's own bar — *"one query pattern spanning many protocols"* — is exactly what the
 first shot of the video shows.

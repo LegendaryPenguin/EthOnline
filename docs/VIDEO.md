@@ -1,6 +1,6 @@
 # Demo video — script, and how it is rendered
 
-**As rendered:** 3:38 (217.5s, 6525 frames), 1080p (1920×1080), 30 fps, burned-in captions, no
+**As rendered:** 3:47 (226.5s, 6795 frames), 1080p (1920×1080), 30 fps, burned-in captions, no
 voiceover (captions carry the narrative; silent).
 **Constraint the script is written against:** every frame is real footage of this repo — a real
 command's real output, the running dashboard, or a real file on screen. Nothing is mocked up for the
@@ -164,10 +164,13 @@ is the entire ask of this track and a source screenshot does not demonstrate exe
 | **CAPTION 4** | `Automated liquidation protection, using private risk thresholds. Signer quorum, staleness and replay all verified in Solidity.` |
 | **ASSET** | **[record]** both commands. |
 
-### 8 — What we don't claim, and one command for all of it (3:00 → 3:38)
+### 8 — What we don't claim, and one command for all of it (3:00 → 3:47)
 
 | | |
 |---|---|
+| **SHOT 8a0** *(source, 9s)* | The operating-point table `npm run backtest:cascades` wrote, in `docs/evidence/phase6-early-warning.md`. Added after the first render, which had no backtest in it — an acceptance criterion asks the video to show the backtest result with lead time, and it wasn't there. |
+| **CAPTION 0a** | `Backtested against real liquidation episodes, each paired against the same hour of the previous week: 3 of 5 detected at a 24-hour median lead time, at a 20% false-alarm rate.` |
+| **CAPTION 0b** | `At the strictest operating point it detects nothing, and that row is the primary result. All three are published rather than the flattering one chosen — with 5 episodes, picking would be fitting the policy to the labels.` |
 | **SHOT 8a** *(source, ~6s)* | The "claims we do not make" section of `docs/EVIDENCE.md`, scrolling. |
 | **CAPTION 1** | `We didn't author a subgraph — we consume two. The backtest publishes its misses. Distress figures are bounds, because E-Mode isn't in the standardized schema.` |
 | **SHOT 8b** *(terminal, ~10s)* | `$ npm run verify` typed and run. Ramp the run visibly (`⏩ 8×`), then drop to 1× and hold on the full summary block: every stage marked `ok`, the totals, and `verify OK — every stage green on live data.` |
@@ -194,8 +197,8 @@ so a judge holding the prize page can tick bullets without translating. Verbatim
 | "compose two or more of The Graph's products" | **1:54** caption 3 — two standardized schemas composed into one pipeline |
 | "Simply querying one Subgraph… does not qualify" | answered by construction at **0:14** and **1:54**: nine deployments, two schemas |
 | "Make the standards leverage clear: show what became easier" | **0:14** caption 3b — the primary-key join, stated as what the standard bought us |
-| "Authoring or extending a Standardized Subgraph… is in scope" | **3:00** — stated as *not claimed*, out loud |
-| "a short demo video (two to four minutes)" | 3:38 total |
+| "Authoring or extending a Standardized Subgraph… is in scope" | **3:09** — stated as *not claimed*, out loud |
+| "a short demo video (two to four minutes)" | 3:47 total |
 
 **The Graph — Best AI Tooling or AI Use Case (Start Fresh)**
 
@@ -207,7 +210,7 @@ so a judge holding the prize page can tick bullets without translating. Verbatim
 | "risk monitors" *(their own example of a qualifying AI app)* | **2:14** caption 5, using their word |
 | "Do meaningful work with the data: reasoning, decisions, automation… not just printing a raw query result" | **2:14** caption 5 and **2:43** (the vault acting on the signal) |
 | "Consume live data… Mocked, local-only, or static datasets do not qualify" | **2:14** shot 6a, live handshake |
-| "a clear README or SKILL.md so judges can run it" | **3:00** closing card |
+| "a clear README or SKILL.md so judges can run it" | **3:40** closing card |
 | "document any pre-existing work" | `docs/DISCLOSURE.md`, linked in the submission — not in the cut, since a disclosure belongs in writing |
 
 **Chainlink — Best Confidential Workflow**
