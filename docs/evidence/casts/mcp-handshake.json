@@ -1,0 +1,73 @@
+{
+  "id": "mcp-handshake",
+  "command": "npm run mcp:handshake",
+  "prompt": "sentinel $ ",
+  "section": "6a — the tools over the wire",
+  "recordedAt": "2026-09-13T05:17:39.319Z",
+  "exitCode": 0,
+  "durationMs": 9600,
+  "cols": 120,
+  "rows": 34,
+  "events": [
+    [
+      217,
+      "> sentinel@0.1.0 mcp:handshake\r\n> tsx scripts/mcp-handshake.mts\r\n\r\n"
+    ],
+    [
+      387,
+      "-> {\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"sentinel-handshake\",\"version\":\"0.1.0\"}}}\r\n"
+    ],
+    [
+      1205,
+      "## [sentinel] MCP server ready: 8 tools, 5 deployments\r\n"
+    ],
+    [
+      1209,
+      "<- {\"result\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{\"tools\":{}},\"serverInfo\":{\"name\":\"sentinel\",\"version\":\"0.1.0\"}},\"jsonrpc\":\"2.0\",\"id\":1}\r\n"
+    ],
+    [
+      1209,
+      "-> {\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}\r\n"
+    ],
+    [
+      1209,
+      "-> {\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\",\"params\":{}}\r\n"
+    ],
+    [
+      1210,
+      "<- {\"result\":{\"tools\":[{\"name\":\"sentinel_signal\",\"description\":\"The current systemic-risk signal: the composite score, how much borrowed value sits with addresses levered across two or more protocols, an\r\n"
+    ],
+    [
+      1210,
+      "-> {\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{\"name\":\"sentinel_alert\",\"arguments\":{}}}\r\n"
+    ],
+    [
+      1413,
+      "## [sentinel] head 25966363, pinning 25966353\r\n"
+    ],
+    [
+      5170,
+      "## [sentinel] signal at 25966353: score 22.00, 4 deployment(s), 14 calls\r\n"
+    ],
+    [
+      9541,
+      "## [sentinel] control at 25916222: score 21.83\r\n"
+    ],
+    [
+      9545,
+      "<- {\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"No alert. The score moved 0.17 points against the same hour last week (21.83 to 22.00), below the weakest calibrated threshold of 0.61.\\n\\n| number | value\r\n"
+    ],
+    [
+      9546,
+      "## handshake ok: 8 tools, sentinel_alert answered 1760 chars\r\n"
+    ],
+    [
+      9552,
+      "\r\nwrote docs/evidence/phase7-mcp-handshake.log\r\n"
+    ],
+    [
+      9575,
+      "⠙\u001b[1G\u001b[0K"
+    ]
+  ]
+}

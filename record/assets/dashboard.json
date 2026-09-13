@@ -1,0 +1,45 @@
+{
+  "clip": "dashboard.webm",
+  "recordedAt": "2026-09-13T05:37:48.738Z",
+  "durationMs": 22773,
+  "leadInMs": 998,
+  "presses": 40,
+  "pressGapMs": 190,
+  "driver": "keyboard (ArrowRight), Playwright — Playwright's recorder does not draw a cursor",
+  "fpsLine": "Last interaction: 60 fps over 487 frames, worst single frame 16.8 ms. Measured with requestAnimationFrame in this tab, not eyeballed.",
+  "sliderLabel": "PRICE SHOCK TO ETH AND BTC",
+  "marks": [
+    {
+      "at": 0,
+      "what": "hero"
+    },
+    {
+      "at": 2202,
+      "what": "scroll-to-explorer"
+    },
+    {
+      "at": 3624,
+      "what": "focus-slider"
+    },
+    {
+      "at": 4526,
+      "what": "drive"
+    },
+    {
+      "at": 12221,
+      "what": "propagated"
+    },
+    {
+      "at": 15623,
+      "what": "read-fps"
+    },
+    {
+      "at": 18240,
+      "what": "graph"
+    },
+    {
+      "at": 22773,
+      "what": "end"
+    }
+  ]
+}

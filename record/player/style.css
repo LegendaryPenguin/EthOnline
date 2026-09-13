@@ -1,0 +1,419 @@
+/*
+ * The video's stylesheet. Every colour here is a token read from `app/tokens.css` (served at
+ * /repo/app/tokens.css and imported below), so the video cannot drift from the product's palette —
+ * the same rule `app/globals.css` follows for the same reason: a literal hex is a colour nothing
+ * has measured for contrast.
+ */
+@import url("/repo/app/tokens.css");
+
+:root {
+  --caption-plate: rgba(8, 11, 15, 0.82);
+  --frame-pad: 56px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+#stage {
+  position: relative;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+}
+
+/* Every segment is absolutely positioned and shown only while it is on. */
+.seg {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+.seg[data-on="1"] {
+  display: block;
+}
+
+/* ---------------------------------------------------------------- title cards */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 34px;
+  padding: 0 200px;
+  text-align: center;
+  height: 100%;
+}
+.card-line {
+  font-size: 62px;
+  line-height: 1.18;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  opacity: 0;
+  transform: translateY(14px);
+}
+.card-line.sub {
+  font-size: 40px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+.card-line.accent {
+  color: var(--color-accent);
+}
+
+/* ---------------------------------------------------------------- terminal */
+
+.term-wrap {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1600px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+}
+.term-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 46px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-raised);
+  font-size: 17px;
+  color: var(--color-text-faint);
+}
+.term-bar .dots {
+  display: flex;
+  gap: 8px;
+}
+.term-bar .dots i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-border-strong);
+  opacity: 0.6;
+}
+.term-bar .who {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+.term-bar .cast {
+  margin-left: auto;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 15px;
+  opacity: 0.75;
+}
+.term-body {
+  padding: 14px 16px 16px;
+}
+.term-body .xterm {
+  padding: 0;
+}
+
+/* The ramp badge: on screen whenever the replay is running faster than the run did. */
+.ramp {
+  position: absolute;
+  top: 88px;
+  right: 190px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--color-warn);
+  color: #080b0f;
+  font-size: 22px;
+  font-weight: 600;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  display: none;
+}
+.ramp[data-on="1"] {
+  display: block;
+}
+
+/* A pinned enlargement of lines that are on screen behind it, for the frames that matter. */
+.zoom {
+  position: absolute;
+  left: 50%;
+  top: 300px;
+  transform: translateX(-50%) scale(0.96);
+  width: 1500px;
+  padding: 30px 36px;
+  border-radius: 14px
+  ;
+  border: 2px solid var(--color-accent);
+  background: rgba(4, 12, 14, 0.995);
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.8);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 25px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  color: var(--color-text);
+  opacity: 0;
+}
+.zoom .zoom-label {
+  display: block;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 14px;
+}
+.zoom em {
+  font-style: normal;
+  color: var(--color-accent);
+}
+
+/* ---------------------------------------------------------------- code / doc panes */
+
+.pane {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1640px;
+  height: 790px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+  overflow: hidden;
+}
+.pane-bar {
+  display: flex;
+  align-items: center;
+  height: 46px;
+  padding: 0 20px;
+  gap: 16px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-raised);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 17px;
+  color: var(--color-text-muted);
+}
+.pane-bar .where {
+  margin-left: auto;
+  color: var(--color-accent);
+}
+.pane-scroll {
+  position: relative;
+  height: calc(100% - 46px);
+  overflow: hidden;
+}
+.pane-code {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 21px;
+  line-height: 30px;
+  white-space: pre;
+}
+.pane-code .row {
+  display: flex;
+  gap: 20px;
+  padding: 0 20px;
+}
+.pane-code .n {
+  width: 62px;
+  text-align: right;
+  color: var(--color-text-faint);
+  opacity: 0.6;
+  flex: none;
+}
+.pane-code .t {
+  color: var(--color-text-muted);
+}
+.pane-code .row.hl {
+  background: rgba(63, 217, 196, 0.13);
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+.pane-code .row.hl .t {
+  color: var(--color-text);
+}
+.pane-code .row.hl .n {
+  color: var(--color-accent);
+  opacity: 1;
+}
+
+/* Prose panes (docs) wrap instead of scrolling sideways. */
+.pane-code.prose {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 25px;
+  line-height: 40px;
+  white-space: normal;
+}
+.pane-code.prose .row {
+  padding: 0 40px;
+}
+.pane-code.prose .n {
+  display: none;
+}
+.pane-code.prose .t {
+  white-space: pre-wrap;
+}
+
+/* ---------------------------------------------------------------- dashboard clip */
+
+.clip {
+  position: absolute;
+  inset: 0;
+  width: 1920px;
+  height: 1080px;
+  object-fit: cover;
+  background: var(--color-bg);
+}
+
+/* ---------------------------------------------------------------- agent transcript */
+
+.chat {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1560px;
+  height: 790px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+}
+.chat-inner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  padding: 34px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.turn {
+  opacity: 0;
+}
+.turn .who {
+  font-size: 17px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  margin-bottom: 8px;
+}
+.turn.user .body {
+  font-size: 30px;
+  color: var(--color-text);
+  border-left: 3px solid var(--color-accent);
+  padding-left: 20px;
+}
+.turn.tool .body,
+.turn.agent .body {
+  font-size: 23px;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+  white-space: pre-wrap;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+/* Citation rows carry a name, a value, the deployments and a block; at body size they wrap. */
+.turn.table .body {
+  font-size: 17px;
+  line-height: 1.5;
+}
+.turn.refusal .body {
+  color: var(--color-alert);
+}
+.chat-label {
+  position: absolute;
+  right: 26px;
+  bottom: 22px;
+  z-index: 3;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: rgba(8, 11, 15, 0.9);
+  border: 1px solid var(--color-border);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 16px;
+  color: var(--color-warn);
+}
+
+/* ---------------------------------------------------------------- captions */
+
+#captions {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 210px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 90px 34px;
+  z-index: 5;
+  pointer-events: none;
+}
+#caption {
+  max-width: 1560px;
+  padding: 20px 30px;
+  border-radius: 12px;
+  background: var(--caption-plate);
+  backdrop-filter: blur(3px);
+  font-size: 40px;
+  line-height: 1.28;
+  text-align: center;
+  color: #f2f4f8;
+  opacity: 0;
+}
+#caption b {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+#caption code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 36px;
+  color: var(--color-accent);
+}
+
+/* A persistent, quiet mark of which track a section is answering. */
+#tracktag {
+  position: absolute;
+  left: 40px;
+  top: 14px;
+  z-index: 6;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: rgba(8, 11, 15, 0.72);
+  font-size: 17px;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  opacity: 0;
+}
+
+/* The decode source for a canvas-painted clip: in the layout so it keeps decoding, never seen. */
+.hidden-source {
+  opacity: 0;
+  z-index: -1;
+}
+
+#progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 4px;
+  background: var(--color-accent);
+  z-index: 7;
+  opacity: 0.55;
+}

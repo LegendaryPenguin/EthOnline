@@ -1,0 +1,89 @@
+{
+  "id": "snapshot",
+  "command": "npm run snapshot",
+  "prompt": "sentinel $ ",
+  "section": "2 — live, across five protocols",
+  "recordedAt": "2026-09-13T05:17:11.465Z",
+  "exitCode": 0,
+  "durationMs": 7885,
+  "cols": 120,
+  "rows": 34,
+  "events": [
+    [
+      122,
+      "> sentinel@0.1.0 snapshot\r\n> tsx scripts/snapshot.mts\r\n\r\n"
+    ],
+    [
+      3856,
+      "  aave-v3-eth: block 25966360 (lag 1), schema 3.1.0, 176ms\r\n  aave-v2-eth: block 25966360 (lag 1), schema 3.1.0, 173ms\r\n  compound-v3-eth: block 25966360 (lag 1), schema 3.1.0, 186ms\r\n  compound-v2-eth: block 25966361 (lag 0), schema 2.0.1, 3590ms\r\n  morpho-aave-v2-eth: block 25966359 (lag 2), schema 3.0.1, 248ms\r\n"
+    ],
+    [
+      4105,
+      "  aave-v3-eth: 67 markets\r\n  aave-v2-eth: 37 markets\r\n  compound-v3-eth: 73 markets\r\n"
+    ],
+    [
+      4105,
+      "  compound-v2-eth: 20 markets\r\n  morpho-aave-v2-eth: 7 markets\r\n"
+    ],
+    [
+      4105,
+      "  price index: 104 assets\r\n"
+    ],
+    [
+      5949,
+      "  compound-v2-eth: 15328 positions from 20 markets, 0 dropped (unpriceable or zero)\r\n"
+    ],
+    [
+      6004,
+      "  morpho-aave-v2-eth: 2319 positions from 7 markets, 0 dropped (unpriceable or zero)\r\n"
+    ],
+    [
+      6583,
+      "  compound-v3-eth: 10259 positions from 71 markets, 0 dropped (unpriceable or zero)\r\n"
+    ],
+    [
+      6616,
+      "  aave-v2-eth: 25251 positions from 37 markets, 0 dropped (unpriceable or zero)\r\n"
+    ],
+    [
+      7060,
+      "  aave-v3-eth: 24287 positions from 67 markets, 0 dropped (unpriceable or zero)\r\n"
+    ],
+    [
+      7064,
+      "  aave-v3-eth: debt reconciles at 95.1% of reported\r\n"
+    ],
+    [
+      7090,
+      "  excluded aave-v2-eth: debt reconciliation failed: sampled $26,869,714,929 is 1924.8x the protocol-reported $13,959,542; position mappings disagree with protocol totals, so these rows are unusable for risk\r\n"
+    ],
+    [
+      7091,
+      "  compound-v3-eth: debt reconciles at 99.4% of reported\r\n"
+    ],
+    [
+      7091,
+      "  compound-v2-eth: debt reconciles at 84.9% of reported\r\n"
+    ],
+    [
+      7091,
+      "  morpho-aave-v2-eth: debt reconciles at 92.3% of reported\r\n"
+    ],
+    [
+      7166,
+      "\r\n  completing 360 multi-protocol borrowers...\r\n"
+    ],
+    [
+      7790,
+      "  2404 positions for 360 accounts (the sample held only 1546)\r\n"
+    ],
+    [
+      7857,
+      "\r\nSnapshot captured in 7.6s\r\n  block aligned      false\r\n  blocks             {\"aave-v3-eth\":25966360,\"compound-v3-eth\":25966360,\"compound-v2-eth\":25966361,\"morpho-aave-v2-eth\":25966359}\r\n  excluded           1\r\n    - aave-v2-eth: debt reconciliation failed: sampled $26,869,714,929 is 1924.8x the protocol-reported $13,959,542; position mappings disagree with protocol totals, so these rows are unusable for risk\r\n\r\nPer-protocol debt coverage\r\n  aave-v3-eth            $9,404,481,516 /   $9,884,322,997  = 95.15%\r\n  compound-v3-eth          $576,458,490 /     $580,218,191  = 99.35%\r\n  compound-v2-eth           $10,147,416 /      $11,948,359  = 84.93%\r\n  morpho-aave-v2-eth             $5,507 /           $5,964  = 92.35%\r\n\r\nCross-protocol exposure (sample of 37,862 accounts)\r\n  accounts on 2+ protocols          1,116\r\n  borrowing on 2+ protocols         68\r\n  debt held by those borrowers      $905,660,677\r\n  sampled debt                      $9,991,092,929\r\n  protocol-reported debt            $10,476,495,511\r\n  sample covers                     95.37% of reported debt\r\n\r\nHEADLINE: at least 9.06% of sampled borrowed value\r\nsits with addresses levered across 2 or more protocols.\r\n\r\nHealth-factor confidence, 360 completed multi-protocol borrowers\r\n  ok                 178      $222,641,955\r\n  incomplete          66      $169,123,912\r\n  contradicted       116    $1,074,582,484\r\n  contradicted = HF < 1 on a live, un-liquidated account, so our parameters are\r\n  wrong rather than the borrower being unsafe. On complete position sets the\r\n  remaining cause is Aave V3 E-Mode, which the standardized schema omits.\r\n\r\n  protocol-count histogram  {\"1\":36746,\"2\":1042,\"3\":72,\"4\":2}\r\n  top protocol pairs\r\n    aave-v3-eth + compound-v3-eth: 543\r\n    aave-v3-eth + compound-v2-eth: 212\r\n    compound-v2-eth + compound-v3-eth: 211\r\n    compound-v3-eth + morpho-aave-v2-eth: 161\r\n    aave-v3-eth + morpho-aave-v2-eth: 78\r\n    compound-v2-eth + morpho-aave-v2-eth: 65\r\n\r\nWrote data/snapshot.json and data/multi-protocol-accounts.json\r\n\r\n"
+    ],
+    [
+      7877,
+      "⠙\u001b[1G\u001b[0K"
+    ]
+  ]
+}

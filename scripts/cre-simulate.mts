@@ -15,27 +15,17 @@
  *
  * Redaction is by pattern, not by comparison against the known key, because the point is to
  * survive a key we have never seen — a fresh clone with someone else's credentials must be just
- * as safe as ours.
+ * as safe as ours. The patterns live in `scripts/lib/redact.mts`, shared with the video recorder,
+ * which has exactly the same problem for exactly the same reason.
  */
 
 import { spawn } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const OUT = resolve("docs/evidence/cre-simulation.log");
+import { countSecretSurvivors, redact } from "./lib/redact.mts";
 
-/**
- * The gateway URL is `https://gateway.thegraph.com/api/<key>/subgraphs/id/<id>`, so the key is a
- * path segment and any log line carrying a request URL carries the key. Two passes: the specific
- * shape first, then any bare 32-hex token that is still sitting in a URL. Subgraph IDs are
- * base58 and longer, so they are not caught by the hex pattern.
- */
-function redact(text: string): string {
-  return text
-    .replace(/(gateway\.thegraph\.com\/api\/)[0-9a-fA-F]{32}/g, "$1<GRAPH_API_KEY redacted>")
-    .replace(/([?&](?:api[-_]?key|key|token)=)[^&\s"']+/gi, "$1<redacted>")
-    .replace(/\b[0-9a-f]{32}\b(?=[/"'\s])/g, "<32-hex redacted>");
-}
+const OUT = resolve("docs/evidence/cre-simulation.log");
 
 /**
  * Guard against redacting into a false sense of safety: if a 32-hex token survives anywhere in
@@ -43,12 +33,12 @@ function redact(text: string): string {
  * clean. (Binary and config hashes in the CLI banner are 64-hex, so they are unaffected.)
  */
 function assertClean(text: string): void {
-  const survivors = text.match(/\b[0-9a-f]{32}\b/g);
-  if (survivors && survivors.length > 0) {
+  const survivors = countSecretSurvivors(text);
+  if (survivors > 0) {
     console.error(
-      `\nrefusing to write ${OUT}: ${survivors.length} 32-hex token(s) survived redaction.\n` +
+      `\nrefusing to write ${OUT}: ${survivors} 32-hex token(s) survived redaction.\n` +
         `The log is discarded rather than written, because a log we wrongly believe is clean is\n` +
-        `worse than no log. Widen redact() in scripts/cre-simulate.mts and re-run.`,
+        `worse than no log. Widen redact() in scripts/lib/redact.mts and re-run.`,
     );
     process.exit(1);
   }

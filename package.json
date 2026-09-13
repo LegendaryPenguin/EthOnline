@@ -30,6 +30,9 @@
     "check:ui": "tsx scripts/check-ui.mts",
     "frames": "tsx scripts/measure-frame-cost.tsx",
     "capture:ui": "tsx scripts/capture-ui.mts",
+    "record:terminal": "tsx scripts/record/capture-terminal.mts",
+    "record:dashboard": "tsx scripts/record/capture-dashboard.mts",
+    "record:render": "tsx scripts/record/render.mts",
     "preflight": "tsx scripts/preflight.mts",
     "verify": "tsx scripts/verify.mts"
   },
@@ -45,6 +48,7 @@
     "@types/node": "^24.13.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@xterm/xterm": "^6.0.0",
     "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",

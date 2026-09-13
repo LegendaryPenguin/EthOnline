@@ -9,6 +9,10 @@
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
+    // The `scripts/` programs are run by tsx, which resolves a `./lib/thing.mts` specifier as
+    // written; without this, `tsc` rejects the extension that the runtime requires. Safe here
+    // because this project emits nothing from tsc (`noEmit`), so no import path is ever rewritten.
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",

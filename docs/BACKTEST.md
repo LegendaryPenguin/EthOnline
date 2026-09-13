@@ -21,7 +21,7 @@ negatives whatsoever, which is why it cannot be the only experiment. A model tha
 flags every account scores 100% here.
 
 **Precision and the false-positive rate** come from a population fixed *before* any
-outcome is known: every book is flagged at block 25816175, and only then is it
+outcome is known: every book is flagged at block 25816413, and only then is it
 checked which of them were liquidated in the 150,000
 blocks that followed.
 
@@ -30,7 +30,7 @@ assertion that the block it queries strictly precedes the outcome being scored �
 335 reads in this run, all asserted — so no-lookahead is
 a property the program enforces rather than a claim in a comment.
 
-Window: blocks **25816175–25966175** (head was 25966275). The limit is measured rather
+Window: blocks **25816413–25966413** (head was 25966513). The limit is measured rather
 than chosen: the deployments that serve history at all serve it 200,000 blocks back
 and fail at 1,000,000, so about three weeks is what history allows.
 
@@ -47,7 +47,7 @@ back, and the gateway's reason is the surprising part — this is the verbatim
 response for `aave-v2-eth` in this run:
 
 ```
-bad indexers: {0x1b92e4cba0f82c85c1298af861247849988c788c: Unavailable(missing block: 25816175, latest: 25864375), 0x2f09092aacd80196fc984908c5a9a7ab3ee4f1ce: Unavailable(missing block: 25816175, latest: 25955758), 0x3717cef8020bddee7a18f4efb2bfa88fefdcb1bc: Unavailable(missing block: 25816175, latest: 25966275), 0x6f9bb7e454f5b3eb2310343f0e99269dc2bb8a1d: Unavailable(missing block: 25816175, late
+bad indexers: {0x1b92e4cba0f82c85c1298af861247849988c788c: Unavailable(missing block: 25816413, latest: 25864375), 0x2f09092aacd80196fc984908c5a9a7ab3ee4f1ce: Unavailable(missing block: 25816413, latest: 25955758), 0x3717cef8020bddee7a18f4efb2bfa88fefdcb1bc: Unavailable(missing block: 25816413, latest: 25966508), 0x6f9bb7e454f5b3eb2310343f0e99269dc2bb8a1d: Unavailable(missing block: 25816413, late
 ```
 
 Read the pairs: several indexers report a `latest` **ahead of** the `missing`
@@ -128,7 +128,7 @@ for in false positives:
 | flag at | recall | caught | false-positive rate | precision |
 |---|---|---|---|---|
 | HF < 1.00 | 53.1% | 51/96 | 34.8% | 47.3% |
-| HF < 1.01 | 76.0% | 73/96 | 34.8% | 47.3% |
+| HF < 1.01 | 76.0% | 73/96 | 34.8% | 47.9% |
 | HF < 1.02 | 88.5% | 85/96 | 34.8% | 50.0% |
 | HF < 1.05 | 93.8% | 90/96 | 36.9% | 50.0% |
 | HF < 1.10 | 95.8% | 92/96 | 37.6% | 53.1% |
@@ -329,7 +329,7 @@ solvent by under 5%: balances are event-written, so interest accrued since the a
 | `0x9bb4ffc6…720728` | aave-v3-eth | 25845399 | $0 | 0.952 | $0 | $0 | 2 |
 | `0x75ccae67…920a17` | aave-v3-eth | 25845503 | $0 | 0.684 | $0 | $0 | 3 |
 
-## Experiment 2 — precision and false positives at block 25816175
+## Experiment 2 — precision and false positives at block 25816413
 
 Population: **239 books**, fixed before any outcome was known —
 89 that were liquidated somewhere in the window, plus the
@@ -369,21 +369,21 @@ correlated collateral and has **no field anywhere in the standardized schema**, 
 the engine computes a boundary the protocol does not use. This experiment prices
 that gap in false positives instead of arguing about it.
 
-| account | protocol | HF at 25816175 | collateral | debt | positions |
+| account | protocol | HF at 25816413 | collateral | debt | positions |
 |---|---|---|---|---|---|
-| `0x9600a48e…b22745` | aave-v3-eth | 0.868 | $764,652,501 | $705,118,661 | 3 |
-| `0xf7462251…c83010` | aave-v3-eth | 0.654 | $111,868,283 | $128,285,738 | 3 |
-| `0xd8495b95…85562d` | aave-v3-eth | 0.650 | $44,382,893 | $51,244,491 | 2 |
-| `0x2e15d7aa…ae1392` | aave-v3-eth | 0.907 | $42,710,712 | $37,656,581 | 2 |
-| `0x13d05033…1f2983` | aave-v3-eth | 0.884 | $12,638,731 | $11,586,436 | 2 |
-| `0x1e2799e0…e5a6a5` | aave-v3-eth | 0.919 | $11,562,022 | $10,026,755 | 4 |
+| `0x9600a48e…b22745` | aave-v3-eth | 0.870 | $768,520,614 | $706,961,592 | 3 |
+| `0xf7462251…c83010` | aave-v3-eth | 0.653 | $111,868,283 | $128,621,032 | 3 |
+| `0xd8495b95…85562d` | aave-v3-eth | 0.648 | $44,382,893 | $51,378,425 | 2 |
+| `0x2e15d7aa…ae1392` | aave-v3-eth | 0.910 | $42,944,156 | $37,755,002 | 2 |
+| `0x13d05033…1f2983` | aave-v3-eth | 0.881 | $12,638,731 | $11,616,719 | 2 |
+| `0x1e2799e0…e5a6a5` | aave-v3-eth | 0.921 | $11,615,208 | $10,052,961 | 4 |
 | `0xd480bb57…816d6a` | aave-v3-eth | 0.819 | $6,232,792 | $5,710,112 | 2 |
 | `0x8a25d8c9…083f78` | aave-v3-eth | 0.000 | $0 | $5,445,993 | 2 |
 | `0xc25d3502…2a3aa7` | compound-v3-eth | 0.841 | $3,740,936 | $4,138,212 | 3 |
 | `0x65ae0ed2…54c14a` | aave-v3-eth | 0.000 | $0 | $2,507,589 | 1 |
 | `0x9cbf099f…4c06ce` | aave-v3-eth | 0.644 | $2,007,766 | $2,358,804 | 4 |
 | `0xebea8eee…50d4e4` | aave-v3-eth | 0.000 | $0 | $2,343,788 | 1 |
-| `0x1a557354…65b158` | aave-v3-eth | 0.000 | $3 | $1,600,139 | 2 |
+| `0x1a557354…65b158` | aave-v3-eth | 0.000 | $3 | $1,604,321 | 2 |
 | `0xf6da9e9d…522767` | aave-v3-eth | 0.000 | $0 | $1,600,000 | 1 |
 | `0xa53a13a8…fe3526` | aave-v3-eth | 0.000 | $0 | $1,500,000 | 1 |
 | `0xa765a629…06017d` | aave-v3-eth | 0.819 | $1,480,309 | $1,355,840 | 3 |
@@ -393,9 +393,9 @@ that gap in false positives instead of arguing about it.
 | `0x9f4f18ac…fa1561` | aave-v3-eth | 0.000 | $0 | $1,201,725 | 1 |
 | `0xd0b8dfcf…2b757c` | aave-v3-eth | 0.000 | $0 | $1,038,870 | 1 |
 | `0xfe99cc46…ee737a` | aave-v3-eth | 0.000 | $0 | $999,525 | 1 |
-| `0x5cede91b…204b27` | aave-v3-eth | 0.859 | $769,256 | $716,817 | 3 |
+| `0x5cede91b…204b27` | aave-v3-eth | 0.861 | $773,460 | $718,690 | 3 |
 | `0x7b852ebc…634f11` | aave-v3-eth | 0.000 | $0 | $650,404 | 1 |
-| `0xdd647ce1…cfc737` | aave-v3-eth | 0.889 | $726,075 | $644,983 | 2 |
+| `0xdd647ce1…cfc737` | aave-v3-eth | 0.887 | $726,075 | $646,668 | 2 |
 | `0x3ee505ba…b44fab` | aave-v3-eth | 0.000 | $0 | $440,422 | 1 |
 | `0xdd84ce1a…4c5a2b` | aave-v3-eth | 0.000 | $0 | $400,379 | 1 |
 | `0xbbced90f…aa1048` | aave-v3-eth | 0.000 | $0 | $400,000 | 3 |
@@ -410,12 +410,12 @@ that gap in false positives instead of arguing about it.
 | `0x432dcbda…ed8bed` | aave-v3-eth | 0.000 | $0 | $250,000 | 1 |
 | `0xf534b467…1efa99` | aave-v3-eth | 0.000 | $0 | $210,000 | 2 |
 | `0xe5350e92…df1941` | aave-v3-eth | 0.000 | $0 | $190,126 | 1 |
-| `0xa17b7d51…436022` | aave-v3-eth | 0.874 | $197,818 | $180,989 | 2 |
+| `0xa17b7d51…436022` | aave-v3-eth | 0.877 | $198,900 | $181,462 | 2 |
 | `0x984425ed…7bae21` | aave-v3-eth | 0.000 | $0 | $180,387 | 1 |
 | `0xfd8a6308…2c68dd` | aave-v3-eth | 0.000 | $0 | $164,252 | 1 |
 | `0xecded8b1…2a29af` | aave-v3-eth | 0.000 | $0 | $148,293 | 1 |
 | `0xf212ce21…bb686a` | aave-v3-eth | 0.000 | $0 | $140,001 | 1 |
-| `0x8011d0c9…a177d4` | aave-v3-eth | 0.081 | $13,414 | $137,454 | 6 |
+| `0x8011d0c9…a177d4` | aave-v3-eth | 0.081 | $13,448 | $137,473 | 6 |
 | `0xdf9e6bea…f33d95` | aave-v3-eth | 0.000 | $0 | $135,000 | 1 |
 | `0x1e7267fa…7272a4` | aave-v3-eth | 0.000 | $0 | $125,400 | 1 |
 | `0x52d033e6…d29382` | aave-v3-eth | 0.000 | $0 | $123,692 | 1 |

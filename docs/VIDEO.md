@@ -1,9 +1,35 @@
-# Demo video — script for approval
+# Demo video — script, and how it is rendered
 
-**Target:** 3:34, 1080p (1920×1080), 30 fps, burned-in captions, no voiceover required
-(captions carry the narrative; music bed optional and quiet).
-**Constraint the script is written against:** every frame is real footage of this repo — a live
-terminal, the running dashboard, or a real file on screen. Nothing is mocked up for the camera.
+**As rendered:** 3:38 (217.5s, 6525 frames), 1080p (1920×1080), 30 fps, burned-in captions, no
+voiceover (captions carry the narrative; silent).
+**Constraint the script is written against:** every frame is real footage of this repo — a real
+command's real output, the running dashboard, or a real file on screen. Nothing is mocked up for the
+camera.
+
+**The video is a build artifact, not a performance.** `npm run record:render` renders it frame by
+frame from committed inputs; there is no screen recorder anywhere in the pipeline. Three programs:
+
+| | |
+|---|---|
+| `npm run record:terminal` | Runs each demo command for real under a pty and writes `docs/evidence/casts/<id>.json` — every output chunk stamped with the millisecond it arrived, redacted through `scripts/lib/redact.mts`, and refused outright if a 32-hex token survives. |
+| `npm run record:dashboard` | Drives the running dashboard in Playwright and records `record/assets/dashboard.webm`. The slider is driven by `ArrowRight` keypresses, not a mouse — Playwright's recorder does not draw a cursor, and keyboard operation is a stated acceptance criterion of the interface anyway. |
+| `npm run record:render` | Serves `record/player/` (the video as a web page whose entire visual state is a pure function of `SENTINEL.seek(t)`), replays the casts into a real xterm.js terminal, screenshots every frame at 30 fps and pipes them into ffmpeg. |
+
+Why this way rather than pointing a recorder at a screen:
+
+- **The casts are committed**, so a judge can diff any frame of the video against the bytes the
+  command actually produced. A screen recording is unfalsifiable in the wrong direction — there is
+  nothing to check it against.
+- **Frame-exactness.** The 30th frame is at t = 1.0000s on a slow machine and a fast one. No dropped
+  frames, no variable-rate output.
+- **Reproducibility.** Re-running the renderer on the same inputs produces the same mp4.
+
+What is *not* claimed: the terminal sections are not photographs of a terminal window. Every one is
+labelled on screen for its full duration with the cast it replays and the timestamp it was recorded
+at (`docs/evidence/casts/verify.json · recorded 2026-09-13T…Z`), plus its exit code.
+
+`record/player/edit.mjs` is the executable shot list — segment order, durations, caption text and
+cues. Where it and the script below disagree, it is the one that shipped.
 
 **Proof rules (these drive the whole edit).** Six of the eight sections are terminal footage,
 because a claim that runs is worth more than a claim that is stated:
@@ -21,7 +47,7 @@ because a claim that runs is worth more than a claim that is stated:
 5. **Nothing is re-run for a prettier number.** Whatever the live run says is what ships in the
    caption, and if it disagrees with this script the caption changes, not the run.
 
-**Approve or edit this before I render.** Nothing gets recorded until you say so.
+**Status:** approved, captured and rendered. `record/out/sentinel-demo.mp4`.
 
 ---
 
@@ -32,7 +58,7 @@ Everything under `ASSET` already exists in the repo unless marked **[record]**.
 
 ---
 
-### 1 — The number nobody publishes (0:00 → 0:22)
+### 1 — The number nobody publishes (0:00 → 0:14)
 
 | | |
 |---|---|
@@ -42,7 +68,7 @@ Everything under `ASSET` already exists in the repo unless marked **[record]**.
 | **CAPTION 3** | `That's the debt that liquidates twice in one price move.` |
 | **ASSET** | `docs/evidence/screens/dashboard-dark.png` for the hard cut, held 3s on the `$35,923,754` figure with a subtle push-in. |
 
-### 2 — Measured, live, across five protocols (0:22 → 0:52)
+### 2 — Measured, live, across five protocols (0:14 → 0:40)
 
 | | |
 |---|---|
@@ -59,7 +85,7 @@ Everything under `ASSET` already exists in the repo unless marked **[record]**.
 > the live run prints on screen is the only number in frame.
 | **ASSET** | **[record]** terminal capture of `npm run snapshot`; speed-ramped 4× where it's just waiting. |
 
-### 3 — Why the raw answer can't be published (0:52 → 1:24)
+### 3 — Why the raw answer can't be published (0:40 → 1:05)
 
 | | |
 |---|---|
@@ -70,7 +96,7 @@ Everything under `ASSET` already exists in the repo unless marked **[record]**.
 | **CAPTION 4** | `k-anonymity suppression on the output: 3 coupling buckets withheld, because fewer than k accounts stood behind them. Suppression that never fires is decoration.` |
 | **ASSET** | **[record]** `npm run leak-demo`; still of `docs/ENCLAVE.md`. |
 
-### 4 — Chainlink CRE: the aggregation runs in the enclave (1:24 → 2:06)
+### 4 — Chainlink CRE: the aggregation runs in the enclave (1:05 → 1:54)
 
 The longest section, and the most terminal-heavy, because "the confidential part actually executes"
 is the entire ask of this track and a source screenshot does not demonstrate execution.
@@ -89,7 +115,7 @@ is the entire ask of this track and a source screenshot does not demonstrate exe
 | **CAPTION 6** | `And the CRE CLI's own simulator agrees about where it ran:` |
 | **CAPTION 7** | *(the TEE box on screen, zoomed, held 4s — no caption competing with it; this is Chainlink's tooling stating our core claim for us)* |
 | **CAPTION 8** | `"During real execution, user logs for this trigger will not be visible, and will not leave the TEE." — that's the CLI, not us.` |
-| **CAPTION 9** | `Score 22.0 at block 25966223. 4 protocols, 90 borrowers, 3 buckets suppressed. Exit 0.` |
+| **CAPTION 9** | `Exit 0. Score 22.0 at block 25966362 — 4 protocols, 90 borrowers, and 3 coupling buckets withheld for k-anonymity.` |
 | **ASSET** | source stills; **[record]** all four terminal runs. Transcript already committed at `docs/evidence/cre-simulation.log`. |
 
 > **Editing note — do not skip.** The frame that shows the CLI's TEE box is the single most
@@ -102,7 +128,7 @@ is the entire ask of this track and a source screenshot does not demonstrate exe
 > wrapper redacts in-flight. Even so: **do not scroll the engine's JSON output on camera.** Frame
 > the shot on the human-readable header and footer, which is where everything worth showing is.
 
-### 5 — The cascade, driven live (2:06 → 2:34)
+### 5 — The cascade, driven live (1:54 → 2:14)
 
 | | |
 |---|---|
@@ -110,10 +136,10 @@ is the entire ask of this track and a source screenshot does not demonstrate exe
 | **CAPTION 1** | `A liquidation you can't sell into real depth isn't a liquidation.` |
 | **CAPTION 2** | `So the cascade model reads exit liquidity from four DEX AMM subgraphs — 636 live depth queries, deduped by pool.` |
 | **CAPTION 3** | `Two standardized schemas, composed into one pipeline. Lending risk parameters meet actual market depth.` |
-| **CAPTION 4** | `41 rungs, precomputed. 61 fps measured over 71 frames, worst frame 16.8 ms.` |
-| **ASSET** | **[record]** dashboard screen capture at 1080p60, downsampled to 30 fps for delivery (slider motion still reads smooth). Real cursor visible. |
+| **CAPTION 4** | `The page measures itself while it is used: 60 fps over 487 frames, worst single frame 16.8 ms.` |
+| **ASSET** | **[record]** `npm run record:dashboard` — a real browser against a real `next dev`, driven from the keyboard with a visible focus ring, recorded at 1920×1080 and re-seeked frame by frame at 30 fps by the renderer. No cursor: Playwright's recorder does not draw one, so rather than fake a cursor the shot uses keyboard operation, which the interface is required to support anyway. |
 
-### 6 — And an agent can use all of it (2:34 → 3:02)
+### 6 — And an agent can use all of it (2:14 → 2:43)
 
 | | |
 |---|---|
@@ -127,7 +153,7 @@ is the entire ask of this track and a source screenshot does not demonstrate exe
 | **CAPTION 5** | `Reasoning, decisions and automation — not printing a raw query result. This is a risk monitor with The Graph as its live source of blockchain data.` |
 | **ASSET** | **[record]** `npm run mcp:handshake`; animated replay built from `docs/evidence/phase7-transcript.md`. |
 
-### 7 — It ends on-chain (3:02 → 3:16)
+### 7 — It ends on-chain (2:43 → 3:00)
 
 | | |
 |---|---|
@@ -138,7 +164,7 @@ is the entire ask of this track and a source screenshot does not demonstrate exe
 | **CAPTION 4** | `Automated liquidation protection, using private risk thresholds. Signer quorum, staleness and replay all verified in Solidity.` |
 | **ASSET** | **[record]** both commands. |
 
-### 8 — What we don't claim, and one command for all of it (3:16 → 3:34)
+### 8 — What we don't claim, and one command for all of it (3:00 → 3:38)
 
 | | |
 |---|---|
@@ -162,42 +188,42 @@ so a judge holding the prize page can tick bullets without translating. Verbatim
 
 | Their words | Where |
 |---|---|
-| "one shared schema across every protocol of a type" · "a single query across many protocols" | **0:22** caption 1–2 |
-| "build meaningfully on a standardized schema (for example the Messari Standardized Subgraphs)" | **0:22** caption 2, on screen as `lib/graph/deployments.ts` |
-| "Consume live data from a Graph provider… Mocked, local-only, or static datasets do not qualify" | **0:22** caption 3, over a live `npm run snapshot` |
-| "compose two or more of The Graph's products" | **2:06** caption 3 — two standardized schemas composed into one pipeline |
-| "Simply querying one Subgraph… does not qualify" | answered by construction at **0:22** and **2:06**: nine deployments, two schemas |
-| "Make the standards leverage clear: show what became easier" | **0:22** caption 3b — the primary-key join, stated as what the standard bought us |
-| "Authoring or extending a Standardized Subgraph… is in scope" | **3:16** — stated as *not claimed*, out loud |
-| "a short demo video (two to four minutes)" | 3:34 total |
+| "one shared schema across every protocol of a type" · "a single query across many protocols" | **0:14** caption 1–2 |
+| "build meaningfully on a standardized schema (for example the Messari Standardized Subgraphs)" | **0:14** caption 2, on screen as `lib/graph/deployments.ts` |
+| "Consume live data from a Graph provider… Mocked, local-only, or static datasets do not qualify" | **0:14** caption 3, over a live `npm run snapshot` |
+| "compose two or more of The Graph's products" | **1:54** caption 3 — two standardized schemas composed into one pipeline |
+| "Simply querying one Subgraph… does not qualify" | answered by construction at **0:14** and **1:54**: nine deployments, two schemas |
+| "Make the standards leverage clear: show what became easier" | **0:14** caption 3b — the primary-key join, stated as what the standard bought us |
+| "Authoring or extending a Standardized Subgraph… is in scope" | **3:00** — stated as *not claimed*, out loud |
+| "a short demo video (two to four minutes)" | 3:38 total |
 
 **The Graph — Best AI Tooling or AI Use Case (Start Fresh)**
 
 | Their words | Where |
 |---|---|
-| "makes The Graph easier to use from AI environments like Claude, Cursor, and ChatGPT (new or extended MCP servers, agent SKILLs…)" | **2:34** caption 1 |
-| "reusable infrastructure, not a single end-user app" | **2:34** caption 1, verbatim |
-| "Use The Graph as a load-bearing part of the project" | **2:34** caption 1b — every tool queries Standardized Subgraphs live |
-| "risk monitors" *(their own example of a qualifying AI app)* | **2:34** caption 5, using their word |
-| "Do meaningful work with the data: reasoning, decisions, automation… not just printing a raw query result" | **2:34** caption 5 and **3:02** (the vault acting on the signal) |
-| "Consume live data… Mocked, local-only, or static datasets do not qualify" | **2:34** shot 6a, live handshake |
-| "a clear README or SKILL.md so judges can run it" | **3:16** closing card |
+| "makes The Graph easier to use from AI environments like Claude, Cursor, and ChatGPT (new or extended MCP servers, agent SKILLs…)" | **2:14** caption 1 |
+| "reusable infrastructure, not a single end-user app" | **2:14** caption 1, verbatim |
+| "Use The Graph as a load-bearing part of the project" | **2:14** caption 1b — every tool queries Standardized Subgraphs live |
+| "risk monitors" *(their own example of a qualifying AI app)* | **2:14** caption 5, using their word |
+| "Do meaningful work with the data: reasoning, decisions, automation… not just printing a raw query result" | **2:14** caption 5 and **2:43** (the vault acting on the signal) |
+| "Consume live data… Mocked, local-only, or static datasets do not qualify" | **2:14** shot 6a, live handshake |
+| "a clear README or SKILL.md so judges can run it" | **3:00** closing card |
 | "document any pre-existing work" | `docs/DISCLOSURE.md`, linked in the submission — not in the cut, since a disclosure belongs in writing |
 
 **Chainlink — Best Confidential Workflow**
 
 | Their words | Where |
 |---|---|
-| "register and use a confidential TEE handler, such as `handlerInTee`" | **1:24** shot 4a + caption 1, `handlerInTee` on screen |
-| "Secrets can be fetched directly inside the enclave" | **1:24** caption 2, both `getSecret` calls on screen |
-| "sensitive inputs, API responses, and intermediate computation remain protected" | **1:24** captions 4–5, all four categories named |
-| "hardware-isolated Trusted Execution Environment (TEE)" | **1:24** shot 4d — the CLI's own box naming AWS Nitro |
-| "execute a meaningful part of the application" · "A placeholder handler… will not qualify" | **0:52** (leak-demo: remove the enclave and there is no safe product) and **1:24** caption 9 (suppression firing on real data) |
-| "Developers explicitly control what stays confidential and what leaves the enclave for DON consensus, external delivery, or onchain settlement" | **3:02** caption 1, using all three of their destinations |
-| "Demonstrate a successful execution through… A Confidential Workflow simulation using the CRE CLI" | **1:24** shot 4d, exit 0 in frame |
+| "register and use a confidential TEE handler, such as `handlerInTee`" | **1:05** shot 4a + caption 1, `handlerInTee` on screen |
+| "Secrets can be fetched directly inside the enclave" | **1:05** caption 2, both `getSecret` calls on screen |
+| "sensitive inputs, API responses, and intermediate computation remain protected" | **1:05** captions 4–5, all four categories named |
+| "hardware-isolated Trusted Execution Environment (TEE)" | **1:05** shot 4d — the CLI's own box naming AWS Nitro |
+| "execute a meaningful part of the application" · "A placeholder handler… will not qualify" | **0:40** (leak-demo: remove the enclave and there is no safe product) and **1:05** caption 9 (suppression firing on real data) |
+| "Developers explicitly control what stays confidential and what leaves the enclave for DON consensus, external delivery, or onchain settlement" | **2:43** caption 1, using all three of their destinations |
+| "Demonstrate a successful execution through… A Confidential Workflow simulation using the CRE CLI" | **1:05** shot 4d, exit 0 in frame |
 | "Provide evidence… such as a demo video, terminal output, execution logs" | the whole cut is terminal output; log committed at `docs/evidence/cre-simulation.log` |
-| their example use case: "Automated liquidation protection using private risk thresholds" | **3:02** caption 4, using their phrase |
-| their example use case: "Privacy-preserving risk assessment and policy enforcement" | **0:52** and **3:02** — the assessment is private, the vault is the enforcement |
+| their example use case: "Automated liquidation protection using private risk thresholds" | **2:43** caption 4, using their phrase |
+| their example use case: "Privacy-preserving risk assessment and policy enforcement" | **0:40** and **2:43** — the assessment is private, the vault is the enforcement |
 
 One gap, named rather than hidden: the track description mentions layering **the Subgraph MCP** on
 top for cross-protocol analysis. We ship our *own* MCP server over Standardized Subgraphs; we do not
@@ -205,29 +231,44 @@ use The Graph's Subgraph MCP. The composition claim rests on two standardized sc
 
 ## Caption style
 
-- Bottom-third, 48px, the dashboard's own type stack, `#F2F4F8` on a 70%-opacity `#0B0D12` plate
-  so it stays legible over terminal output.
-- One clause per card. Nothing on screen longer than ~4.5s or shorter than ~1.6s.
+- Bottom-third, 40px, `ui-sans-serif` — the dashboard's own stack — `#F2F4F8` on an 82%-opacity
+  `#080B0F` plate so it stays legible over terminal output. Inline `code` at 36px in the accent
+  colour; `<b>` is the accent colour too, and marks the figure or phrase the shot exists for.
+- One clause per card. Nothing on screen longer than ~6.5s or shorter than ~1.9s. The caption engine
+  throws if two cues overlap, so the plate can never show two claims at once.
 - Numbers are never rounded in a caption — the same rule the SKILL enforces on the agent applies
-  to our own marketing. `$35,923,754` stays `$35,923,754`.
-- Code and terminal footage: 15px minimum after scaling, and every highlighted line is legible at
-  720p, since that's what a judge on a laptop actually gets.
+  to our own marketing. `$35,923,754` stays `$35,923,754`. Every figure in a caption is copied from
+  the run visible behind it, and the renderer refuses to encode any caption containing `TODO`.
+- Terminal footage is 21px monospace at 1080p (120 columns, 30 rows), code panes 21px, doc panes
+  25px — all legible at 720p, since that is what a judge on a laptop actually gets. Zoom callouts
+  are enlargements *sliced out of the cast on screen behind them*: a callout cannot quote a line the
+  command did not print, and if the output changes shape the render fails instead of misquoting.
 
 ## Recording checklist
 
-1. `npm run verify` green immediately before recording, so on-screen figures match the repo.
-2. Fresh terminal, 120×34, dashboard-dark palette, no personal paths visible in the prompt.
-3. **`.env.local` never on screen**; no `env`, no `cat`, no error that could echo a gateway URL.
-4. Dashboard on the dark theme throughout (light theme is in the screenshots, not the video).
-5. Two takes of the slider drag; keep the one where the graph fills without a stutter.
-6. Speed-ramp waits, never the results — a sped-up number is a number the viewer can't check. Any
-   ramp is labelled on screen.
-7. Every terminal command is typed on camera and every run ends with the prompt back. Ten commands
-   run live across the cut: `snapshot`, `leak-demo`, `cre:typecheck`, `cre:test`,
-   `cre workflow simulate`, `mcp:handshake`, `consume-signal`, `forge:test`, `verify`, plus the
-   dashboard on `dev`.
-8. Record the terminal sections in one session, after a single `npm run verify`, so every number
-   across the whole video comes from the same block and the same run.
+1. `npm run record:terminal` captures all nine casts in one session, so every number across the
+   whole video comes from the same block and the same run. **The `verify` cast is captured last**,
+   after every code change, because its title bar shows its exit code and a red one is a red one.
+2. The casts are 120×34 (`COLUMNS`/`LINES` are set for the child too, so a CLI that wraps to the
+   terminal width wraps to the frame it will be replayed in). The prompt is `sentinel $` — no path,
+   so no personal directory in frame; `$HOME` is scrubbed from the output as well.
+3. **`.env.local` never on screen**; no `env`, no `cat`, no error that could echo a gateway URL. The
+   capture refuses to write a cast in which a 32-hex token survived redaction.
+4. The CRE simulation goes through `npm run cre:simulate`, never the bare CLI with `-g`: the engine
+   logs full request URLs and the Graph gateway carries the API key as a path segment. The wrapper
+   redacts in flight, and `<GRAPH_API_KEY redacted>` is visible in the footage doing it.
+5. Dashboard on the dark theme, set via the browser's `colorScheme` — clicking DARK would film a
+   preference being overridden rather than the page a reader with a dark desktop actually gets.
+6. Speed-ramp waits, never the results — a sped-up number is a number the viewer can't check. A ramp
+   changes the rate, never the range, and puts `⏩ N× — nothing removed, only sped up` on screen for
+   as long as it runs. `npm run verify` is the only ramped shot.
+7. Every terminal shot types its command after the prompt, plays the run, and holds the last frame.
+   Nine commands across the cut: `snapshot`, `leak-demo`, `cre:typecheck`, `cre:test`,
+   `cre:simulate`, `mcp:handshake`, `consume-signal`, `forge:test`, `verify` — plus the dashboard,
+   captured separately against a real `next dev`.
+8. `RENDER_STILLS=40,90,114 npm run record:render` writes those seconds as PNGs and stops; checking
+   a layout should not cost a full render. `RENDER_SERVE=1` hosts the timeline so it can be scrubbed
+   by hand in a browser.
 
 ## Decisions taken
 
@@ -236,3 +277,14 @@ use The Graph's Subgraph MCP. The composition claim rests on two standardized sc
 - **Section 6b is an animated transcript, not a live session** — labelled as such on screen for its
   full duration. It carries no weight it hasn't earned: section 6a runs `npm run mcp:handshake`
   live, which is what actually proves the tools are real and answering over the wire.
+- **No cursor is drawn anywhere.** The obvious fix for a recorder that doesn't capture the pointer is
+  to composite a fake one in. That would be a synthetic element in footage whose entire pitch is that
+  it isn't synthetic, so the dashboard is driven from the keyboard instead and the caption says so.
+- **The `⏩` badge names its own rate from the cast, not from the edit.** The edit asks for "this
+  stretch, in 4.4 seconds"; the rate is computed against the recorded duration and printed. So
+  re-recording `npm run verify` cannot silently produce a badge that lies about the compression, and
+  cannot overrun the segment either — the player throws at load if the shot is too short for the run.
+- **Section 4c's caption quotes the count the run printed:** 20 pass, 0 fail. The earlier draft's
+  captions 4–5 described the four confidentiality categories instead; that argument is made where it
+  is checkable — 4a's two source panes and the CLI's own TEE box at 4d — rather than asserted over
+  a passing test count.

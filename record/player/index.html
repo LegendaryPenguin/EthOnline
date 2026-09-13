@@ -1,0 +1,25 @@
+<!doctype html>
+<!--
+  The demo video, as a page. `scripts/record/render.mts` opens this at 1920×1080, calls
+  SENTINEL.seek(t) for every frame at 30 fps, and screenshots the result — so every visual state
+  here has to be a pure function of t. That is why nothing in style.css uses a CSS transition or
+  animation: a fade that runs on wall-clock time would render differently depending on how long the
+  screenshot before it took.
+-->
+<html lang="en" class="theme-dark">
+  <head>
+    <meta charset="utf-8" />
+    <title>Sentinel — demo</title>
+    <link rel="stylesheet" href="/vendor/xterm.css" />
+    <link rel="stylesheet" href="/player/style.css" />
+  </head>
+  <body>
+    <div id="stage">
+      <div id="segments"></div>
+      <div id="tracktag"></div>
+      <div id="captions"><div id="caption"></div></div>
+      <div id="progress"></div>
+    </div>
+    <script type="module" src="/player/player.mjs"></script>
+  </body>
+</html>
