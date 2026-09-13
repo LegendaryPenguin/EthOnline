@@ -179,6 +179,154 @@ body {
   color: var(--color-accent);
 }
 
+/* ------------------------------------------------------- v2: the terminal as a window
+ *
+ * The first cut put the cast file name and a recording timestamp in the title bar. Honest, and
+ * nothing a terminal has ever shown. Here the bar is what macOS puts there: three lights and the
+ * session, with the provenance moved to docs/VIDEO.md and the closing card. The window is also
+ * slightly larger and sits lower, so the lower third has room for three lines of caption.
+ */
+body[data-cut="v2"] .term-wrap {
+  top: 48px;
+  /* Sized to the 120 columns the casts were recorded at, plus the body padding, and no wider: a
+     window with an empty strip down its right-hand side is the tell that it is a div. */
+  width: 1600px;
+  border-radius: 12px;
+  border-color: #2b3946;
+  background: #111820;
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.62), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+}
+body[data-cut="v2"] .term-bar {
+  position: relative;
+  height: 44px;
+  justify-content: center;
+  background: linear-gradient(#39434f, #2c3540);
+  border-bottom: 1px solid #1d2530;
+}
+body[data-cut="v2"] .term-bar .dots {
+  position: absolute;
+  left: 16px;
+  gap: 9px;
+}
+body[data-cut="v2"] .term-bar .dots i {
+  width: 13px;
+  height: 13px;
+  opacity: 1;
+  background: #ff5f57;
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.25);
+}
+body[data-cut="v2"] .term-bar .dots i:nth-child(2) {
+  background: #febc2e;
+}
+body[data-cut="v2"] .term-bar .dots i:nth-child(3) {
+  background: #28c840;
+}
+body[data-cut="v2"] .term-bar .title {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #cfd8e3;
+  letter-spacing: 0.01em;
+}
+body[data-cut="v2"] .term-body {
+  padding: 16px 18px 18px;
+}
+
+/* ------------------------------------------------------- v2: annotation cards
+ *
+ * Three registers, three treatments, so a viewer can tell at a glance which one is speaking:
+ * the kicker (what you are looking at) is small accent caps, the quote is the command's own bytes in
+ * the terminal's typeface, and the explain line is the video's voice in the caption's typeface. The
+ * leader rule bleeding off the left or right edge is what stops it reading as a floating tooltip.
+ */
+.note {
+  position: absolute;
+  top: 300px;
+  width: 1180px;
+  padding: 26px 32px 24px;
+  background: #0a1015;
+  border: 1px solid #2f4450;
+  border-radius: 10px;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.75);
+  opacity: 0;
+}
+.note::before {
+  /* The leader: a rule running from the card out past the frame, so the card is anchored to the
+     terminal behind it rather than hovering over it. */
+  content: "";
+  position: absolute;
+  top: -1px;
+  height: 4px;
+  width: 320px;
+  background: var(--color-accent);
+}
+.note-left {
+  left: 128px;
+  border-left: 4px solid var(--color-accent);
+}
+.note-left::before {
+  left: -4px;
+}
+.note-right {
+  right: 128px;
+  border-right: 4px solid var(--color-accent);
+}
+.note-right::before {
+  right: -4px;
+}
+.note-head {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+.note-kicker {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+.note-src {
+  margin-left: auto;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 16px;
+  color: var(--color-text-faint);
+}
+.note-quote {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 24px;
+  line-height: 1.46;
+  white-space: pre-wrap;
+  color: #eef3f8;
+  padding: 12px 16px;
+  background: #141d25;
+  border-radius: 6px;
+}
+.note-quote em {
+  font-style: normal;
+  color: var(--color-accent);
+  background: rgba(63, 217, 196, 0.12);
+  box-shadow: 0 2px 0 var(--color-accent);
+}
+.note-explain {
+  margin-top: 18px;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 25px;
+  line-height: 1.36;
+  color: #b9c6d2;
+}
+.note-explain b {
+  color: #eef3f8;
+  font-weight: 600;
+}
+.note-explain code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 22px;
+  color: var(--color-accent);
+}
+
 /* ---------------------------------------------------------------- code / doc panes */
 
 .pane {
@@ -249,6 +397,27 @@ body {
 .pane-code .row.hl .n {
   color: var(--color-accent);
   opacity: 1;
+}
+
+/* v2 panes are shorter for the same reason its terminal has two fewer rows: the lower third grew. */
+body[data-cut="v2"] .pane,
+body[data-cut="v2"] .chat {
+  top: 48px;
+  height: 748px;
+  border-radius: 10px;
+}
+/* Same width as the v2 terminal window, so cutting between a shot and a file does not shift the
+   left and right edges of the frame. */
+body[data-cut="v2"] .pane {
+  width: 1600px;
+}
+body[data-cut="v2"] .pane-bar {
+  height: 44px;
+  background: #1b242e;
+  color: #c3d0dc;
+}
+body[data-cut="v2"] .pane-scroll {
+  height: calc(100% - 44px);
 }
 
 /* Prose panes (docs) wrap instead of scrolling sideways. */
@@ -384,6 +553,69 @@ body {
   font-family: ui-monospace, "SF Mono", Menlo, monospace;
   font-size: 36px;
   color: var(--color-accent);
+}
+
+/* ------------------------------------------------------- v2: the lower third
+ *
+ * One centred sentence had to be both the claim and the explanation, so it was neither. Three lines
+ * instead, left-aligned against a rule: who this is (the sponsor product, in accent caps), what is
+ * true (the claim), and how it works (the mechanism, for a judge who has not used this technology).
+ * Left-aligned because a centred block of three lines has no edge for the eye to return to.
+ */
+body[data-cut="v2"] #captions {
+  height: 300px;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 0 96px 40px;
+}
+body[data-cut="v2"] #caption {
+  max-width: 1500px;
+  text-align: left;
+  padding: 22px 32px 24px;
+  border-radius: 4px;
+  border-left: 5px solid var(--color-accent);
+  background: rgba(6, 9, 13, 0.9);
+}
+body[data-cut="v2"] #caption .cap-kicker {
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 12px;
+}
+body[data-cut="v2"] #caption .cap-main {
+  font-size: 41px;
+  line-height: 1.2;
+  font-weight: 500;
+  color: #f6f8fb;
+}
+body[data-cut="v2"] #caption .cap-detail {
+  margin-top: 14px;
+  font-size: 26px;
+  line-height: 1.34;
+  color: #a9b7c5;
+}
+body[data-cut="v2"] #caption .cap-detail b {
+  color: #dde5ee;
+  font-weight: 600;
+}
+body[data-cut="v2"] #caption .cap-detail code {
+  font-size: 23px;
+}
+
+/* The track tag reads as a broadcast slug in v2: a square accent mark and the sponsor's own words. */
+body[data-cut="v2"] #tracktag {
+  /* Top right, clear of both the window below it and the caption block bottom left. */
+  left: auto;
+  right: 60px;
+  top: 12px;
+  border-radius: 3px;
+  border-color: rgba(63, 217, 196, 0.35);
+  background: rgba(6, 9, 13, 0.86);
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  color: #c3d0dc;
 }
 
 /* A persistent, quiet mark of which track a section is answering. */

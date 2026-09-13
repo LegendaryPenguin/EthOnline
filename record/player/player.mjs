@@ -12,11 +12,25 @@
  *      `docs/evidence/casts/`, code panes fetch the real source file, doc panes fetch the real
  *      markdown, and the zoom callouts are *sliced out of the cast they sit on top of* by matching
  *      a line — so a callout cannot quote something the command did not print. Captions are the one
- *      exception, and they are the video's own voice.
+ *      exception, and they are the video's own voice. In the v2 cut a callout may also carry an
+ *      `explain` line, which is editorial for the same reason a caption is, and is styled in the
+ *      caption's typeface rather than the terminal's so the two registers stay visibly apart.
  */
 
 import { Terminal } from "/vendor/xterm.mjs";
-import { EDIT, FPS } from "/player/edit.mjs";
+
+/**
+ * Two cuts share this engine. `?cut=v2` loads `edit.v2.mjs`, the second mockup: a terminal dressed
+ * as the machine it was recorded on rather than as a player, annotation cards that explain what a
+ * line is evidence *of*, and three-tier captions that name the sponsor technology in play. `edit.mjs`
+ * (the first cut, already rendered to `record/out/sentinel-demo.mp4`) is untouched and still the
+ * default, so both cuts render from one engine and neither can quietly break the other.
+ */
+const CUT = new URLSearchParams(location.search).get("cut") === "v2" ? "v2" : "v1";
+const { EDIT, FPS } = await import(CUT === "v2" ? "/player/edit.v2.mjs" : "/player/edit.mjs");
+/** v2 opts into the reworked chrome; everything else in this file is shared. */
+const V2 = EDIT.style === "v2";
+document.body.dataset.cut = CUT;
 
 const stage = document.getElementById("segments");
 const captionBox = document.getElementById("caption");
@@ -87,19 +101,30 @@ function buildImage(spec, root) {
  */
 async function buildTerminal(spec, root) {
   const cast = await json(`/casts/${spec.cast}.json`);
-  const wrap = el("div", "term-wrap", root);
+  const wrap = el("div", `term-wrap${V2 ? " native" : ""}`, root);
   const bar = el("div", "term-bar", wrap);
   const dots = el("div", "dots", bar);
   for (let i = 0; i < 3; i++) el("i", null, dots);
-  const who = el("div", "who", bar);
-  who.textContent = `${cast.command}  —  exit ${cast.exitCode}`;
-  const castTag = el("div", "cast", bar);
-  castTag.textContent = `docs/evidence/casts/${cast.id}.json · recorded ${cast.recordedAt.slice(0, 19).replace("T", " ")}Z`;
+  if (V2) {
+    // What a terminal window actually shows: the session, and nothing about how the footage was
+    // made. The provenance that used to sit here (cast file, recording timestamp) moved into
+    // docs/VIDEO.md and the closing card, which is where a claim belongs when it is about the video
+    // rather than about the run.
+    const title = el("div", "title", bar);
+    title.textContent = `${cast.prompt.replace(/\s*[%$#]\s*$/, "").replace(" ~", ": ~")}`;
+  } else {
+    const who = el("div", "who", bar);
+    who.textContent = `${cast.command}  —  exit ${cast.exitCode}`;
+    const castTag = el("div", "cast", bar);
+    castTag.textContent = `docs/evidence/casts/${cast.id}.json · recorded ${cast.recordedAt.slice(0, 19).replace("T", " ")}Z`;
+  }
   const body = el("div", "term-body", wrap);
 
   const term = new Terminal({
     cols: cast.cols,
-    rows: spec.rows ?? 30,
+    // Two fewer rows in v2: its lower third is up to three lines tall, and a caption plate over the
+    // last line of a run would cover the exit line that is the whole point of the shot.
+    rows: spec.rows ?? (V2 ? 28 : 30),
     fontSize: spec.fontSize ?? 21,
     fontFamily: 'ui-monospace, "SF Mono", Menlo, monospace',
     lineHeight: 1.15,
@@ -176,7 +201,33 @@ async function buildTerminal(spec, root) {
     const index = lines.findIndex((line) => line.includes(z.match));
     if (index < 0) throw new Error(`${spec.cast}: no line matching "${z.match}" — the cast changed`);
     const slice = lines.slice(index + (z.skip ?? 0), index + (z.skip ?? 0) + z.lines).join("\n");
-    const node = el("div", "zoom", root);
+
+    // v2's card has three parts and each is a different kind of statement, which is the point of the
+    // redesign: a kicker naming what the viewer is being shown, the command's own bytes, and an
+    // `explain` line that is editorial and is styled as editorial so it cannot be mistaken for
+    // output. v1's callout was one accent-bordered box with a label, which read as decoration.
+    const node = el("div", V2 ? `note note-${z.side ?? "left"}` : "zoom", root);
+    if (V2) {
+      const head = el("div", "note-head", node);
+      if (z.label) {
+        const kicker = el("span", "note-kicker", head);
+        kicker.textContent = z.label;
+      }
+      const src = el("span", "note-src", head);
+      src.textContent = z.source ?? `${cast.command}`;
+      const pre = el("div", "note-quote", node);
+      pre.textContent = slice.replace(/\s+$/, "");
+      if (z.emphasise) pre.innerHTML = pre.innerHTML.replace(z.emphasise, (m) => `<em>${m}</em>`);
+      if (z.fontSize) pre.style.fontSize = z.fontSize;
+      if (z.explain) {
+        const why = el("div", "note-explain", node);
+        why.innerHTML = z.explain;
+      }
+      if (z.top) node.style.top = z.top;
+      if (z.width) node.style.width = z.width;
+      return { ...z, node };
+    }
+
     if (z.label) {
       const label = el("span", "zoom-label", node);
       label.textContent = z.label;
@@ -194,7 +245,17 @@ async function buildTerminal(spec, root) {
   // Written state, so a forward seek only writes the delta.
   let writtenChars = 0; // of the typed command
   let writtenEvents = 0; // of the cast
+  let promptReturned = false; // v2 only: the shell coming back after the run
   let lastT = -1;
+
+  // The shell printing its prompt again is how a real terminal shows a command finished, and the
+  // first cut had no equivalent: the footage simply stopped. It is the one string in the terminal
+  // that the cast did not record, because `script` captures the child and not the interactive shell
+  // that spawned it, so it is the cast's *own* prompt written a second time and nothing else. That a
+  // prompt came back is not a claim beyond the recorded exit code, which every one of these shots
+  // has at 0 (`npm run record:terminal` refuses to finish otherwise).
+  const tail = cast.events.at(-1)?.[1] ?? "\n";
+  const returnPrompt = (/[\r\n]$/.test(plain(tail)) ? "" : "\r\n") + cast.prompt;
 
   const flushWrite = (data) => new Promise((done) => term.write(data, done));
 
@@ -203,6 +264,7 @@ async function buildTerminal(spec, root) {
     await flushWrite(cast.prompt);
     writtenChars = 0;
     writtenEvents = 0;
+    promptReturned = false;
   };
   await reset();
 
@@ -236,17 +298,32 @@ async function buildTerminal(spec, root) {
         writtenEvents++;
       }
       if (chunk) await flushWrite(chunk);
+      if (V2 && !promptReturned && writtenEvents === cast.events.length) {
+        await flushWrite(returnPrompt);
+        promptReturned = true;
+      }
     }
 
     const active = ramps.find((p) => t >= p.start && t < p.end);
     badge.dataset.on = active ? "1" : "0";
-    if (active) badge.textContent = `⏩ ${active.rate.toFixed(active.rate < 10 ? 1 : 0)}× — nothing removed, only sped up`;
+    if (active) {
+      const rate = active.rate.toFixed(active.rate < 10 ? 1 : 0);
+      badge.textContent = V2 ? `⏩ ${rate}× · no output removed` : `⏩ ${rate}× — nothing removed, only sped up`;
+    }
 
     for (const z of zooms) {
-      const o = fade(t - z.at, z.dur, 0.28, 0.28);
+      // v2 snaps in over four frames and then holds absolutely still, which is what a cut-in
+      // annotation does in an edited video. v1's slow continuous zoom across the whole hold is the
+      // giveaway that no editor was involved: nothing in a human edit drifts for five seconds.
+      const o = fade(t - z.at, z.dur, V2 ? 0.14 : 0.28, V2 ? 0.2 : 0.28);
       z.node.style.opacity = Math.max(0, o).toFixed(3);
-      const k = ease(ramp(t - z.at, 0, z.dur));
-      z.node.style.transform = `translateX(-50%) scale(${(0.965 + 0.02 * k).toFixed(4)})`;
+      if (V2) {
+        const k = ease(ramp(t - z.at, 0, 0.3));
+        z.node.style.transform = `translateY(${(12 * (1 - k)).toFixed(1)}px) scale(${(0.99 + 0.01 * k).toFixed(4)})`;
+      } else {
+        const k = ease(ramp(t - z.at, 0, z.dur));
+        z.node.style.transform = `translateX(-50%) scale(${(0.965 + 0.02 * k).toFixed(4)})`;
+      }
     }
   };
 
@@ -275,9 +352,11 @@ async function buildCode(spec, root) {
     t.textContent = lines[n - 1] ?? "";
   }
   const rowH = 30;
-  const visible = 744 / rowH;
-  const maxScroll = Math.max(0, (to - from + 1 - visible) * rowH);
   return (t) => {
+    // Measured rather than assumed: the two cuts give the pane different heights, and a hard-coded
+    // viewport would scroll one of them past its own last line.
+    const visible = (scroll.clientHeight || 744) / rowH;
+    const maxScroll = Math.max(0, (to - from + 1 - visible) * rowH);
     const k = ease(ramp(t, spec.scrollAt ?? 0.6, spec.dur - 0.5));
     const y = (spec.scrollFrom ?? 0) + ((spec.scrollTo ?? maxScroll) - (spec.scrollFrom ?? 0)) * k;
     code.style.transform = `translateY(${(-Math.min(y, maxScroll)).toFixed(1)}px)`;
@@ -306,7 +385,7 @@ async function buildDoc(spec, root) {
   return (t) => {
     const k = ease(ramp(t, spec.scrollAt ?? 1.2, spec.dur - 0.6));
     const height = code.getBoundingClientRect().height;
-    const maxScroll = Math.max(0, height - 730);
+    const maxScroll = Math.max(0, height - (scroll.clientHeight || 730));
     code.style.transform = `translateY(${(-maxScroll * k).toFixed(1)}px)`;
     pane.style.opacity = fade(t, spec.dur, 0.3, 0.3).toFixed(3);
   };
@@ -411,7 +490,7 @@ async function buildChat(spec, root) {
     let y = 0;
     if (last) {
       const bottom = last.node.offsetTop + last.node.offsetHeight;
-      y = Math.max(0, bottom - 700);
+      y = Math.max(0, bottom - ((pane.clientHeight || 790) - 90));
     }
     inner.style.transform = `translateY(${(-y).toFixed(1)}px)`;
     pane.style.opacity = fade(t, spec.dur, 0.3, 0.3).toFixed(3);
@@ -479,6 +558,11 @@ for (const segment of segments) {
       t0: segment.start + cue.at,
       t1: segment.start + cue.at + cue.dur,
       html: cue.html,
+      // v2's cue is three registers rather than one sentence: `kicker` names the sponsor product
+      // being used, `html` is the claim, and `detail` explains the mechanism for a judge who has
+      // never touched this technology. See the head of edit.v2.mjs.
+      kicker: cue.kicker,
+      detail: cue.detail,
     });
   }
 }
@@ -505,12 +589,17 @@ async function seek(t) {
 
   const cue = captions.find((c) => clamped >= c.t0 && clamped < c.t1);
   if (cue) {
-    if (captionBox.dataset.key !== cue.html) {
-      captionBox.innerHTML = cue.html;
-      captionBox.dataset.key = cue.html;
+    const key = `${cue.kicker ?? ""}|${cue.html}|${cue.detail ?? ""}`;
+    if (captionBox.dataset.key !== key) {
+      captionBox.innerHTML = V2
+        ? (cue.kicker ? `<div class="cap-kicker">${cue.kicker}</div>` : "") +
+          `<div class="cap-main">${cue.html}</div>` +
+          (cue.detail ? `<div class="cap-detail">${cue.detail}</div>` : "")
+        : cue.html;
+      captionBox.dataset.key = key;
     }
     const local = clamped - cue.t0;
-    captionBox.style.opacity = fade(local, cue.t1 - cue.t0, 0.22, 0.22).toFixed(3);
+    captionBox.style.opacity = fade(local, cue.t1 - cue.t0, V2 ? 0.16 : 0.22, V2 ? 0.16 : 0.22).toFixed(3);
   } else {
     captionBox.style.opacity = "0";
   }
@@ -534,6 +623,13 @@ window.SENTINEL = {
     start: Number(s.start.toFixed(2)),
     dur: Number(s.dur.toFixed(2)),
   })),
-  captions: captions.map((c) => ({ t0: Number(c.t0.toFixed(2)), t1: Number(c.t1.toFixed(2)), html: c.html })),
+  cut: CUT,
+  captions: captions.map((c) => ({
+    t0: Number(c.t0.toFixed(2)),
+    t1: Number(c.t1.toFixed(2)),
+    kicker: c.kicker,
+    html: c.html,
+    detail: c.detail,
+  })),
 };
 document.body.dataset.ready = "1";

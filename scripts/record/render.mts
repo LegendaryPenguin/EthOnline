@@ -33,7 +33,14 @@ import { chromium, type Browser, type Page } from "playwright";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "../..");
 const OUT_DIR = path.join(ROOT, "record/out");
-const OUT_FILE = path.join(OUT_DIR, "sentinel-demo.mp4");
+
+/**
+ * Two cuts, one engine. `RENDER_CUT=v2` renders `record/player/edit.v2.mjs` (the second mockup:
+ * native terminal chrome, annotation cards, three-tier captions) to its own file, so rendering it can
+ * never overwrite the first cut's mp4.
+ */
+const CUT = process.env.RENDER_CUT === "v2" ? "v2" : "v1";
+const OUT_FILE = path.join(OUT_DIR, CUT === "v2" ? "sentinel-demo-v2.mp4" : "sentinel-demo.mp4");
 const FFMPEG = "/opt/homebrew/bin/ffmpeg";
 
 const WIDTH = 1920;
@@ -206,7 +213,7 @@ async function openPlayer(browser: Browser): Promise<{ page: Page; duration: num
   });
   page.on("pageerror", (err) => problems.push(err.message));
 
-  await page.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: "load" });
+  await page.goto(`http://127.0.0.1:${PORT}/?cut=${CUT}`, { waitUntil: "load" });
   await page.waitForFunction("document.body.dataset.ready === '1'", null, { timeout: 60_000 }).catch(() => {
     throw new Error(`the player never became ready:\n  ${problems.join("\n  ") || "(no error reported)"}`);
   });
@@ -215,18 +222,29 @@ async function openPlayer(browser: Browser): Promise<{ page: Page; duration: num
   const info = await page.evaluate("({ duration: SENTINEL.duration, outline: SENTINEL.outline, captions: SENTINEL.captions })") as {
     duration: number;
     outline: Outline[];
-    captions: { t0: number; t1: number; html: string }[];
+    captions: { t0: number; t1: number; kicker?: string; html: string; detail?: string }[];
   };
 
-  // A placeholder that reached the render is a caption asserting something nobody filled in.
-  const todo = info.captions.filter((c) => /TODO/.test(c.html));
+  // A placeholder that reached the render is a caption asserting something nobody filled in. All
+  // three registers are checked, because v2's `detail` line is the one a judge reads for the
+  // mechanism and an unfilled one there is the worst of the three.
+  const todo = info.captions.filter((c) => /TODO/.test(`${c.kicker ?? ""} ${c.html} ${c.detail ?? ""}`));
   if (todo.length > 0) {
     throw new Error(`unfilled captions: ${todo.map((c) => c.html).join(" | ")}`);
   }
 
+  // No em dash anywhere in the v2 cut's own voice. The rule is enforced here rather than trusted to
+  // proofreading, because a caption is the one thing on screen this repo writes freely.
+  if (CUT === "v2") {
+    const dashed = info.captions.filter((c) => /—/.test(`${c.kicker ?? ""} ${c.html} ${c.detail ?? ""}`));
+    if (dashed.length > 0) {
+      throw new Error(`em dash in v2 captions: ${dashed.map((c) => c.html.slice(0, 60)).join(" | ")}`);
+    }
+  }
+
   await mkdir(OUT_DIR, { recursive: true });
   await writeFile(
-    path.join(OUT_DIR, "timeline.json"),
+    path.join(OUT_DIR, CUT === "v2" ? "timeline.v2.json" : "timeline.json"),
     JSON.stringify({ fps: FPS, duration: info.duration, outline: info.outline, captions: info.captions }, null, 2) + "\n",
   );
   return { page, duration: info.duration, outline: info.outline };
