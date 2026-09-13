@@ -23,7 +23,12 @@
     "agent:ask": "tsx scripts/agent-ask.mts",
     "mcp:handshake": "tsx scripts/mcp-handshake.mts",
     "fixture:report": "tsx scripts/export-report-fixture.mts",
-    "forge:test": "cd contracts && forge test -vv"
+    "forge:test": "cd contracts && forge test -vv",
+    "shock:ladder": "tsx scripts/shock-ladder.mts",
+    "tokens": "tsx scripts/build-tokens.mts",
+    "check:ui": "tsx scripts/check-ui.mts",
+    "frames": "tsx scripts/measure-frame-cost.tsx",
+    "capture:ui": "tsx scripts/capture-ui.mts"
   },
   "dependencies": {
     "next": "16.3.5",
@@ -40,6 +45,7 @@
     "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
+    "playwright": "^1.63.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.13",
     "typescript": "^5",

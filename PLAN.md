@@ -288,15 +288,15 @@ Checked before planning, not assumed:
 - Design system built fresh (no copied assets), with a `/styleguide` route.
 
 **Acceptance criteria**
-- [ ] Shock slider stays ≥55fps on live data (measured, not eyeballed).
-- [ ] Renders from a **live snapshot**, not fixtures.
-- [ ] Accessible: full keyboard operation, `prefers-reduced-motion` honored, WCAG AA
+- [x] Shock slider stays ≥55fps on live data (measured, not eyeballed).
+- [x] Renders from a **live snapshot**, not fixtures.
+- [x] Accessible: full keyboard operation, `prefers-reduced-motion` honored, WCAG AA
       contrast verified by automated check.
-- [ ] Light and dark both correct.
-- [ ] Loading, empty, stale-data, and error states all explicitly designed — no
+- [x] Light and dark both correct.
+- [x] Loading, empty, stale-data, and error states all explicitly designed — no
       unhandled spinner-forever path.
-- [ ] `/styleguide` documents every token and component.
-- [ ] Charts follow the project dataviz rules; no default library palettes.
+- [x] `/styleguide` documents every token and component.
+- [x] Charts follow the project dataviz rules; no default library palettes.
 
 ---
 
