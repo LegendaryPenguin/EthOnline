@@ -21,23 +21,18 @@ negatives whatsoever, which is why it cannot be the only experiment. A model tha
 flags every account scores 100% here.
 
 **Precision and the false-positive rate** come from a population fixed *before* any
-outcome is known: every book is flagged at block 25813995, and only then is it
+outcome is known: every book is flagged at block 25815919, and only then is it
 checked which of them were liquidated in the 150,000
 blocks that followed.
 
 Neither experiment can see forward. Every historical read passes through an
 assertion that the block it queries strictly precedes the outcome being scored —
-352 reads in this run, all asserted — so no-lookahead is
+335 reads in this run, all asserted — so no-lookahead is
 a property the program enforces rather than a claim in a comment.
 
-Window: blocks **25813995–25963995** (head was 25964095). The limit is measured rather
-than chosen, but this run only measured it coarsely: it established that the
-deployments serving history serve 200,000 blocks back and fail at 1,000,000, and took
-the lower figure. Phase 6 binary-searched the same question and found the true depth is
-**~480,000 blocks (~67 days)** on `aave-v3-eth` and ~470,000 on `compound-v3-eth` — so
-history allows about ten weeks, not three, and this window is narrower than it needed
-to be. See `docs/evidence/phase6-early-warning.md`; the correction does not change any
-result below, since a wider window would only have added observations.
+Window: blocks **25815919–25965919** (head was 25966019). The limit is measured rather
+than chosen: the deployments that serve history at all serve it 200,000 blocks back
+and fail at 1,000,000, so about three weeks is what history allows.
 
 ## Only 2 of 5 deployments can be replayed at all
 
@@ -52,7 +47,7 @@ back, and the gateway's reason is the surprising part — this is the verbatim
 response for `aave-v2-eth` in this run:
 
 ```
-bad indexers: {0x1b92e4cba0f82c85c1298af861247849988c788c: Unavailable(missing block: 25813995, latest: 25864375), 0x2f09092aacd80196fc984908c5a9a7ab3ee4f1ce: Unavailable(missing block: 25813995, latest: 25955758), 0x3717cef8020bddee7a18f4efb2bfa88fefdcb1bc: Unavailable(missing block: 25813995, latest: 25964093), 0x6f9bb7e454f5b3eb2310343f0e99269dc2bb8a1d: Unavailable(missing block: 25813995, late
+bad indexers: {0x1b92e4cba0f82c85c1298af861247849988c788c: Unavailable(missing block: 25815919, latest: 25864375), 0x2f09092aacd80196fc984908c5a9a7ab3ee4f1ce: Unavailable(missing block: 25815919, latest: 25955758), 0x3717cef8020bddee7a18f4efb2bfa88fefdcb1bc: Unavailable(missing block: 25815919, latest: 25966019), 0x6f9bb7e454f5b3eb2310343f0e99269dc2bb8a1d: Unavailable(missing block: 25815919, late
 ```
 
 Read the pairs: several indexers report a `latest` **ahead of** the `missing`
@@ -83,14 +78,14 @@ limitation that does.
 
 | | |
 |---|---|
-| `Liquidate` rows in window | 329 |
-| distinct (account, protocol, block) episodes | 328 |
-| of those, on a replayable deployment | 105 (32.0%) |
-| episodes replayed | 105 — all of them |
-| episodes scored | 105 |
+| `Liquidate` rows in window | 319 |
+| distinct (account, protocol, block) episodes | 318 |
+| of those, on a replayable deployment | 96 (30.2%) |
+| episodes replayed | 96 — all of them |
+| episodes scored | 96 |
 | protocols with liquidations | 5 of 5 |
 
-68.0% of the window's liquidations
+69.8% of the window's liquidations
 happened on protocols whose history cannot be fetched, so they are counted here and
 scored nowhere. Leaving them out of this table would have hidden the size of the
 blind spot.
@@ -105,15 +100,15 @@ Size-ranking would have been the more flattering choice and the wrong one: large
 books are the well-parameterised ones, so it would measure the engine on its
 easiest cases and then call the result recall.
 
-## Experiment 1 — recall over 105 real liquidations
+## Experiment 1 — recall over 96 real liquidations
 
-**51 of 105 episodes were flagged: recall 48.6%.**
+**51 of 96 episodes were flagged: recall 53.1%.**
 
 | outcome | episodes | share | what it means |
 |---|---|---|---|
-| `flagged` | 51 | 48.6% | health factor below 1 at the block before the liquidation — a hit |
-| `stale-balance` | 44 | 41.9% | solvent by under 5%: balances are event-written, so interest accrued since the account's last event is missing |
-| `solvent` | 10 | 9.5% | comfortably solvent on the replayed numbers — a real miss |
+| `flagged` | 51 | 53.1% | health factor below 1 at the block before the liquidation — a hit |
+| `stale-balance` | 39 | 40.6% | solvent by under 5%: balances are event-written, so interest accrued since the account's last event is missing |
+| `solvent` | 6 | 6.3% | comfortably solvent on the replayed numbers — a real miss |
 
 Recall here is a **floor**, for a reason visible in the table. Position balances in
 this schema are event-written: a debt balance is as of the account's last
@@ -132,13 +127,13 @@ for in false positives:
 
 | flag at | recall | caught | false-positive rate | precision |
 |---|---|---|---|---|
-| HF < 1.00 | 48.6% | 51/105 | 34.5% | 47.9% |
-| HF < 1.01 | 70.5% | 74/105 | 34.5% | 48.4% |
-| HF < 1.02 | 85.7% | 90/105 | 34.5% | 52.0% |
-| HF < 1.05 | 90.5% | 95/105 | 36.6% | 53.2% |
-| HF < 1.10 | 95.2% | 100/105 | 37.3% | 56.6% |
-| HF < 1.20 | 96.2% | 101/105 | 39.4% | 56.6% |
-| HF < 1.50 | 97.1% | 102/105 | 45.8% | 54.9% |
+| HF < 1.00 | 53.1% | 51/96 | 34.5% | 47.3% |
+| HF < 1.01 | 76.0% | 73/96 | 34.5% | 47.3% |
+| HF < 1.02 | 88.5% | 85/96 | 34.5% | 50.0% |
+| HF < 1.05 | 93.8% | 90/96 | 36.6% | 50.0% |
+| HF < 1.10 | 95.8% | 92/96 | 37.3% | 53.1% |
+| HF < 1.20 | 95.8% | 92/96 | 39.4% | 53.7% |
+| HF < 1.50 | 96.9% | 93/96 | 45.1% | 52.6% |
 
 Recall comes from the replayed liquidations, the false-positive rate from the panel's
 142 negatives, both at the same threshold.
@@ -150,9 +145,9 @@ interest predicts, since it understates every debt by a small amount that grows 
 time since the account's last event.
 
 The uncomfortable part deserves stating rather than burying: **HF < 1.02 is not a
-tradeoff against HF < 1.00, it beats it outright** — recall 48.6% →
-85.7%, false-positive rate 34.5% → 34.5%,
-precision 47.9% → 52.0%. There is no column
+tradeoff against HF < 1.00, it beats it outright** — recall 53.1% →
+88.5%, false-positive rate 34.5% → 34.5%,
+precision 47.3% → 50.0%. There is no column
 in which 1.00 wins. The usual defence of a threshold, that loosening it costs
 precision, is simply not available here.
 
@@ -169,7 +164,7 @@ trust.
 ### Root cause of every miss
 
 "A real miss" is not a root cause, and a miss at a health factor of 2.0 is plainly
-not explained by accrued interest. So each of the 54 misses was tested
+not explained by accrued interest. So each of the 45 misses was tested
 against the one hypothesis that fits a book far from its boundary: **the oracle
 update that triggered the liquidation landed in the liquidation's own block.** Aave
 liquidations are routinely triggered by a price publication, and when they are, the
@@ -180,8 +175,8 @@ prices and see whether the book crosses its boundary on the price move alone.
 
 | | misses | share of misses |
 |---|---|---|
-| cross the boundary at the event block's prices | 17 | 31.5% |
-| still solvent even at the event block's prices | 37 | 68.5% |
+| cross the boundary at the event block's prices | 17 | 37.8% |
+| still solvent even at the event block's prices | 28 | 62.2% |
 
 The first row is **not a defect the engine could fix by reading better**. Those books
 were read correctly and were solvent at every block a monitor could have queried; the
@@ -189,29 +184,29 @@ price was the news. The honest way to describe them is as a bound on how much wa
 any position-based monitor can give, which is the question Phase 6 takes up directly.
 
 The second row is the part that is genuinely wrong: books still solvent on our numbers
-even after the price move. There are 37, and they are listed in full below with the diagnostic column attached.
+even after the price move. There are 28, and they are listed in full below with the diagnostic column attached.
 
 Note that this pass reads the liquidation's own block, so it is quarantined from
 scoring entirely: every figure above was final before it ran, and the `at()`
 assertion that guards the scoring reads would reject these queries by design.
 
-### All 105 episodes accounted for
+### All 96 episodes accounted for
 
 Putting the two diagnostics together leaves no residual bucket, which is the point of
 running both:
 
 | | episodes | share |
 |---|---|---|
-| flagged at HF < 1 | 51 | 48.6% |
-| unobservable — solvent at every queryable block, price arrived in the liquidation's own block | 17 | 16.2% |
-| near-boundary — within 5% of 1, consistent with missing accrued interest | 27 | 25.7% |
-| genuinely wrong — solvent by a wide margin, before and after the price move | 10 | 9.5% |
+| flagged at HF < 1 | 51 | 53.1% |
+| unobservable — solvent at every queryable block, price arrived in the liquidation's own block | 17 | 17.7% |
+| near-boundary — within 5% of 1, consistent with missing accrued interest | 22 | 22.9% |
+| genuinely wrong — solvent by a wide margin, before and after the price move | 6 | 6.3% |
 
-Read down that column rather than stopping at the headline. The 48.6% recall
+Read down that column rather than stopping at the headline. The 53.1% recall
 figure is what Sentinel achieves today; the row below it is a ceiling no
 position-based monitor can beat, because those accounts were solvent at every block
 that existed to be queried; and the third row is a known, one-directional and fixable
-understatement. What is left over — **10 of 105 episodes** — is the
+understatement. What is left over — **6 of 96 episodes** — is the
 part where the engine is simply wrong, and that is the number worth attacking.
 
 ### The misses, in full
@@ -219,7 +214,7 @@ part where the engine is simply wrong, and that is the number worth attacking.
 The **HF at event prices** column is the diagnostic above; ✓ marks a book that
 crosses its boundary on the price move alone.
 
-#### `solvent` — 10 episodes
+#### `solvent` — 6 episodes
 
 comfortably solvent on the replayed numbers — a real miss.
 
@@ -230,13 +225,9 @@ comfortably solvent on the replayed numbers — a real miss.
 | `0xb7040ffa…cc96f7` | aave-v3-eth | 25885743 | $15,679 | 1.058 | 1.058 | $48,054 | $36,779 | 4 |
 | `0xb7040ffa…cc96f7` | aave-v3-eth | 25922641 | $13,988 | 1.087 | 1.075 | $33,826 | $25,212 | 3 |
 | `0x7baecee4…a7383d` | aave-v3-eth | 25884317 | $9,092 | 3.244 | 3.229 | $68,238 | $17,327 | 4 |
-| `0xba96412a…45769c` | aave-v3-eth | 25815709 | $1,213 | 1.062 | 1.053 | $2,816 | $2,200 | 2 |
-| `0x201fef25…6d567c` | aave-v3-eth | 25814804 | $0 | 1.069 | 1.069 | $0 | $0 | 2 |
-| `0x7d19c5f5…e55cdc` | aave-v3-eth | 25814804 | $0 | 1.051 | 1.051 | $0 | $0 | 2 |
 | `0x3455490c…21a6d7` | aave-v3-eth | 25845399 | $0 | 1.349 | 1.349 | $0 | $0 | 2 |
-| `0x74991f71…185b28` | aave-v3-eth | 25814774 | $0 | 1.133 | 1.133 | $0 | $0 | 2 |
 
-#### `stale-balance` — 44 episodes
+#### `stale-balance` — 39 episodes
 
 solvent by under 5%: balances are event-written, so interest accrued since the account's last event is missing.
 
@@ -277,13 +268,8 @@ solvent by under 5%: balances are event-written, so interest accrued since the a
 | `0xa20f550e…98eb60` | compound-v3-eth | 25954568 | $2 | 1.019 | 1.030 | $2 | $2 | 3 |
 | `0x6c59f64b…915ff1` | aave-v3-eth | 25868099 | $1 | 1.012 | 1.012 | $2 | $1 | 3 |
 | `0x83657520…96d425` | aave-v3-eth | 25892595 | $1 | 1.004 | 0.999 ✓ | $2 | $1 | 2 |
-| `0x25d0c625…e8d537` | aave-v3-eth | 25814774 | $0 | 1.014 | 1.014 | $0 | $0 | 2 |
 | `0x19334a41…073ef7` | aave-v3-eth | 25845438 | $0 | 1.020 | 1.020 | $0 | $0 | 2 |
-| `0x8ecd00fa…6bc01b` | aave-v3-eth | 25814804 | $0 | 1.010 | 1.010 | $0 | $0 | 2 |
 | `0xbc126f3c…cc239c` | aave-v3-eth | 25845491 | $0 | 1.025 | 1.025 | $0 | $0 | 2 |
-| `0x0580908c…6558b8` | aave-v3-eth | 25814804 | $0 | 1.010 | 1.010 | $0 | $0 | 2 |
-| `0x2361894d…b67b74` | aave-v3-eth | 25814804 | $0 | 1.011 | 1.011 | $0 | $0 | 2 |
-| `0x7c7739bc…6beb7b` | aave-v3-eth | 25814774 | $0 | 1.011 | 1.011 | $0 | $0 | 2 |
 | `0xc4f43acf…511db3` | aave-v3-eth | 25845491 | $0 | 1.010 | 1.010 | $0 | $0 | 2 |
 | `0xadc99293…9711ca` | aave-v3-eth | 25845491 | $0 | 1.017 | 1.017 | $0 | $0 | 2 |
 
@@ -337,34 +323,34 @@ solvent by under 5%: balances are event-written, so interest accrued since the a
 | `0x57d20456…4a5dfe` | aave-v3-eth | 25845482 | $0 | 0.911 | $0 | $0 | 2 |
 | `0x9b471413…2d4b2a` | aave-v3-eth | 25845491 | $0 | 0.980 | $0 | $0 | 2 |
 | `0xe656904a…e3cdbf` | aave-v3-eth | 25845415 | $0 | 0.951 | $0 | $0 | 2 |
-| `0x07e86691…39dda7` | aave-v3-eth | 25845399 | $0 | 0.908 | $0 | $0 | 2 |
 | `0x04e05a38…40bc64` | aave-v3-eth | 25845399 | $0 | 0.901 | $0 | $0 | 2 |
+| `0x07e86691…39dda7` | aave-v3-eth | 25845399 | $0 | 0.908 | $0 | $0 | 2 |
 | `0xcfceb153…c7d332` | aave-v3-eth | 25841114 | $0 | 0.822 | $0 | $0 | 3 |
 | `0x9bb4ffc6…720728` | aave-v3-eth | 25845399 | $0 | 0.952 | $0 | $0 | 2 |
 | `0x75ccae67…920a17` | aave-v3-eth | 25845503 | $0 | 0.684 | $0 | $0 | 3 |
 
-## Experiment 2 — precision and false positives at block 25813995
+## Experiment 2 — precision and false positives at block 25815919
 
-Population: **247 books**, fixed before any outcome was known —
-97 that were liquidated somewhere in the window, plus the
+Population: **239 books**, fixed before any outcome was known —
+89 that were liquidated somewhere in the window, plus the
 150 largest live cross-protocol borrowers as candidate
-negatives. 230 of them carried debt at the panel block and therefore
+negatives. 222 of them carried debt at the panel block and therefore
 received a prediction; the other 17 had no debt, no
 health factor and no opinion, and counting those as correct would inflate
 specificity with accounts the engine never had a view on.
 
 | | liquidated after | not liquidated |
 |---|---|---|
-| **flagged (HF < 1)** | 45 | 49 |
-| **not flagged** | 43 | 93 |
+| **flagged (HF < 1)** | 44 | 49 |
+| **not flagged** | 36 | 93 |
 
-- precision **47.9%** — of the books flagged, this share were liquidated within three weeks
-- recall **51.1%** — over this population, at a single fixed block
+- precision **47.3%** — of the books flagged, this share were liquidated within three weeks
+- recall **55.0%** — over this population, at a single fixed block
 - false-positive rate **34.51%** — of the books never liquidated, this share were flagged
 
 **This population is denser in liquidations than the chain is**, which is a
 deliberate bias and matters for how the two numbers transfer. Precision is a
-statement about a population and rises with the base rate, so 47.9%
+statement about a population and rises with the base rate, so 47.3%
 here is a *lower* bound relative to a population dominated by negatives. The
 false-positive rate is conditioned on the negatives alone, so it is the figure that
 carries over unchanged.
@@ -383,33 +369,33 @@ correlated collateral and has **no field anywhere in the standardized schema**, 
 the engine computes a boundary the protocol does not use. This experiment prices
 that gap in false positives instead of arguing about it.
 
-| account | protocol | HF at 25813995 | collateral | debt | positions |
+| account | protocol | HF at 25815919 | collateral | debt | positions |
 |---|---|---|---|---|---|
-| `0x9600a48e…b22745` | aave-v3-eth | 0.872 | $777,659,604 | $713,856,454 | 3 |
-| `0xf7462251…c83010` | aave-v3-eth | 0.646 | $111,873,095 | $129,875,448 | 3 |
-| `0xd8495b95…85562d` | aave-v3-eth | 0.642 | $44,382,893 | $51,879,509 | 2 |
-| `0x2e15d7aa…ae1392` | aave-v3-eth | 0.912 | $43,464,833 | $38,123,219 | 2 |
-| `0x13d05033…1f2983` | aave-v3-eth | 0.881 | $12,752,250 | $11,730,015 | 2 |
-| `0x1e2799e0…e5a6a5` | aave-v3-eth | 0.923 | $11,751,830 | $10,151,006 | 4 |
-| `0xd480bb57…816d6a` | aave-v3-eth | 0.818 | $6,230,701 | $5,710,112 | 2 |
-| `0x8a25d8c9…083f78` | aave-v3-eth | 0.000 | $0 | $5,446,038 | 2 |
-| `0xc25d3502…2a3aa7` | compound-v3-eth | 0.837 | $3,740,936 | $4,156,379 | 3 |
-| `0x65ae0ed2…54c14a` | aave-v3-eth | 0.000 | $0 | $2,507,815 | 1 |
-| `0x9cbf099f…4c06ce` | aave-v3-eth | 0.658 | $2,049,366 | $2,358,804 | 4 |
-| `0xebea8eee…50d4e4` | aave-v3-eth | 0.000 | $0 | $2,344,000 | 1 |
-| `0x1a557354…65b158` | aave-v3-eth | 0.000 | $3 | $1,619,968 | 2 |
+| `0x9600a48e…b22745` | aave-v3-eth | 0.865 | $759,261,189 | $703,127,224 | 3 |
+| `0xf7462251…c83010` | aave-v3-eth | 0.656 | $111,866,770 | $127,923,426 | 3 |
+| `0xd8495b95…85562d` | aave-v3-eth | 0.651 | $44,382,893 | $51,099,763 | 2 |
+| `0x2e15d7aa…ae1392` | aave-v3-eth | 0.903 | $42,395,048 | $37,550,229 | 2 |
+| `0x13d05033…1f2983` | aave-v3-eth | 0.884 | $12,603,036 | $11,553,713 | 2 |
+| `0x1e2799e0…e5a6a5` | aave-v3-eth | 0.916 | $11,487,731 | $9,998,437 | 4 |
+| `0xd480bb57…816d6a` | aave-v3-eth | 0.819 | $6,232,782 | $5,710,112 | 2 |
+| `0x8a25d8c9…083f78` | aave-v3-eth | 0.000 | $0 | $5,445,993 | 2 |
+| `0xc25d3502…2a3aa7` | compound-v3-eth | 0.841 | $3,740,936 | $4,138,212 | 3 |
+| `0x65ae0ed2…54c14a` | aave-v3-eth | 0.000 | $0 | $2,507,589 | 1 |
+| `0x9cbf099f…4c06ce` | aave-v3-eth | 0.649 | $2,022,213 | $2,358,804 | 4 |
+| `0xebea8eee…50d4e4` | aave-v3-eth | 0.000 | $0 | $2,343,788 | 1 |
 | `0xf6da9e9d…522767` | aave-v3-eth | 0.000 | $0 | $1,600,000 | 1 |
+| `0x1a557354…65b158` | aave-v3-eth | 0.000 | $3 | $1,595,620 | 2 |
 | `0xa53a13a8…fe3526` | aave-v3-eth | 0.000 | $0 | $1,500,000 | 1 |
-| `0xa765a629…06017d` | aave-v3-eth | 0.819 | $1,479,812 | $1,355,840 | 3 |
-| `0x5cede91b…204b27` | compound-v3-eth | 0.828 | $1,177,890 | $1,323,162 | 2 |
+| `0xa765a629…06017d` | aave-v3-eth | 0.819 | $1,480,307 | $1,355,840 | 3 |
+| `0x5cede91b…204b27` | compound-v3-eth | 0.832 | $1,177,890 | $1,317,378 | 2 |
 | `0x00236fee…084c64` | aave-v3-eth | 0.000 | $0 | $1,274,627 | 1 |
 | `0xb8270b5b…a0e855` | aave-v3-eth | 0.000 | $0 | $1,270,674 | 1 |
 | `0x9f4f18ac…fa1561` | aave-v3-eth | 0.000 | $0 | $1,201,725 | 1 |
 | `0xd0b8dfcf…2b757c` | aave-v3-eth | 0.000 | $0 | $1,038,870 | 1 |
 | `0xfe99cc46…ee737a` | aave-v3-eth | 0.000 | $0 | $999,525 | 1 |
-| `0x5cede91b…204b27` | aave-v3-eth | 0.863 | $782,838 | $725,699 | 3 |
-| `0xdd647ce1…cfc737` | aave-v3-eth | 0.882 | $729,321 | $652,975 | 2 |
+| `0x5cede91b…204b27` | aave-v3-eth | 0.855 | $763,570 | $714,792 | 3 |
 | `0x7b852ebc…634f11` | aave-v3-eth | 0.000 | $0 | $650,404 | 1 |
+| `0xdd647ce1…cfc737` | aave-v3-eth | 0.892 | $726,075 | $643,161 | 2 |
 | `0x3ee505ba…b44fab` | aave-v3-eth | 0.000 | $0 | $440,422 | 1 |
 | `0xdd84ce1a…4c5a2b` | aave-v3-eth | 0.000 | $0 | $400,379 | 1 |
 | `0xbbced90f…aa1048` | aave-v3-eth | 0.000 | $0 | $400,000 | 3 |
@@ -424,12 +410,12 @@ that gap in false positives instead of arguing about it.
 | `0x432dcbda…ed8bed` | aave-v3-eth | 0.000 | $0 | $250,000 | 1 |
 | `0xf534b467…1efa99` | aave-v3-eth | 0.000 | $0 | $210,000 | 2 |
 | `0xe5350e92…df1941` | aave-v3-eth | 0.000 | $0 | $190,126 | 1 |
-| `0xa17b7d51…436022` | aave-v3-eth | 0.879 | $201,311 | $183,232 | 2 |
+| `0xa17b7d51…436022` | aave-v3-eth | 0.870 | $196,356 | $180,478 | 2 |
 | `0x984425ed…7bae21` | aave-v3-eth | 0.000 | $0 | $180,387 | 1 |
 | `0xfd8a6308…2c68dd` | aave-v3-eth | 0.000 | $0 | $164,252 | 1 |
 | `0xecded8b1…2a29af` | aave-v3-eth | 0.000 | $0 | $148,293 | 1 |
 | `0xf212ce21…bb686a` | aave-v3-eth | 0.000 | $0 | $140,001 | 1 |
-| `0x8011d0c9…a177d4` | aave-v3-eth | 0.082 | $13,579 | $137,543 | 6 |
+| `0x8011d0c9…a177d4` | aave-v3-eth | 0.081 | $13,377 | $137,434 | 6 |
 | `0xdf9e6bea…f33d95` | aave-v3-eth | 0.000 | $0 | $135,000 | 1 |
 | `0x1e7267fa…7272a4` | aave-v3-eth | 0.000 | $0 | $125,400 | 1 |
 | `0x52d033e6…d29382` | aave-v3-eth | 0.000 | $0 | $123,692 | 1 |
@@ -437,14 +423,10 @@ that gap in false positives instead of arguing about it.
 
 ## What this does not establish
 
-**About ten weeks is the whole history available**, and this run used three of them.
-Phase 6 measured the wall precisely at ~480,000 blocks (~67 days); either way the
-window cannot cover a real crisis, because the year's actual cascades — including one
-that liquidated $224M across 2,452 accounts and four protocols — sit outside it.
-`Liquidate` *events* are retained for the full year while *state* is not, so Sentinel
-can locate crises it cannot replay. Every liquidation scored here happened in an
-ordinary market, and an ordinary market is the easy case: it is exactly in a crash that
-oracle staleness, depth and correlation all break together.
+**Three weeks is the whole history available.** Time-travel fails at a million
+blocks back, so the window cannot cover a real crisis. Every liquidation scored
+here happened in an ordinary market, and an ordinary market is the easy case: it is
+exactly in a crash that oracle staleness, depth and correlation all break together.
 
 **A flag is not a profitable liquidation.** The engine answers whether a book is
 below its boundary, not whether seizing it clears at a price a liquidator will
@@ -456,7 +438,7 @@ than small ones, so they are somewhat less likely to be liquidated. That biases 
 false-positive rate **up**, which is the safe direction for a number reported as a
 cost.
 
-**68.0% of the window's liquidations
+**69.8% of the window's liquidations
 are unscorable**, on the 3 deployments whose indexers retain no
 historical state (`aave-v2-eth`, `compound-v2-eth`, `morpho-aave-v2-eth`). Nothing here
 says how the engine would have performed on them. Worse, the gap is not random with

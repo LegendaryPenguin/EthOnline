@@ -28,7 +28,9 @@
     "tokens": "tsx scripts/build-tokens.mts",
     "check:ui": "tsx scripts/check-ui.mts",
     "frames": "tsx scripts/measure-frame-cost.tsx",
-    "capture:ui": "tsx scripts/capture-ui.mts"
+    "capture:ui": "tsx scripts/capture-ui.mts",
+    "preflight": "tsx scripts/preflight.mts",
+    "verify": "tsx scripts/verify.mts"
   },
   "dependencies": {
     "next": "16.3.5",
