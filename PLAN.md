@@ -191,11 +191,15 @@ Checked before planning, not assumed:
 **Acceptance criteria**
 - [x] `handlerInTee` registered and used; TEE handles the aggregation, not a
       placeholder side-path.
-- [ ] CRE CLI simulation succeeds; full terminal logs captured to
-      `docs/evidence/cre-simulation.log`.
-      **Blocked: `cre login` requires the account holder.** Stood in for by
-      `docs/evidence/enclave-local-run.log` — every line of `workflow.ts` against the
-      live gateway, which the log's own header states is not a TEE.
+- [x] CRE CLI simulation succeeds; full terminal logs captured to
+      `docs/evidence/cre-simulation.log`. Unblocked once the account holder ran
+      `cre login`: exit 0, the CLI's own output naming the enclave it dispatched to
+      (AWS Nitro, us-west-2), and it re-runs as a verify stage (31.5s on the
+      fresh-clone run). The log is redacted in-flight by `npm run cre:simulate` and
+      refused if a 32-hex token survives, because with `-g` the engine logs full
+      outbound URLs and the gateway carries the key as a path segment.
+      `docs/evidence/enclave-local-run.log` remains as the non-TEE local run it
+      always was, and its header still says so.
 - [x] `docs/ENCLAVE.md` enumerates every field crossing the boundary, in and out.
 - [x] **Leak demo**: a documented run with the TEE bypassed shows per-address
       exposure escaping — proving the enclave is load-bearing, not decorative.
