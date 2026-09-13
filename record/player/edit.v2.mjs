@@ -6,7 +6,8 @@
  *   1. **The terminal is a terminal.** The first cut put the cast file name and a recording
  *      timestamp in the title bar. Honest, and nothing any terminal has ever shown. Here the window
  *      is what macOS draws and the prompt is the operator's own, so a viewer reads the footage as a
- *      session rather than as a widget. The provenance moved to the closing card and `docs/VIDEO.md`.
+ *      session rather than as a widget. The provenance lives in `docs/VIDEO.md` and in the casts
+ *      themselves, and is not narrated on screen: a demo talks about the product, not about itself.
  *   2. **The callouts explain instead of decorating.** A `zooms` entry in this cut carries a `label`
  *      (what you are looking at), the cast's own bytes (unchanged: the engine still slices them out
  *      of the cast, so a card cannot quote a line the command did not print), and an `explain` line
@@ -107,7 +108,7 @@ export const EDIT = {
           label: "a subgraph rejected by the gate, live",
           source: "npm run snapshot",
           explain:
-            "Every deployment has to reconcile: the debt we sum from its positions must land near the debt it reports for itself. Aave V2's mappings never handle <code>Repay</code>, so its positions sum to 1924.8x its own reported total. It is registered on purpose and rejected on purpose, by a rule that names no protocol.",
+            "Every deployment has to reconcile: the debt summed from its positions must land near the debt it reports for itself. Aave V2's mappings never handle <code>Repay</code>, so its positions sum to 1924.8x its own reported total. It is registered on purpose and rejected on purpose, by a rule that names no protocol.",
         },
         {
           at: 10.4,
@@ -395,7 +396,7 @@ export const EDIT = {
           side: "right",
           top: "270px",
           width: "1560px",
-          label: "the CRE CLI's own words, not ours",
+          label: "the CRE CLI's own output",
           source: "cre workflow simulate",
           emphasise: "will not be visible, and will not leave the TEE",
           explain:
@@ -422,7 +423,7 @@ export const EDIT = {
           kicker: "Chainlink CRE · the CLI, end to end",
           html: "The confidential workflow, compiled and dispatched by <b>Chainlink's own CLI</b>.",
           detail:
-            "<code>cre workflow simulate</code> builds the TypeScript to WASM, loads the secrets from <code>secrets.yaml</code>, starts the engine and fires the cron trigger. Nothing in this shot is our tooling.",
+            "<code>cre workflow simulate</code> builds the TypeScript to WASM, loads the secrets from <code>secrets.yaml</code>, starts the engine and fires the cron trigger. Every line in this shot is Chainlink's CLI.",
         },
         {
           at: 4.6,
@@ -437,7 +438,7 @@ export const EDIT = {
           dur: 2.6,
           kicker: "Then it says where the handler runs",
           html: "Watch the next line.",
-          detail: "This is the frame worth pausing on, and we did not write it.",
+          detail: "Chainlink's own tooling is about to state the property this project is built on.",
         },
         // Deliberate silence from 11.2 to 17.4: the TEE box gets six seconds with nothing competing
         // with it. It is the one thing on screen in this video that an independent tool wrote.
@@ -635,7 +636,7 @@ export const EDIT = {
           label: "accepted, and what it says",
           source: "npm run consume-signal",
           explain:
-            "The whole payload, decoded by a consumer that has never seen our code. Twelve aggregate numbers and a block. Nothing else fits through.",
+            "The whole payload, decoded by a consumer that has never seen the workflow's code. Twelve aggregate numbers and a block. Nothing else fits through.",
         },
         {
           at: 6.4,
@@ -669,7 +670,7 @@ export const EDIT = {
         {
           at: 6.4,
           dur: 3.4,
-          kicker: "No trust in us required",
+          kicker: "No trust in the publisher required",
           html: "<b>7 of 7 tampered variants refused, 1 genuine report accepted.</b>",
           detail: "Every rejection prints the reason, which is the part that would be easy to fake and is not faked here.",
         },
@@ -715,10 +716,10 @@ export const EDIT = {
       ],
     },
 
-    // ── 8. What we do not claim, and one command for all of it ───────────────
+    // ── 8. The backtest, and one command for all of it ────────────────────────
     //
     // The backtest earns its place here rather than in the results sections, because what it
-    // measured is an argument against our own alert policy. `npm run backtest:cascades` writes this
+    // measured is an argument against the alert policy. `npm run backtest:cascades` writes this
     // table; the shot is the file it wrote, not a slide about it.
     {
       kind: "doc",
@@ -726,7 +727,7 @@ export const EDIT = {
       from: 28,
       to: 36,
       note: "npm run backtest:cascades · 5 episodes, 20 controls",
-      dur: 9,
+      dur: 13,
       captions: [
         {
           at: 0.2,
@@ -744,31 +745,13 @@ export const EDIT = {
           detail:
             "All three operating points are published rather than the best one chosen. With only 5 episodes, picking between them by which detects more is fitting the policy to the labels.",
         },
-      ],
-    },
-    {
-      kind: "doc",
-      file: "docs/EVIDENCE.md",
-      from: 333,
-      to: 352,
-      note: "the claims we do not make",
-      dur: 8,
-      scrollAt: 1.0,
-      captions: [
         {
-          at: 0.3,
-          dur: 3.6,
-          kicker: "What this project does not claim",
-          html: "We did not author a subgraph. We consume two standards.",
-          detail: "The contribution is the composition and the confidentiality, and the docs say so in their own section.",
-        },
-        {
-          at: 4.1,
+          at: 9.2,
           dur: 3.6,
           kicker: "Stated bounds, not estimates",
-          html: "Distress figures are <b>bounds</b>, because E-Mode is absent from the standardized schema.",
+          html: "The backtest replays <b>96 of 319</b> known episodes.",
           detail:
-            "And only 2 of 5 deployments support time travel queries, so the backtest replays 96 of 319 known episodes rather than all of them.",
+            "Only 2 of the 5 deployments answer time travel queries on The Graph, so the rest cannot be read at a past block. The coverage is printed rather than the sample being presented as the whole.",
         },
       ],
     },
@@ -795,7 +778,7 @@ export const EDIT = {
           fontSize: "27px",
           top: "180px",
           width: "1240px",
-          label: "one command, every claim in this video",
+          label: "one command, every claim above",
           source: "npm run verify",
           explain:
             "18 of 18 stages in 120.5 seconds, and the run is dominated by one of them on purpose: <code>cascade</code> makes 636 live DEX depth queries and is gateway bound, not client bound. Nothing here is cached and nothing is mocked.",
@@ -806,7 +789,7 @@ export const EDIT = {
           at: 0.2,
           dur: 4.0,
           kicker: "Reproducible",
-          html: "Everything in this video re-verifies in <b>one command</b>.",
+          html: "Every claim above re-verifies in <b>one command</b>.",
           detail: "<code>npm run verify</code>, on a clean checkout, against live data.",
         },
         {
@@ -823,7 +806,7 @@ export const EDIT = {
           kicker: "The ramp is marked",
           html: "Time was compressed here. <b>No output was removed.</b>",
           detail:
-            "The badge is on screen for exactly the stretch that is sped up. The renderer can change the rate of a recorded run; it cannot change its range.",
+            "The badge is on screen for exactly the stretch that is sped up. Every line the command printed is still here, in order.",
         },
         {
           at: 15.2,
@@ -838,33 +821,18 @@ export const EDIT = {
     {
       kind: "card",
       id: "close",
-      dur: 7,
+      // Three lines and out. The provenance sentence and the track list that used to close the card
+      // were both about the submission rather than about the product, and a demo ends on the product.
+      dur: 5.5,
       lines: [
-        { at: 0.2, hold: 6.6, html: "Sentinel" },
+        { at: 0.2, hold: 5.1, html: "Sentinel" },
         {
           at: 0.9,
-          hold: 5.9,
+          hold: 4.4,
           class: "sub",
           html: "<code style=\"font-family:ui-monospace,Menlo,monospace;color:var(--color-accent)\">npm run verify</code>",
         },
-        { at: 1.7, hold: 5.1, class: "sub", html: "github.com/LegendaryPenguin/EthOnline" },
-        {
-          // The provenance the v2 title bar gave up. It belongs in the video, not only in the repo:
-          // every terminal frame in this cut is a replay of a committed cast, and a judge can diff
-          // any frame against the bytes the command produced.
-          at: 2.8,
-          hold: 4.0,
-          class: "sub",
-          html:
-            "<span style=\"font-size:0.62em;line-height:1.5;display:block\">Every terminal frame in this video is a replay of a recorded run, committed in <code style=\"font-family:ui-monospace,Menlo,monospace;color:var(--color-accent)\">docs/evidence/casts/</code> with per chunk timings. Diff any frame against it.</span>",
-        },
-        {
-          at: 4.4,
-          hold: 2.4,
-          class: "sub",
-          html:
-            "<span style=\"font-size:0.66em\">The Graph · Composable or Standardized Graph Products &nbsp;·&nbsp; The Graph · AI Tooling (From Scratch) &nbsp;·&nbsp; Chainlink · Best Confidential Workflow</span>",
-        },
+        { at: 1.7, hold: 3.6, class: "sub", html: "github.com/LegendaryPenguin/EthOnline" },
       ],
     },
   ],

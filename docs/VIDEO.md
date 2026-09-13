@@ -1,6 +1,6 @@
 # Demo video — script, and how it is rendered
 
-**As rendered:** v1 3:47 (226.5s, 6795 frames), v2 3:59 (238.5s, 7155 frames). Both 1080p
+**As rendered:** v1 3:47 (226.5s, 6795 frames), v2 3:53 (233.0s, 6990 frames). Both 1080p
 (1920×1080), 30 fps, burned-in captions, no voiceover (captions carry the narrative; silent).
 **Constraint the script is written against:** every frame is real footage of this repo — a real
 command's real output, the running dashboard, or a real file on screen. Nothing is mocked up for the
@@ -27,8 +27,8 @@ Why this way rather than pointing a recorder at a screen:
 What is *not* claimed: the terminal sections are not photographs of a terminal window. In v1 every one
 is labelled on screen for its full duration with the cast it replays, the timestamp it was recorded at
 (`docs/evidence/casts/verify.json · recorded 2026-09-13T…Z`) and its exit code. In v2 that chrome is
-gone, because no terminal has it, and the same claim is made once on the closing card instead: every
-terminal frame is a replay of a run committed in `docs/evidence/casts/`. See *The second cut* below.
+gone, because no terminal has it, and the claim is not narrated on screen at all: it is stated here and
+in the casts themselves. See *The second cut* below.
 
 `record/player/edit.mjs` (v1) and `record/player/edit.v2.mjs` (v2) are the executable shot lists:
 segment order, durations, caption text and cues. Where they and the script below disagree, they are
@@ -55,7 +55,7 @@ because a claim that runs is worth more than a claim that is stated:
 | cut | shot list | output | length |
 |---|---|---|---|
 | v1 | `record/player/edit.mjs` | `record/out/sentinel-demo.mp4` | 3:46 |
-| v2 | `record/player/edit.v2.mjs` | `record/out/sentinel-demo-v2.mp4` | 3:59 |
+| v2 | `record/player/edit.v2.mjs` | `record/out/sentinel-demo-v2.mp4` | 3:53 |
 
 ---
 
@@ -77,10 +77,13 @@ child and not the interactive shell that spawned it, so it is the cast's own pro
 time and nothing more. It claims no more than the recorded exit code, which is 0 for all nine shots
 (`npm run record:terminal` refuses to finish otherwise).
 
-**The provenance moved rather than disappeared.** It is now on the closing card, in frame: every
-terminal frame in this video is a replay of a run committed in `docs/evidence/casts/` with per-chunk
-timings, and a judge can diff any frame against it. That claim belongs somewhere a viewer reads it
-once, not in a chrome field on every shot.
+**The provenance moved out of frame, not out of the repo.** Every terminal frame in either cut is a
+replay of a run committed in `docs/evidence/casts/` with per-chunk timings, and a judge can diff any
+frame against it. But that is a claim about the video rather than about the product, and a demo that
+narrates its own construction spends its closing seconds on itself. It was on v2's closing card for one
+render and was cut; it lives here, where someone checking the work will look for it. For the same
+reason v2 carries no self referential lines anywhere: no *we did not write this*, no *not our tooling*,
+no track list on the outro. The track each section answers is already in the corner of every shot.
 
 **Callouts explain instead of decorating.** A v2 card has three registers, styled differently on
 purpose so a viewer can tell which one is speaking: a `label` naming what they are looking at, the
@@ -230,6 +233,14 @@ is the entire ask of this track and a source screenshot does not demonstrate exe
 | **CLOSING CARD** | `Sentinel` / `npm run verify` / `github.com/LegendaryPenguin/EthOnline` |
 | **ASSET** | still; **[record]** a full `npm run verify` run — the same run whose numbers the captions quote. |
 
+**v2 drops SHOT 8a.** A section headed *what this project does not claim*, over a doc pane headed
+*the claims we do not make*, is a disclaimer slide, and a demo is not the place to argue with itself.
+The one load-bearing fact in it — the backtest replays 96 of 319 known episodes, because only 2 of the
+5 deployments answer time-travel queries — moved into SHOT 8a0 as a third caption, over the table that
+figure comes from. The E-Mode bound it also stated is still on screen in the snapshot shot, in the
+run's own words (`the remaining cause is Aave V3 E-Mode, which the standardized schema omits`). v2's
+closing card is three lines and out.
+
 ---
 
 ## Track wording map — every requirement, and the second it lands
@@ -249,7 +260,7 @@ so a judge holding the prize page can tick bullets without translating. Verbatim
 | "Simply querying one Subgraph… does not qualify" | answered by construction at **0:14** and **1:54**: nine deployments, two schemas |
 | "Make the standards leverage clear: show what became easier" | **0:14** caption 3b — the primary-key join, stated as what the standard bought us |
 | "Authoring or extending a Standardized Subgraph… is in scope" | **3:09** — stated as *not claimed*, out loud |
-| "a short demo video (two to four minutes)" | 3:47 total |
+| "a short demo video (two to four minutes)" | v1 3:47, v2 3:53 |
 
 **The Graph — Best AI Tooling or AI Use Case (Start Fresh)**
 
@@ -261,7 +272,7 @@ so a judge holding the prize page can tick bullets without translating. Verbatim
 | "risk monitors" *(their own example of a qualifying AI app)* | **2:14** caption 5, using their word |
 | "Do meaningful work with the data: reasoning, decisions, automation… not just printing a raw query result" | **2:14** caption 5 and **2:43** (the vault acting on the signal) |
 | "Consume live data… Mocked, local-only, or static datasets do not qualify" | **2:14** shot 6a, live handshake |
-| "a clear README or SKILL.md so judges can run it" | **3:40** closing card |
+| "a clear README or SKILL.md so judges can run it" | closing card, both cuts |
 | "document any pre-existing work" | `docs/DISCLOSURE.md`, linked in the submission — not in the cut, since a disclosure belongs in writing |
 
 **Chainlink — Best Confidential Workflow**
