@@ -189,7 +189,7 @@ export const EDIT = {
         {
           at: 0.3,
           dur: 6.4,
-          html: "Twelve aggregate fields leave the enclave, specified one by one. <b>No address in any form, no per-address row, no coupling bucket below k = 3 borrowers.</b>",
+          html: "Fifteen fields leave the enclave, specified one by one. <b>No address in any form, no per-address row, no coupling bucket below k = 3 borrowers.</b>",
         },
       ],
     },

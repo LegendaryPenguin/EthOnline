@@ -1,7 +1,8 @@
 # Evidence
 
 Every qualification bullet from all three tracks, mapped to the file, line and artifact that
-satisfies it. The bullets are quoted verbatim in `docs/TRACKS.md`; this document answers them.
+satisfies it. The bullets are the sponsors' own wording from their prize pages; this document
+answers them.
 
 Reproduce the whole thing with one command:
 
@@ -303,7 +304,7 @@ gestured at: the aggregate reaches **DON consensus**; the dashboard is **externa
 `SentinelSignal.sol` is **onchain settlement**. Each is a separate place a leak could happen, so
 each is tested separately.
 
-The signal that leaves the enclave is 12 aggregate fields, specified in `docs/SIGNAL.md` and
+The signal that leaves the enclave is 15 fields, specified in `docs/SIGNAL.md` and
 verified on-chain in `contracts/src/SentinelSignal.sol`. The dashboard verifies the signer
 quorum before rendering a single figure, and `npm run check:ui` proves **zero** 40-hex strings
 cross the wire on either route — checked against the 360-account sample, 139 of which are

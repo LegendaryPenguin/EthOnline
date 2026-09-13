@@ -2,7 +2,7 @@
  * npm run verify — the whole project, from a live query to a rendered page, in one command.
  *
  * The claim this exists to make checkable: a stranger clones the repo, sets one API key, runs
- * this, and every acceptance criterion in PLAN.md is re-verified against live data in front of
+ * this, and every acceptance criterion this project set for itself is re-verified against live data in front of
  * them. Not a test suite standing in for the system — the actual system.
  *
  * Design decisions worth knowing:

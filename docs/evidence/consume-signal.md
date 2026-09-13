@@ -18,11 +18,11 @@ ACCEPTED
 
 REFUSED
   one byte of the signal body flipped after signing
-      report rejected: 0 of 2 required signatures verified: unknown signer 0x4170C176499fdc95e95DFC7010B29613c1d4a298; unknown signer 0xC84a83858564aa97E459d0a4eEe2525664B0b779
+      report rejected: 0 of 2 required signatures verified: unknown signer 0xBcbB6e9F0e36805C9971Ba0dCf4B13F6C1EE15fc; unknown signer 0x7A9dA80841429030Ddb10e93658DfCA0c5f986f0
   the header's DON id rewritten after signing
-      report rejected: 0 of 2 required signatures verified: unknown signer 0xb1DB2f6E991345449181757D37423d1E071b4088; unknown signer 0xC87B96609252c13CC1A21fAF0A2b3667f5Ef7700
+      report rejected: 0 of 2 required signatures verified: unknown signer 0x516d6773b77728a7a8e66a1e38A134b5a7646152; unknown signer 0x08fE44e8Bb8ec5aE14879bA428cB8e6AbBE903Cc
   replayed under a different DON sequence number
-      report rejected: 0 of 2 required signatures verified: unknown signer 0x63A49580Edf1bbb1c8d8AFb4259430660a99C879; unknown signer 0x0C62bbBFc1A58CE30F5349AD305a5692FD197a9e
+      report rejected: 0 of 2 required signatures verified: unknown signer 0x95b63A8B078c763cFcdBF6B3848F1b50586F1188; unknown signer 0x9594dE2463e971EE52B5eb19F68EDD11280F5F82
   signed by a key outside the DON's signer set
       report rejected: 0 of 2 required signatures verified: unknown signer 0x1d81bc367c85bF86ffD52048805Ed3E9FE6E5835; unknown signer 0xeF27d856c356Cd1FC1a45FBA676fd662F9B1D672
   one signer's signature repeated to fake a quorum

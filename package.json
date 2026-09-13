@@ -35,7 +35,9 @@
     "record:dashboard": "tsx scripts/record/capture-dashboard.mts",
     "record:render": "tsx scripts/record/render.mts",
     "preflight": "tsx scripts/preflight.mts",
-    "verify": "tsx scripts/verify.mts"
+    "verify": "tsx scripts/verify.mts",
+    "record:narrate": "tsx scripts/record/narrate.mts",
+    "submission:assets": "tsx scripts/submission-assets.mts"
   },
   "dependencies": {
     "next": "16.3.5",

@@ -246,8 +246,8 @@ closing card is three lines and out.
 ## Track wording map — every requirement, and the second it lands
 
 The captions above deliberately reuse the sponsors' own phrases rather than our paraphrases of them,
-so a judge holding the prize page can tick bullets without translating. Verbatim requirements are in
-`docs/TRACKS.md`; this table says where each one is on screen.
+so a judge holding the prize page can tick bullets without translating. Requirements are quoted
+straight from each sponsor's own prize page; this table says where each one is on screen.
 
 **The Graph — Best Use of Composable or Standardized Graph Products**
 

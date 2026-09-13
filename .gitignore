@@ -53,3 +53,10 @@ next-env.d.ts
 # `npm run record:render` from committed inputs (the casts, record/assets/, and the repo itself).
 /record/out/
 /record/vendor/
+record/narration/
+# Note: docs/demo.mp4 is deliberately NOT ignored. It is the committed copy of
+# record/out/sentinel-demo-video.mp4 that the README plays inline on GitHub; the renderer's
+# own output directory above stays ignored.
+
+# TypeScript incremental build cache.
+tsconfig.tsbuildinfo

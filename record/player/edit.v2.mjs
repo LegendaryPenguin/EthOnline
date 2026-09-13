@@ -270,7 +270,7 @@ export const EDIT = {
           at: 0.3,
           dur: 7.4,
           kicker: "Chainlink CRE · the confidential boundary",
-          html: "Twelve aggregate fields leave the enclave. They are specified one by one.",
+          html: "Fifteen fields leave the enclave, and every one is specified in advance.",
           detail:
             "<b>No address in any form. No per address row. No coupling bucket below k = 3 borrowers.</b> A runtime check walks the output and throws on anything address shaped, keys as well as values, so the boundary is enforced by code and not by review.",
         },
@@ -636,7 +636,7 @@ export const EDIT = {
           label: "accepted, and what it says",
           source: "npm run consume-signal",
           explain:
-            "The whole payload, decoded by a consumer that has never seen the workflow's code. Twelve aggregate numbers and a block. Nothing else fits through.",
+            "The whole payload, decoded by a consumer that has never seen the workflow's code. Thirteen aggregate numbers, a block, and a version string. Nothing else fits through.",
         },
         {
           at: 6.4,
